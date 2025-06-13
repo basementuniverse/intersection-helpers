@@ -2,9 +2,9 @@ const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
+  devtool: false,
   mode: process.env.NODE_ENV || 'development',
-  entry: './index.ts',
-  // devtool: 'inline-source-map',
+  entry: './src/index.ts',
   watchOptions: {
     aggregateTimeout: 500,
     ignored: [
@@ -28,6 +28,7 @@ module.exports = {
     publicPath: '/build/',
     filename: 'index.js',
     path: path.resolve(__dirname, 'build'),
+    globalObject: 'this',
   },
   performance: {
     hints: false,

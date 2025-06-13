@@ -4,7 +4,7 @@
     "target": "es2019",
     "module": "commonjs",
     "allowJs": false,
-    "declaration": true,
+    "declaration": false,
     "outDir": "./build",
     "rootDir": "./",
     "strict": true,
@@ -22,5 +22,10 @@
     "inlineSourceMap": false,
     "sourceMap": false
   },
-  "include": ["index.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
