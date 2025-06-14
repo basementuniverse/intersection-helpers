@@ -25,7 +25,7 @@ export type Line = {
  * A circle defined by its center and radius in 2D space
  */
 export type Circle = {
-  center: Point;
+  position: Point;
   radius: number;
 };
 

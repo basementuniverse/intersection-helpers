@@ -6,7 +6,8 @@
   "types": "build/index.d.ts",
   "scripts": {
     "build": "webpack && cp ./src/index.d.ts ./build/index.d.ts",
-    "test": "jest"
+    "test": "jest",
+    "test:only": "jest --t \"@only\""
   },
   "author": "Gordon Larrigan <gordonlarrigan@gmail.com> (https://gordonlarrigan.com)",
   "license": "MIT",

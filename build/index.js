@@ -978,7 +978,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.polygonIntersectsPolygon = exports.rectangleIntersectsPolygon = exports.rectangleIntersectsRectangle = exports.circleIntersectsPolygon = exports.circleIntersectsRectangle = exports.circleIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsRectangle = exports.lineIntersectsCircle = exports.lineIntersectsLine = exports.lineIntersectsRay = exports.rayIntersectsPolygon = exports.rayIntersectsRectangle = exports.rayIntersectsCircle = exports.rayIntersectsLine = exports.rayIntersectsRay = exports.pointInPolygon = exports.pointInRectangle = exports.pointInCircle = exports.pointOnLine = exports.pointOnRay = exports.decomposeConcavePolygon = exports.polygonCentroid = exports.polygonArea = exports.polygonWindingOrder = exports.polygonIsValid = exports.polygonSelfIntersects = exports.polygonIsConvex = exports.rectangleVertices = exports.rectangleIsRotated = exports.rayToLine = exports.lineToRay = exports.pointsAreCollinear = exports.angleBetween = exports.distance = void 0;
+exports.polygonIntersectsPolygon = exports.rectangleIntersectsPolygon = exports.rectangleIntersectsRectangle = exports.circleIntersectsPolygon = exports.circleIntersectsRectangle = exports.circleIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsRectangle = exports.lineIntersectsCircle = exports.lineIntersectsLine = exports.lineIntersectsRay = exports.rayIntersectsPolygon = exports.rayIntersectsRectangle = exports.rayIntersectsCircle = exports.rayIntersectsLine = exports.rayIntersectsRay = exports.pointInPolygon = exports.pointInRectangle = exports.pointInCircle = exports.pointOnLine = exports.pointOnRay = exports.decomposePolygon = exports.polygonCentroid = exports.polygonArea = exports.polygonWindingOrder = exports.polygonIsValid = exports.polygonSelfIntersects = exports.polygonIsConvex = exports.rectangleVertices = exports.rectangleIsRotated = exports.rayToLine = exports.lineToRay = exports.pointsAreCollinear = exports.angleBetween = exports.distance = void 0;
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const constants = __importStar(__webpack_require__(/*! ../utilities/constants */ "./src/utilities/constants.ts"));
 __exportStar(__webpack_require__(/*! ./types */ "./src/2d/types.ts"), exports);
@@ -993,7 +993,12 @@ exports.distance = distance;
  * Calculate the angle between two vectors in 2D space
  */
 function angleBetween(a, b) {
-    return vec_1.vec2.rad(vec_1.vec2.sub(b, a));
+    if (vec_1.vec2.len(a) < constants.EPSILON ||
+        vec_1.vec2.len(b) < constants.EPSILON ||
+        vec_1.vec2.len(vec_1.vec2.sub(a, b)) < constants.EPSILON) {
+        return 0;
+    }
+    return Math.acos(vec_1.vec2.dot(vec_1.vec2.nor(a), vec_1.vec2.nor(b)));
 }
 exports.angleBetween = angleBetween;
 /**
@@ -1168,14 +1173,18 @@ exports.polygonArea = polygonArea;
 /**
  * Calculate the centroid of a polygon in 2D space
  *
- * Returns null if the polygon is invalid
+ * Returns null if the polygon is invalid or degenerate (i.e. all vertices are
+ * collinear)
  */
 function polygonCentroid(polygon) {
     if (!polygonIsValid(polygon)) {
         return null;
     }
-    let c = (0, vec_1.vec2)();
     const n = polygon.vertices.length;
+    if (polygon.vertices.every((v, i, arr) => pointsAreCollinear(v, arr[(i + 1) % n], arr[(i + 2) % n]))) {
+        return null; // All vertices are collinear
+    }
+    let c = (0, vec_1.vec2)();
     for (let i = 0; i < n; i++) {
         const a = polygon.vertices[i];
         c = vec_1.vec2.add(c, a);
@@ -1189,7 +1198,7 @@ exports.polygonCentroid = polygonCentroid;
  *
  * Returns null if the polygon is invalid or cannot be decomposed
  */
-function decomposeConcavePolygon(polygon) {
+function decomposePolygon(polygon) {
     if (!polygonIsValid(polygon)) {
         return null;
     }
@@ -1198,25 +1207,24 @@ function decomposeConcavePolygon(polygon) {
     }
     throw new Error('not implemented yet'); // TODO
 }
-exports.decomposeConcavePolygon = decomposeConcavePolygon;
+exports.decomposePolygon = decomposePolygon;
 /**
  * Check if a point intersects a ray in 2D space
  */
 function pointOnRay(point, ray) {
+    // Vector from ray origin to point
     const toPoint = vec_1.vec2.sub(point, ray.origin);
-    const projection = vec_1.vec2.dot(toPoint, ray.direction);
-    if (projection < 0) {
-        // Point is behind the ray origin
-        return {
-            intersects: false,
-            closestPoint: ray.origin,
-            distance: vec_1.vec2.len(toPoint),
-        };
-    }
-    const closestPoint = vec_1.vec2.add(ray.origin, vec_1.vec2.mul(ray.direction, projection));
+    // Get normalized ray direction
+    const rayDirection = vec_1.vec2.nor(ray.direction);
+    // Project toPoint onto the ray direction
+    const projection = vec_1.vec2.dot(toPoint, rayDirection);
+    // Calculate closest point on ray
+    const closestPoint = vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDirection, Math.max(0, projection)));
+    // Calculate distance from point to closest point
     const distance = vec_1.vec2.len(vec_1.vec2.sub(point, closestPoint));
     return {
-        intersects: distance < constants.EPSILON,
+        // Point is on ray if distance is zero and projection is non-negative
+        intersects: distance < constants.EPSILON && projection >= 0,
         closestPoint,
         distance,
     };
@@ -1226,14 +1234,40 @@ exports.pointOnRay = pointOnRay;
  * Check if a point intersects a line segment in 2D space
  */
 function pointOnLine(point, line) {
-    throw new Error('not implemented yet'); // TODO
+    // Get vector from line start to end
+    const lineVector = vec_1.vec2.sub(line.end, line.start);
+    // Get normalized line direction
+    const lineDirection = vec_1.vec2.nor(lineVector);
+    // Get vector from line start to point
+    const toPoint = vec_1.vec2.sub(point, line.start);
+    // Project toPoint onto the line direction
+    const projection = vec_1.vec2.dot(toPoint, lineDirection);
+    // Get line length
+    const lineLength = vec_1.vec2.len(lineVector);
+    // Clamp projection to line segment
+    const clampedProjection = Math.max(0, Math.min(lineLength, projection));
+    // Calculate closest point on line segment
+    const closestPoint = vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDirection, clampedProjection));
+    // Calculate distance from point to closest point
+    const distance = vec_1.vec2.len(vec_1.vec2.sub(point, closestPoint));
+    return {
+        // Point is on line if distance is effectively zero
+        intersects: distance < constants.EPSILON,
+        closestPoint,
+        distance,
+    };
 }
 exports.pointOnLine = pointOnLine;
 /**
  * Check if a point is inside a circle in 2D space
  */
 function pointInCircle(point, circle) {
-    throw new Error('not implemented yet'); // TODO
+    const toPoint = vec_1.vec2.sub(point, circle.position);
+    const distance = vec_1.vec2.len(toPoint);
+    return {
+        intersects: distance <= circle.radius,
+        distance: distance - circle.radius, // Distance from point to circle edge
+    };
 }
 exports.pointInCircle = pointInCircle;
 /**
@@ -1300,7 +1334,47 @@ exports.lineIntersectsRay = lineIntersectsRay;
  * Check if two line segments intersect in 2D space
  */
 function lineIntersectsLine(lineA, lineB) {
-    throw new Error('not implemented yet'); // TODO
+    // Get the vectors representing the directions of each line
+    const dirA = vec_1.vec2.sub(lineA.end, lineA.start);
+    const dirB = vec_1.vec2.sub(lineB.end, lineB.start);
+    // Calculate the cross product determinant
+    const det = vec_1.vec2.cross(dirA, dirB);
+    // Get the vector between starting points
+    const startDiff = vec_1.vec2.sub(lineB.start, lineA.start);
+    // If determinant is close to 0, lines are parallel or collinear
+    if (Math.abs(det) < constants.EPSILON) {
+        // Check if lines are collinear
+        if (Math.abs(vec_1.vec2.cross(startDiff, dirA)) < constants.EPSILON) {
+            // Lines are collinear - check if they overlap
+            const t0 = vec_1.vec2.dot(startDiff, dirA) / vec_1.vec2.dot(dirA, dirA);
+            const t1 = t0 + vec_1.vec2.dot(dirB, dirA) / vec_1.vec2.dot(dirA, dirA);
+            // Check if segments overlap
+            const interval0 = Math.min(t0, t1);
+            const interval1 = Math.max(t0, t1);
+            if (interval0 <= 1 && interval1 >= 0) {
+                return {
+                    intersects: true,
+                    // No single intersection point for overlapping lines
+                };
+            }
+        }
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate intersection parameters
+    const t = vec_1.vec2.cross(startDiff, dirB) / det;
+    const s = vec_1.vec2.cross(startDiff, dirA) / det;
+    // Check if intersection occurs within both line segments
+    if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
+        return {
+            intersects: true,
+            intersectionPoint: vec_1.vec2.add(lineA.start, vec_1.vec2.mul(dirA, t)),
+        };
+    }
+    return {
+        intersects: false,
+    };
 }
 exports.lineIntersectsLine = lineIntersectsLine;
 /**
@@ -1439,6 +1513,32 @@ function angleBetween(a, b) {
     return Math.acos(vec_1.vec3.dot(a, b) / (vec_1.vec3.len(a) * vec_1.vec3.len(b)));
 }
 exports.angleBetween = angleBetween;
+// pointOnRay
+// pointOnLine
+// pointInSphere
+// pointOnPlane
+// pointInTriangle
+// pointInBox
+// rayIntersectsRay
+// rayIntersectsLine
+// rayIntersectsSphere
+// rayIntersectsTriangle
+// rayIntersectsPlane
+// rayIntersectsBox
+// lineIntersectsRay
+// lineIntersectsLine
+// lineIntersectsSphere
+// lineIntersectsTriangle
+// lineIntersectsPlane
+// lineIntersectsBox
+// sphereIntersectsSphere
+// sphereIntersectsTriangle
+// sphereIntersectsPlane
+// sphereIntersectsBox
+// triangleIntersectsTriangle
+// triangleOnPlane
+// planeIntersectsPlane
+// boxIntersectsBox
 
 
 /***/ }),

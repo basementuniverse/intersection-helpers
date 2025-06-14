@@ -15,7 +15,14 @@ export function distance(a: Point, b: Point): number {
  * Calculate the angle between two vectors in 2D space
  */
 export function angleBetween(a: vec2, b: vec2): number {
-  return vec2.rad(vec2.sub(b, a));
+  if (
+    vec2.len(a) < constants.EPSILON ||
+    vec2.len(b) < constants.EPSILON ||
+    vec2.len(vec2.sub(a, b)) < constants.EPSILON
+  ) {
+    return 0;
+  }
+  return Math.acos(vec2.dot(vec2.nor(a), vec2.nor(b)));
 }
 
 /**
@@ -201,14 +208,22 @@ export function polygonArea(polygon: Polygon): number | null {
 /**
  * Calculate the centroid of a polygon in 2D space
  *
- * Returns null if the polygon is invalid
+ * Returns null if the polygon is invalid or degenerate (i.e. all vertices are
+ * collinear)
  */
 export function polygonCentroid(polygon: Polygon): Point | null {
   if (!polygonIsValid(polygon)) {
     return null;
   }
-  let c = vec2();
   const n = polygon.vertices.length;
+  if (
+    polygon.vertices.every((v, i, arr) =>
+      pointsAreCollinear(v, arr[(i + 1) % n], arr[(i + 2) % n])
+    )
+  ) {
+    return null; // All vertices are collinear
+  }
+  let c = vec2();
   for (let i = 0; i < n; i++) {
     const a = polygon.vertices[i];
     c = vec2.add(c, a);
@@ -222,7 +237,7 @@ export function polygonCentroid(polygon: Polygon): Point | null {
  *
  * Returns null if the polygon is invalid or cannot be decomposed
  */
-export function decomposeConcavePolygon(polygon: Polygon): Polygon[] | null {
+export function decomposePolygon(polygon: Polygon): Polygon[] | null {
   if (!polygonIsValid(polygon)) {
     return null;
   }
@@ -244,23 +259,27 @@ export function pointOnRay(
   closestPoint: Point;
   distance: number;
 } {
+  // Vector from ray origin to point
   const toPoint = vec2.sub(point, ray.origin);
-  const projection = vec2.dot(toPoint, ray.direction);
-  if (projection < 0) {
-    // Point is behind the ray origin
-    return {
-      intersects: false,
-      closestPoint: ray.origin,
-      distance: vec2.len(toPoint),
-    };
-  }
+
+  // Get normalized ray direction
+  const rayDirection = vec2.nor(ray.direction);
+
+  // Project toPoint onto the ray direction
+  const projection = vec2.dot(toPoint, rayDirection);
+
+  // Calculate closest point on ray
   const closestPoint = vec2.add(
     ray.origin,
-    vec2.mul(ray.direction, projection)
+    vec2.mul(rayDirection, Math.max(0, projection))
   );
+
+  // Calculate distance from point to closest point
   const distance = vec2.len(vec2.sub(point, closestPoint));
+
   return {
-    intersects: distance < constants.EPSILON,
+    // Point is on ray if distance is zero and projection is non-negative
+    intersects: distance < constants.EPSILON && projection >= 0,
     closestPoint,
     distance,
   };
@@ -274,10 +293,42 @@ export function pointOnLine(
   line: Line
 ): {
   intersects: boolean;
-  intersectionPoint: Point;
+  closestPoint: Point;
   distance: number;
 } {
-  throw new Error('not implemented yet'); // TODO
+  // Get vector from line start to end
+  const lineVector = vec2.sub(line.end, line.start);
+
+  // Get normalized line direction
+  const lineDirection = vec2.nor(lineVector);
+
+  // Get vector from line start to point
+  const toPoint = vec2.sub(point, line.start);
+
+  // Project toPoint onto the line direction
+  const projection = vec2.dot(toPoint, lineDirection);
+
+  // Get line length
+  const lineLength = vec2.len(lineVector);
+
+  // Clamp projection to line segment
+  const clampedProjection = Math.max(0, Math.min(lineLength, projection));
+
+  // Calculate closest point on line segment
+  const closestPoint = vec2.add(
+    line.start,
+    vec2.mul(lineDirection, clampedProjection)
+  );
+
+  // Calculate distance from point to closest point
+  const distance = vec2.len(vec2.sub(point, closestPoint));
+
+  return {
+    // Point is on line if distance is effectively zero
+    intersects: distance < constants.EPSILON,
+    closestPoint,
+    distance,
+  };
 }
 
 /**
@@ -290,7 +341,13 @@ export function pointInCircle(
   intersects: boolean;
   distance: number;
 } {
-  throw new Error('not implemented yet'); // TODO
+  const toPoint = vec2.sub(point, circle.position);
+  const distance = vec2.len(toPoint);
+
+  return {
+    intersects: distance <= circle.radius,
+    distance: distance - circle.radius, // Distance from point to circle edge
+  };
 }
 
 /**
@@ -420,7 +477,55 @@ export function lineIntersectsLine(
   intersects: boolean;
   intersectionPoint?: Point;
 } {
-  throw new Error('not implemented yet'); // TODO
+  // Get the vectors representing the directions of each line
+  const dirA = vec2.sub(lineA.end, lineA.start);
+  const dirB = vec2.sub(lineB.end, lineB.start);
+
+  // Calculate the cross product determinant
+  const det = vec2.cross(dirA, dirB);
+
+  // Get the vector between starting points
+  const startDiff = vec2.sub(lineB.start, lineA.start);
+
+  // If determinant is close to 0, lines are parallel or collinear
+  if (Math.abs(det) < constants.EPSILON) {
+    // Check if lines are collinear
+    if (Math.abs(vec2.cross(startDiff, dirA)) < constants.EPSILON) {
+      // Lines are collinear - check if they overlap
+      const t0 = vec2.dot(startDiff, dirA) / vec2.dot(dirA, dirA);
+      const t1 = t0 + vec2.dot(dirB, dirA) / vec2.dot(dirA, dirA);
+
+      // Check if segments overlap
+      const interval0 = Math.min(t0, t1);
+      const interval1 = Math.max(t0, t1);
+
+      if (interval0 <= 1 && interval1 >= 0) {
+        return {
+          intersects: true,
+          // No single intersection point for overlapping lines
+        };
+      }
+    }
+    return {
+      intersects: false,
+    };
+  }
+
+  // Calculate intersection parameters
+  const t = vec2.cross(startDiff, dirB) / det;
+  const s = vec2.cross(startDiff, dirA) / det;
+
+  // Check if intersection occurs within both line segments
+  if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
+    return {
+      intersects: true,
+      intersectionPoint: vec2.add(lineA.start, vec2.mul(dirA, t)),
+    };
+  }
+
+  return {
+    intersects: false,
+  };
 }
 
 /**
