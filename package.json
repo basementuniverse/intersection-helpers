@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@basementuniverse/utils": "^1.7.0",
-    "@basementuniverse/vec": "^2.3.3"
+    "@basementuniverse/vec": "^2.3.3",
+    "poly-decomp": "^0.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

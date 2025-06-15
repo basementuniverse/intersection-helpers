@@ -310,9 +310,9 @@ describe('IntersectionHelpers2D', () => {
       const polygon = {
         vertices: [
           { x: 0, y: 0 },
-          { x: 2, y: 0 },
-          { x: 2, y: 2 },
           { x: 0, y: 2 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
         ],
       };
       const result = intersection2d.polygonWindingOrder(polygon);
@@ -323,9 +323,9 @@ describe('IntersectionHelpers2D', () => {
       const polygon = {
         vertices: [
           { x: 0, y: 0 },
-          { x: 0, y: 2 },
-          { x: 2, y: 2 },
           { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
         ],
       };
       const result = intersection2d.polygonWindingOrder(polygon);
@@ -500,12 +500,185 @@ describe('IntersectionHelpers2D', () => {
     });
   });
 
-  // describe('decomposePolygon', () => {
-  //   // TODO function not implemented yet
-  //   it('temp', () => {
-  //     expect(1 + 1).toBe(2);
-  //   });
-  // });
+  describe('optimisePolygon', () => {
+    it('should return the same polygon if already optimised', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.optimisePolygon(polygon);
+      expect(result).toEqual(polygon);
+    });
+
+    it('should remove duplicate adjacent vertices from a polygon', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 0 }, // Duplicate vertex
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+          { x: 0, y: 0 }, // Closing the polygon
+        ],
+      };
+      const result = intersection2d.optimisePolygon(polygon);
+      expect(result).toEqual({
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      });
+    });
+
+    it('should remove collinear points from a polygon', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 }, // Collinear point
+          { x: 2, y: 2 },
+          { x: 2, y: 1 }, // Collinear point
+          { x: 2, y: 0 },
+        ],
+      };
+      const result = intersection2d.optimisePolygon(polygon);
+      expect(result).toEqual({
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+        ],
+      });
+    });
+  });
+
+  describe('decomposePolygon', () => {
+    it('should return the same polygon if already convex', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.decomposePolygon(polygon);
+      expect(result).not.toBeNull();
+      expect(result).toHaveLength(1);
+      expect(result![0]).toEqual(polygon);
+    });
+
+    it('should decompose a concave polygon into convex parts', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 1, y: 1 }, // Concave point
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.decomposePolygon(polygon);
+
+      // Should decompose into two triangles
+      expect(result).not.toBeNull();
+      expect(result).toBeTruthy();
+      expect(result).toHaveLength(2);
+
+      // Each resulting polygon should be convex
+      result!.forEach(poly => {
+        expect(intersection2d.polygonIsConvex(poly)).toBe(true);
+      });
+
+      // Total area should be preserved
+      const originalArea = intersection2d.polygonArea(polygon);
+      const decomposedArea = result!.reduce((sum, poly) => {
+        return sum + (intersection2d.polygonArea(poly) ?? 0);
+      }, 0);
+      expect(originalArea).not.toBeNull();
+      expect(decomposedArea).toBeCloseTo(originalArea!, 5);
+    });
+
+    it('should handle U-shaped polygon', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 3, y: 0 },
+          { x: 3, y: 3 },
+          { x: 2, y: 3 },
+          { x: 2, y: 1 },
+          { x: 1, y: 1 },
+          { x: 1, y: 3 },
+          { x: 0, y: 3 },
+        ],
+      };
+      const result = intersection2d.decomposePolygon(polygon);
+
+      expect(result).toBeTruthy();
+      expect(result!.length).toBeGreaterThanOrEqual(2);
+
+      // Each part should be convex
+      result!.forEach(poly => {
+        expect(intersection2d.polygonIsConvex(poly)).toBe(true);
+      });
+
+      // Total area should be preserved
+      const originalArea = intersection2d.polygonArea(polygon);
+      const decomposedArea = result!.reduce((sum, poly) => {
+        return sum + (intersection2d.polygonArea(poly) ?? 0);
+      }, 0);
+      expect(originalArea).not.toBeNull();
+      expect(decomposedArea).toBeCloseTo(originalArea!, 5);
+    });
+
+    it('should handle counterclockwise polygons', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 0, y: 2 },
+          { x: 1, y: 1 }, // Concave point
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+        ],
+      };
+      const result = intersection2d.decomposePolygon(polygon);
+
+      expect(result).toBeTruthy();
+      expect(result!.length).toBeGreaterThanOrEqual(2);
+      result!.forEach(poly => {
+        expect(intersection2d.polygonIsConvex(poly)).toBe(true);
+      });
+    });
+
+    it('should return null for invalid polygon (self-intersecting)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.decomposePolygon(polygon);
+      expect(result).toBe(null);
+    });
+
+    it('should return null for polygon with less than 3 vertices', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+      };
+      const result = intersection2d.decomposePolygon(polygon);
+      expect(result).toBe(null);
+    });
+  });
 
   describe('pointOnRay', () => {
     it('should return true when point is on the ray', () => {
@@ -707,6 +880,68 @@ describe('IntersectionHelpers2D', () => {
       expect(result.intersects).toBe(true);
       expect(result.closestPoint).toEqual(point);
       expect(result.distance).toBe(0);
+    });
+  });
+
+  describe('pointInCircle', () => {
+    it('should return true when point is inside the circle', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 5,
+      };
+      const point = { x: 3, y: 0 };
+      const result = intersection2d.pointInCircle(point, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBe(-2); // Point is 2 units inside the circle
+    });
+
+    it('should return true when point is exactly on the circle edge', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 5,
+      };
+      const point = { x: 5, y: 0 };
+      const result = intersection2d.pointInCircle(point, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBe(0); // Point is exactly on the edge
+    });
+
+    it('should return false when point is outside the circle', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 5,
+      };
+      const point = { x: 8, y: 0 };
+      const result = intersection2d.pointInCircle(point, circle);
+
+      expect(result.intersects).toBe(false);
+      expect(result.distance).toBe(3); // Point is 3 units outside the circle
+    });
+
+    it('should handle circles at non-origin positions', () => {
+      const circle = {
+        position: { x: 10, y: -5 },
+        radius: 3,
+      };
+      const point = { x: 12, y: -7 };
+      const result = intersection2d.pointInCircle(point, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeLessThan(0); // Point is inside the circle
+    });
+
+    it('should handle points at the circle center', () => {
+      const circle = {
+        position: { x: 5, y: 5 },
+        radius: 3,
+      };
+      const point = { x: 5, y: 5 };
+      const result = intersection2d.pointInCircle(point, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBe(-3); // Point is at center, so distance is -radius
     });
   });
 });

@@ -1,4 +1,6 @@
+import { at } from '@basementuniverse/utils';
 import { vec2 } from '@basementuniverse/vec';
+import * as decomp from 'poly-decomp';
 import * as constants from '../utilities/constants';
 import { Circle, Line, Point, Polygon, Ray, Rectangle } from './types';
 
@@ -105,11 +107,10 @@ export function polygonIsConvex(polygon: Polygon): boolean | null {
     return null;
   }
   let sign = 0;
-  const n = polygon.vertices.length;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < polygon.vertices.length; i++) {
     const a = polygon.vertices[i];
-    const b = polygon.vertices[(i + 1) % n];
-    const c = polygon.vertices[(i + 2) % n];
+    const b = at(polygon.vertices, i + 1);
+    const c = at(polygon.vertices, i + 2);
     const crossProduct = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
     if (crossProduct !== 0) {
       if (sign === 0) {
@@ -132,10 +133,10 @@ export function polygonSelfIntersects(polygon: Polygon): boolean {
   const n = polygon.vertices.length;
   for (let i = 0; i < n; i++) {
     const a = polygon.vertices[i];
-    const b = polygon.vertices[(i + 1) % n];
+    const b = at(polygon.vertices, i + 1);
     for (let j = i + 2; j < n; j++) {
       const c = polygon.vertices[j];
-      const d = polygon.vertices[(j + 1) % n];
+      const d = at(polygon.vertices, j + 1);
 
       // Skip adjacent edges
       if (i === 0 && j === n - 1) {
@@ -177,13 +178,12 @@ export function polygonWindingOrder(
     return null;
   }
   let sum = 0;
-  const n = polygon.vertices.length;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < polygon.vertices.length; i++) {
     const a = polygon.vertices[i];
-    const b = polygon.vertices[(i + 1) % n];
+    const b = at(polygon.vertices, i + 1);
     sum += (b.x - a.x) * (b.y + a.y);
   }
-  return sum > 0 ? 'counter-clockwise' : 'clockwise';
+  return sum > 0 ? 'clockwise' : 'counter-clockwise';
 }
 
 /**
@@ -196,10 +196,9 @@ export function polygonArea(polygon: Polygon): number | null {
     return null;
   }
   let area = 0;
-  const n = polygon.vertices.length;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < polygon.vertices.length; i++) {
     const a = polygon.vertices[i];
-    const b = polygon.vertices[(i + 1) % n];
+    const b = at(polygon.vertices, i + 1);
     area += vec2.cross(a, b);
   }
   return Math.abs(area) / 2;
@@ -217,8 +216,8 @@ export function polygonCentroid(polygon: Polygon): Point | null {
   }
   const n = polygon.vertices.length;
   if (
-    polygon.vertices.every((v, i, arr) =>
-      pointsAreCollinear(v, arr[(i + 1) % n], arr[(i + 2) % n])
+    polygon.vertices.every((v, i, a) =>
+      pointsAreCollinear(v, at(a, i + 1), at(a, i + 2))
     )
   ) {
     return null; // All vertices are collinear
@@ -232,12 +231,78 @@ export function polygonCentroid(polygon: Polygon): Point | null {
 }
 
 /**
+ * Remove duplicate adjacent vertices from a list of vertices
+ */
+function removeDuplicateAdjacentVertices(vertices: Point[]): Point[] {
+  const result: Point[] = [];
+  const n = vertices.length;
+  for (let i = 0; i < n; i++) {
+    const current = vertices[i];
+    const next = at(vertices, i + 1);
+    if (!vec2.eq(current, next)) {
+      result.push(current);
+    }
+  }
+  return result;
+}
+
+/**
+ * Remove collinear vertices from a list of vertices
+ */
+function removeCollinearVertices(vertices: Point[]): Point[] {
+  const result: Point[] = [];
+  const n = vertices.length;
+  for (let i = 0; i < n; i++) {
+    const a = at(vertices, i - 1);
+    const b = vertices[i];
+    const c = at(vertices, i + 1);
+
+    // Skip collinear points
+    if (pointsAreCollinear(a, b, c)) {
+      continue;
+    }
+
+    result.push(b);
+  }
+  return result;
+}
+
+/**
+ * Optimise a polygon by removing collinear vertices and duplicate adjacent
+ * vertices
+ */
+export function optimisePolygon(polygon: Polygon): Polygon | null {
+  // Duplicate adjacent vertices will count the polygon as self-intersecting,
+  // so skip that check for now and only check the number of vertices
+  if (polygon.vertices.length < 3) {
+    return null;
+  }
+
+  const optimisedVertices = removeCollinearVertices(
+    removeDuplicateAdjacentVertices(polygon.vertices)
+  );
+
+  // If we have less than 3 vertices after optimisation, return null
+  if (optimisedVertices.length < 3) {
+    return null;
+  }
+
+  return { vertices: optimisedVertices };
+}
+
+/**
  * Decompose a polygon into a set of convex polygons using the Bayazit
  * algorithm
  *
  * Returns null if the polygon is invalid or cannot be decomposed
  */
-export function decomposePolygon(polygon: Polygon): Polygon[] | null {
+export function decomposePolygon(
+  polygon: Polygon,
+  options?: {
+    mode?: 'fast' | 'optimal';
+    keepWindingOrder?: boolean;
+  }
+): Polygon[] | null {
   if (!polygonIsValid(polygon)) {
     return null;
   }
@@ -245,7 +310,42 @@ export function decomposePolygon(polygon: Polygon): Polygon[] | null {
     return [polygon]; // The polygon is already convex
   }
 
-  throw new Error('not implemented yet'); // TODO
+  const mode = options?.mode || 'fast';
+  const keepWindingOrder = options?.keepWindingOrder ?? true;
+  const originalWindingOrder = polygonWindingOrder(polygon);
+  const vertices = polygon.vertices.map(v => [v.x, v.y]);
+  if (originalWindingOrder !== 'counter-clockwise') {
+    vertices.reverse(); // Ensure counter-clockwise winding
+  }
+
+  // Decompose the polygon
+  let convexPolygons: [number, number][][] = [];
+  switch (mode) {
+    case 'fast':
+      convexPolygons = decomp.quickDecomp(vertices);
+      break;
+    case 'optimal':
+      convexPolygons = decomp.decomp(vertices);
+      break;
+  }
+
+  // Convert the result into a list of Polygon objects
+  const result: Polygon[] = [];
+  for (const convex of convexPolygons) {
+    result.push({
+      vertices: convex.map(v => vec2(v[0], v[1])),
+    });
+  }
+
+  // Optionally ensure the winding order is preserved
+  if (keepWindingOrder) {
+    for (const poly of result) {
+      if (polygonWindingOrder(poly) !== originalWindingOrder) {
+        poly.vertices.reverse();
+      }
+    }
+  }
+  return result.length > 0 ? result : null;
 }
 
 /**
