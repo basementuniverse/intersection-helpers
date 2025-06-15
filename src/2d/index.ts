@@ -1,20 +1,26 @@
 import { at } from '@basementuniverse/utils';
 import { vec2 } from '@basementuniverse/vec';
 import * as decomp from 'poly-decomp';
+import { valueInInterval } from '../utilities';
 import * as constants from '../utilities/constants';
 import { Circle, Line, Point, Polygon, Ray, Rectangle } from './types';
 
 export * from './types';
 
 /**
- * Calculate the distance between two points in 2D space
+ * Calculate the distance between two points
  */
 export function distance(a: Point, b: Point): number {
   return vec2.len(vec2.sub(a, b));
 }
 
 /**
- * Calculate the angle between two vectors in 2D space
+ * Calculate the clockwise angle from vector a to vector b
+ *
+ * The result is in radians and ranges from 0 to 2π (360 degrees)
+ * A positive angle indicates clockwise rotation from a to b
+ *
+ * Returns 0 if either vector is zero-length or if they are equal
  */
 export function angleBetween(a: vec2, b: vec2): number {
   if (
@@ -24,11 +30,24 @@ export function angleBetween(a: vec2, b: vec2): number {
   ) {
     return 0;
   }
-  return Math.acos(vec2.dot(vec2.nor(a), vec2.nor(b)));
+
+  // Normalize vectors
+  const normA = vec2.nor(a);
+  const normB = vec2.nor(b);
+
+  // Calculate angle using atan2
+  let angle = Math.atan2(normB.y, normB.x) - Math.atan2(normA.y, normA.x);
+
+  // Ensure angle is positive (clockwise) and in range [0, 2π]
+  if (angle < 0) {
+    angle += 2 * Math.PI;
+  }
+
+  return angle;
 }
 
 /**
- * Check if points are collinear in 2D space
+ * Check if points are collinear
  */
 export function pointsAreCollinear(a: Point, b: Point, c: Point): boolean {
   // Check if the area of the triangle formed by the points is zero
@@ -38,7 +57,7 @@ export function pointsAreCollinear(a: Point, b: Point, c: Point): boolean {
 }
 
 /**
- * Convert a line segment to a ray in 2D space
+ * Convert a line segment to a ray
  */
 export function lineToRay(line: Line): Ray {
   return {
@@ -48,7 +67,7 @@ export function lineToRay(line: Line): Ray {
 }
 
 /**
- * Convert a ray to a line segment in 2D space
+ * Convert a ray to a line segment
  */
 export function rayToLine(ray: Ray, length: number = 1): Line {
   return {
@@ -58,7 +77,7 @@ export function rayToLine(ray: Ray, length: number = 1): Line {
 }
 
 /**
- * Check if a rectangle is rotated in 2D space
+ * Check if a rectangle is rotated
  */
 export function rectangleIsRotated(rectangle: Rectangle): boolean {
   // A rectangle is considered rotated if its rotation is not zero
@@ -69,7 +88,10 @@ export function rectangleIsRotated(rectangle: Rectangle): boolean {
 }
 
 /**
- * Get the vertices of a rectangle in 2D space
+ * Get the vertices of a rectangle
+ *
+ * Vertices will be returned in clockwise order starting at the top-left:
+ * top-left, top-right, bottom-right, bottom-left
  */
 export function rectangleVertices(rectangle: Rectangle): Point[] {
   const { position, size, rotation = 0 } = rectangle;
@@ -99,8 +121,7 @@ export function rectangleVertices(rectangle: Rectangle): Point[] {
 /**
  * Check if a polygon is convex
  *
- * Returns null if the polygon is invalid (i.e. has less than 3 vertices or
- * self-intersects)
+ * Returns null if the polygon is invalid
  */
 export function polygonIsConvex(polygon: Polygon): boolean | null {
   if (!polygonIsValid(polygon)) {
@@ -169,6 +190,8 @@ export function polygonIsValid(polygon: Polygon): boolean {
 /**
  * Determine the winding order of a polygon's vertices
  *
+ * Returns 'clockwise' or 'counter-clockwise'
+ *
  * Returns null if the polygon is invalid
  */
 export function polygonWindingOrder(
@@ -187,7 +210,7 @@ export function polygonWindingOrder(
 }
 
 /**
- * Calculate the area of a polygon in 2D space
+ * Calculate the area of a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -205,7 +228,7 @@ export function polygonArea(polygon: Polygon): number | null {
 }
 
 /**
- * Calculate the centroid of a polygon in 2D space
+ * Calculate the centroid of a polygon
  *
  * Returns null if the polygon is invalid or degenerate (i.e. all vertices are
  * collinear)
@@ -349,7 +372,9 @@ export function decomposePolygon(
 }
 
 /**
- * Check if a point intersects a ray in 2D space
+ * Check if a point is on a ray
+ *
+ * Also returns the closest point on the ray and the distance to it
  */
 export function pointOnRay(
   point: Point,
@@ -386,7 +411,9 @@ export function pointOnRay(
 }
 
 /**
- * Check if a point intersects a line segment in 2D space
+ * Check if a point intersects a line segment
+ *
+ * Also returns the closest point on the line segment and the distance to it
  */
 export function pointOnLine(
   point: Point,
@@ -432,47 +459,155 @@ export function pointOnLine(
 }
 
 /**
- * Check if a point is inside a circle in 2D space
+ * Check if a point is inside a circle
+ *
+ * Also returns the closest point on the circle edge and the distance to it
+ *
+ * If the point is inside the circle, the distance will be negative
  */
 export function pointInCircle(
   point: Point,
   circle: Circle
 ): {
   intersects: boolean;
+  closestPoint?: Point;
   distance: number;
 } {
+  // Calculate vector from circle center to point
   const toPoint = vec2.sub(point, circle.position);
-  const distance = vec2.len(toPoint);
+
+  // Calculate distance from point to circle center
+  const distanceToCenter = vec2.len(toPoint);
+
+  // Check if point is inside the circle
+  const intersects = distanceToCenter <= circle.radius;
+
+  // Calculate distance to circle edge
+  const distance = intersects
+    ? -(circle.radius - distanceToCenter) // Negative if inside
+    : distanceToCenter - circle.radius; // Positive if outside
+
+  // Calculate closest point on circle edge
+  const closestPoint = intersects
+    ? point // Point is inside, closest point is the point itself
+    : vec2.add(circle.position, vec2.mul(vec2.nor(toPoint), circle.radius));
 
   return {
-    intersects: distance <= circle.radius,
-    distance: distance - circle.radius, // Distance from point to circle edge
+    intersects,
+    closestPoint,
+    distance,
   };
 }
 
 /**
- * Check if a point is inside a rectangle in 2D space
+ * Check if a point is inside a rectangle
+ *
+ * Also returns the closest point on the rectangle edge and the distance to it
+ *
+ * If the point is inside the rectangle, the distance will be negative
+ *
+ * In cases where the closest point is ambiguous (e.g. corners), the first edge
+ * encountered with a closest point will be returned after evaluating edges in
+ * this order:
+ * top, right, bottom, left (before applying the rectangle's rotation)
  */
 export function pointInRectangle(
   point: Point,
   rectangle: Rectangle
 ): {
   intersects: boolean;
-} & (
-  | {
-      distanceX: number;
-      distanceY: number;
+  closestPoint: Point;
+  distance: number;
+} {
+  const halfSize = vec2.div(rectangle.size, 2);
+
+  // Helper to find closest point and distance to a rectangle edge
+  const findClosestEdgePoint = (
+    vertices: Point[]
+  ): { closestPoint: Point; distance: number } => {
+    let minDistance = Infinity;
+    let closestPoint = vertices[0];
+
+    // Check each edge in order: top, right, bottom, left
+    for (let i = 0; i < 4; i++) {
+      const line = {
+        start: vertices[i],
+        end: vertices[(i + 1) % 4],
+      };
+
+      const result = pointOnLine(point, line);
+      if (result.distance < minDistance) {
+        minDistance = result.distance;
+        closestPoint = result.closestPoint;
+      }
     }
-  | {
-      distance: number;
-      direction: vec2;
-    }
-) {
-  throw new Error('not implemented yet'); // TODO
+
+    return { closestPoint, distance: minDistance };
+  };
+
+  // Handle axis-aligned rectangle (AABB) case
+  if (!rectangleIsRotated(rectangle)) {
+    // Check if point is inside rectangle using intervals
+    const xInside = valueInInterval(
+      point.x,
+      rectangle.position.x - halfSize.x,
+      rectangle.position.x + halfSize.x
+    );
+    const yInside = valueInInterval(
+      point.y,
+      rectangle.position.y - halfSize.y,
+      rectangle.position.y + halfSize.y
+    );
+    const intersects = xInside && yInside;
+    const { closestPoint, distance } = findClosestEdgePoint(
+      rectangleVertices(rectangle)
+    );
+
+    return {
+      intersects,
+      closestPoint,
+      distance: intersects ? -distance : distance,
+    };
+  }
+
+  // Handle rotated rectangle case by transforming point to local space
+  // First, translate point relative to rectangle center
+  const localPoint = vec2.sub(point, rectangle.position);
+
+  // Rotate point opposite to rectangle's rotation to align with local axes
+  const unrotatedPoint = vec2.rot(localPoint, -rectangle.rotation!);
+
+  // Now we can treat it like an AABB check in local space
+  const xInside = valueInInterval(unrotatedPoint.x, -halfSize.x, halfSize.x);
+  const yInside = valueInInterval(unrotatedPoint.y, -halfSize.y, halfSize.y);
+  const intersects = xInside && yInside;
+
+  // Create vertices in clockwise order:
+  // top-left, top-right, bottom-right, bottom-left
+  let vertices = [
+    { x: -halfSize.x, y: -halfSize.y },
+    { x: halfSize.x, y: -halfSize.y },
+    { x: halfSize.x, y: halfSize.y },
+    { x: -halfSize.x, y: halfSize.y },
+  ];
+
+  // Transform vertices back to world space
+  vertices = vertices.map(v => {
+    const rotated = vec2.rot(v, rectangle.rotation!);
+    return vec2.add(rotated, rectangle.position);
+  });
+
+  const { closestPoint, distance } = findClosestEdgePoint(vertices);
+
+  return {
+    intersects,
+    closestPoint,
+    distance: intersects ? -distance : distance,
+  };
 }
 
 /**
- * Check if a point is inside a polygon in 2D space
+ * Check if a point is inside a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -488,7 +623,7 @@ export function pointInPolygon(
 }
 
 /**
- * Check if two rays intersect in 2D space
+ * Check if two rays intersect
  */
 export function rayIntersectsRay(
   rayA: Ray,
@@ -501,7 +636,7 @@ export function rayIntersectsRay(
 }
 
 /**
- * Check if a ray intersects a line segment in 2D space
+ * Check if a ray intersects a line segment
  */
 export function rayIntersectsLine(
   ray: Ray,
@@ -514,7 +649,7 @@ export function rayIntersectsLine(
 }
 
 /**
- * Check if a ray intersects a circle in 2D space
+ * Check if a ray intersects a circle
  */
 export function rayIntersectsCircle(
   ray: Ray,
@@ -527,7 +662,7 @@ export function rayIntersectsCircle(
 }
 
 /**
- * Check if a ray intersects a rectangle in 2D space
+ * Check if a ray intersects a rectangle
  */
 export function rayIntersectsRectangle(
   ray: Ray,
@@ -540,7 +675,7 @@ export function rayIntersectsRectangle(
 }
 
 /**
- * Check if a ray intersects a polygon in 2D space
+ * Check if a ray intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -555,7 +690,7 @@ export function rayIntersectsPolygon(
 }
 
 /**
- * Check if a line segment intersects a ray in 2D space
+ * Check if a line segment intersects a ray
  */
 export function lineIntersectsRay(
   line: Line,
@@ -568,7 +703,7 @@ export function lineIntersectsRay(
 }
 
 /**
- * Check if two line segments intersect in 2D space
+ * Check if two line segments intersect
  */
 export function lineIntersectsLine(
   lineA: Line,
@@ -629,7 +764,7 @@ export function lineIntersectsLine(
 }
 
 /**
- * Check if a line segment intersects a circle in 2D space
+ * Check if a line segment intersects a circle
  */
 export function lineIntersectsCircle(
   line: Line,
@@ -642,7 +777,7 @@ export function lineIntersectsCircle(
 }
 
 /**
- * Check if a line segment intersects a rectangle in 2D space
+ * Check if a line segment intersects a rectangle
  */
 export function lineIntersectsRectangle(
   line: Line,
@@ -655,7 +790,7 @@ export function lineIntersectsRectangle(
 }
 
 /**
- * Check if a line segment intersects a polygon in 2D space
+ * Check if a line segment intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -670,7 +805,7 @@ export function lineIntersectsPolygon(
 }
 
 /**
- * Check if two circles intersect in 2D space
+ * Check if two circles intersect
  */
 export function circleIntersectsCircle(
   circleA: Circle,
@@ -684,7 +819,7 @@ export function circleIntersectsCircle(
 }
 
 /**
- * Check if a circle intersects a rectangle in 2D space
+ * Check if a circle intersects a rectangle
  */
 export function circleIntersectsRectangle(
   circle: Circle,
@@ -698,7 +833,7 @@ export function circleIntersectsRectangle(
 }
 
 /**
- * Check if a circle intersects a polygon in 2D space
+ * Check if a circle intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -713,7 +848,7 @@ export function circleIntersectsPolygon(
 }
 
 /**
- * Check if two rectangles intersect in 2D space
+ * Check if two rectangles intersect
  */
 export function rectangleIntersectsRectangle(
   rectangleA: Rectangle,
@@ -733,7 +868,7 @@ export function rectangleIntersectsRectangle(
 }
 
 /**
- * Check if a rectangle intersects a polygon in 2D space
+ * Check if a rectangle intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -748,7 +883,7 @@ export function rectangleIntersectsPolygon(
 }
 
 /**
- * Check if two polygons intersect in 2D space
+ * Check if two polygons intersect
  *
  * Returns null if either polygon is invalid
  */

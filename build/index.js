@@ -2230,17 +2230,23 @@ exports.polygonIntersectsPolygon = exports.rectangleIntersectsPolygon = exports.
 const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const decomp = __importStar(__webpack_require__(/*! poly-decomp */ "./node_modules/poly-decomp/src/index.js"));
+const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
 const constants = __importStar(__webpack_require__(/*! ../utilities/constants */ "./src/utilities/constants.ts"));
 __exportStar(__webpack_require__(/*! ./types */ "./src/2d/types.ts"), exports);
 /**
- * Calculate the distance between two points in 2D space
+ * Calculate the distance between two points
  */
 function distance(a, b) {
     return vec_1.vec2.len(vec_1.vec2.sub(a, b));
 }
 exports.distance = distance;
 /**
- * Calculate the angle between two vectors in 2D space
+ * Calculate the clockwise angle from vector a to vector b
+ *
+ * The result is in radians and ranges from 0 to 2π (360 degrees)
+ * A positive angle indicates clockwise rotation from a to b
+ *
+ * Returns 0 if either vector is zero-length or if they are equal
  */
 function angleBetween(a, b) {
     if (vec_1.vec2.len(a) < constants.EPSILON ||
@@ -2248,11 +2254,20 @@ function angleBetween(a, b) {
         vec_1.vec2.len(vec_1.vec2.sub(a, b)) < constants.EPSILON) {
         return 0;
     }
-    return Math.acos(vec_1.vec2.dot(vec_1.vec2.nor(a), vec_1.vec2.nor(b)));
+    // Normalize vectors
+    const normA = vec_1.vec2.nor(a);
+    const normB = vec_1.vec2.nor(b);
+    // Calculate angle using atan2
+    let angle = Math.atan2(normB.y, normB.x) - Math.atan2(normA.y, normA.x);
+    // Ensure angle is positive (clockwise) and in range [0, 2π]
+    if (angle < 0) {
+        angle += 2 * Math.PI;
+    }
+    return angle;
 }
 exports.angleBetween = angleBetween;
 /**
- * Check if points are collinear in 2D space
+ * Check if points are collinear
  */
 function pointsAreCollinear(a, b, c) {
     // Check if the area of the triangle formed by the points is zero
@@ -2261,7 +2276,7 @@ function pointsAreCollinear(a, b, c) {
 }
 exports.pointsAreCollinear = pointsAreCollinear;
 /**
- * Convert a line segment to a ray in 2D space
+ * Convert a line segment to a ray
  */
 function lineToRay(line) {
     return {
@@ -2271,7 +2286,7 @@ function lineToRay(line) {
 }
 exports.lineToRay = lineToRay;
 /**
- * Convert a ray to a line segment in 2D space
+ * Convert a ray to a line segment
  */
 function rayToLine(ray, length = 1) {
     return {
@@ -2281,7 +2296,7 @@ function rayToLine(ray, length = 1) {
 }
 exports.rayToLine = rayToLine;
 /**
- * Check if a rectangle is rotated in 2D space
+ * Check if a rectangle is rotated
  */
 function rectangleIsRotated(rectangle) {
     // A rectangle is considered rotated if its rotation is not zero
@@ -2290,7 +2305,10 @@ function rectangleIsRotated(rectangle) {
 }
 exports.rectangleIsRotated = rectangleIsRotated;
 /**
- * Get the vertices of a rectangle in 2D space
+ * Get the vertices of a rectangle
+ *
+ * Vertices will be returned in clockwise order starting at the top-left:
+ * top-left, top-right, bottom-right, bottom-left
  */
 function rectangleVertices(rectangle) {
     const { position, size, rotation = 0 } = rectangle;
@@ -2318,8 +2336,7 @@ exports.rectangleVertices = rectangleVertices;
 /**
  * Check if a polygon is convex
  *
- * Returns null if the polygon is invalid (i.e. has less than 3 vertices or
- * self-intersects)
+ * Returns null if the polygon is invalid
  */
 function polygonIsConvex(polygon) {
     if (!polygonIsValid(polygon)) {
@@ -2384,6 +2401,8 @@ exports.polygonIsValid = polygonIsValid;
 /**
  * Determine the winding order of a polygon's vertices
  *
+ * Returns 'clockwise' or 'counter-clockwise'
+ *
  * Returns null if the polygon is invalid
  */
 function polygonWindingOrder(polygon) {
@@ -2396,11 +2415,11 @@ function polygonWindingOrder(polygon) {
         const b = (0, utils_1.at)(polygon.vertices, i + 1);
         sum += (b.x - a.x) * (b.y + a.y);
     }
-    return sum > 0 ? 'counter-clockwise' : 'clockwise';
+    return sum > 0 ? 'clockwise' : 'counter-clockwise';
 }
 exports.polygonWindingOrder = polygonWindingOrder;
 /**
- * Calculate the area of a polygon in 2D space
+ * Calculate the area of a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -2418,7 +2437,7 @@ function polygonArea(polygon) {
 }
 exports.polygonArea = polygonArea;
 /**
- * Calculate the centroid of a polygon in 2D space
+ * Calculate the centroid of a polygon
  *
  * Returns null if the polygon is invalid or degenerate (i.e. all vertices are
  * collinear)
@@ -2506,9 +2525,9 @@ function decomposePolygon(polygon, options) {
     }
     const mode = (options === null || options === void 0 ? void 0 : options.mode) || 'fast';
     const keepWindingOrder = (_a = options === null || options === void 0 ? void 0 : options.keepWindingOrder) !== null && _a !== void 0 ? _a : true;
+    const originalWindingOrder = polygonWindingOrder(polygon);
     const vertices = polygon.vertices.map(v => [v.x, v.y]);
-    const windingOrder = polygonWindingOrder(polygon);
-    if (windingOrder !== 'counter-clockwise') {
+    if (originalWindingOrder !== 'counter-clockwise') {
         vertices.reverse(); // Ensure counter-clockwise winding
     }
     // Decompose the polygon
@@ -2531,7 +2550,7 @@ function decomposePolygon(polygon, options) {
     // Optionally ensure the winding order is preserved
     if (keepWindingOrder) {
         for (const poly of result) {
-            if (polygonWindingOrder(poly) !== 'counter-clockwise') {
+            if (polygonWindingOrder(poly) !== originalWindingOrder) {
                 poly.vertices.reverse();
             }
         }
@@ -2540,7 +2559,9 @@ function decomposePolygon(polygon, options) {
 }
 exports.decomposePolygon = decomposePolygon;
 /**
- * Check if a point intersects a ray in 2D space
+ * Check if a point is on a ray
+ *
+ * Also returns the closest point on the ray and the distance to it
  */
 function pointOnRay(point, ray) {
     // Vector from ray origin to point
@@ -2562,7 +2583,9 @@ function pointOnRay(point, ray) {
 }
 exports.pointOnRay = pointOnRay;
 /**
- * Check if a point intersects a line segment in 2D space
+ * Check if a point intersects a line segment
+ *
+ * Also returns the closest point on the line segment and the distance to it
  */
 function pointOnLine(point, line) {
     // Get vector from line start to end
@@ -2590,26 +2613,111 @@ function pointOnLine(point, line) {
 }
 exports.pointOnLine = pointOnLine;
 /**
- * Check if a point is inside a circle in 2D space
+ * Check if a point is inside a circle
+ *
+ * Also returns the closest point on the circle edge and the distance to it
+ *
+ * If the point is inside the circle, the distance will be negative
  */
 function pointInCircle(point, circle) {
+    // Calculate vector from circle center to point
     const toPoint = vec_1.vec2.sub(point, circle.position);
-    const distance = vec_1.vec2.len(toPoint);
+    // Calculate distance from point to circle center
+    const distanceToCenter = vec_1.vec2.len(toPoint);
+    // Check if point is inside the circle
+    const intersects = distanceToCenter <= circle.radius;
+    // Calculate distance to circle edge
+    const distance = intersects
+        ? -(circle.radius - distanceToCenter) // Negative if inside
+        : distanceToCenter - circle.radius; // Positive if outside
+    // Calculate closest point on circle edge
+    const closestPoint = intersects
+        ? point // Point is inside, closest point is the point itself
+        : vec_1.vec2.add(circle.position, vec_1.vec2.mul(vec_1.vec2.nor(toPoint), circle.radius));
     return {
-        intersects: distance <= circle.radius,
-        distance: distance - circle.radius, // Distance from point to circle edge
+        intersects,
+        closestPoint,
+        distance,
     };
 }
 exports.pointInCircle = pointInCircle;
 /**
- * Check if a point is inside a rectangle in 2D space
+ * Check if a point is inside a rectangle
+ *
+ * Also returns the closest point on the rectangle edge and the distance to it
+ *
+ * If the point is inside the rectangle, the distance will be negative
+ *
+ * In cases where the closest point is ambiguous (e.g. corners), the first edge
+ * encountered with a closest point will be returned after evaluating edges in
+ * this order:
+ * top, right, bottom, left (before applying the rectangle's rotation)
  */
 function pointInRectangle(point, rectangle) {
-    throw new Error('not implemented yet'); // TODO
+    const halfSize = vec_1.vec2.div(rectangle.size, 2);
+    // Helper to find closest point and distance to a rectangle edge
+    const findClosestEdgePoint = (vertices) => {
+        let minDistance = Infinity;
+        let closestPoint = vertices[0];
+        // Check each edge in order: top, right, bottom, left
+        for (let i = 0; i < 4; i++) {
+            const line = {
+                start: vertices[i],
+                end: vertices[(i + 1) % 4],
+            };
+            const result = pointOnLine(point, line);
+            if (result.distance < minDistance) {
+                minDistance = result.distance;
+                closestPoint = result.closestPoint;
+            }
+        }
+        return { closestPoint, distance: minDistance };
+    };
+    // Handle axis-aligned rectangle (AABB) case
+    if (!rectangleIsRotated(rectangle)) {
+        // Check if point is inside rectangle using intervals
+        const xInside = (0, utilities_1.valueInInterval)(point.x, rectangle.position.x - halfSize.x, rectangle.position.x + halfSize.x);
+        const yInside = (0, utilities_1.valueInInterval)(point.y, rectangle.position.y - halfSize.y, rectangle.position.y + halfSize.y);
+        const intersects = xInside && yInside;
+        const { closestPoint, distance } = findClosestEdgePoint(rectangleVertices(rectangle));
+        return {
+            intersects,
+            closestPoint,
+            distance: intersects ? -distance : distance,
+        };
+    }
+    // Handle rotated rectangle case by transforming point to local space
+    // First, translate point relative to rectangle center
+    const localPoint = vec_1.vec2.sub(point, rectangle.position);
+    // Rotate point opposite to rectangle's rotation to align with local axes
+    const unrotatedPoint = vec_1.vec2.rot(localPoint, -rectangle.rotation);
+    // Now we can treat it like an AABB check in local space
+    const xInside = (0, utilities_1.valueInInterval)(unrotatedPoint.x, -halfSize.x, halfSize.x);
+    const yInside = (0, utilities_1.valueInInterval)(unrotatedPoint.y, -halfSize.y, halfSize.y);
+    const intersects = xInside && yInside;
+    // Create vertices in clockwise order:
+    // top-left, top-right, bottom-right, bottom-left
+    let vertices = [
+        { x: -halfSize.x, y: -halfSize.y },
+        { x: halfSize.x, y: -halfSize.y },
+        { x: halfSize.x, y: halfSize.y },
+        { x: -halfSize.x, y: halfSize.y },
+    ];
+    // Transform vertices back to world space
+    vertices = vertices.map(v => {
+        const rotated = vec_1.vec2.rot(v, rectangle.rotation);
+        return vec_1.vec2.add(rotated, rectangle.position);
+    });
+    const { closestPoint, distance } = findClosestEdgePoint(vertices);
+    return {
+        intersects,
+        closestPoint,
+        distance: intersects ? -distance : distance,
+    };
 }
 exports.pointInRectangle = pointInRectangle;
 /**
- * Check if a point is inside a polygon in 2D space
+ * Check if a point is inside a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -2618,35 +2726,35 @@ function pointInPolygon(point, polygon) {
 }
 exports.pointInPolygon = pointInPolygon;
 /**
- * Check if two rays intersect in 2D space
+ * Check if two rays intersect
  */
 function rayIntersectsRay(rayA, rayB) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.rayIntersectsRay = rayIntersectsRay;
 /**
- * Check if a ray intersects a line segment in 2D space
+ * Check if a ray intersects a line segment
  */
 function rayIntersectsLine(ray, line) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.rayIntersectsLine = rayIntersectsLine;
 /**
- * Check if a ray intersects a circle in 2D space
+ * Check if a ray intersects a circle
  */
 function rayIntersectsCircle(ray, circle) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.rayIntersectsCircle = rayIntersectsCircle;
 /**
- * Check if a ray intersects a rectangle in 2D space
+ * Check if a ray intersects a rectangle
  */
 function rayIntersectsRectangle(ray, rectangle) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.rayIntersectsRectangle = rayIntersectsRectangle;
 /**
- * Check if a ray intersects a polygon in 2D space
+ * Check if a ray intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -2655,14 +2763,14 @@ function rayIntersectsPolygon(ray, polygon) {
 }
 exports.rayIntersectsPolygon = rayIntersectsPolygon;
 /**
- * Check if a line segment intersects a ray in 2D space
+ * Check if a line segment intersects a ray
  */
 function lineIntersectsRay(line, ray) {
     return rayIntersectsLine(ray, line);
 }
 exports.lineIntersectsRay = lineIntersectsRay;
 /**
- * Check if two line segments intersect in 2D space
+ * Check if two line segments intersect
  */
 function lineIntersectsLine(lineA, lineB) {
     // Get the vectors representing the directions of each line
@@ -2709,21 +2817,21 @@ function lineIntersectsLine(lineA, lineB) {
 }
 exports.lineIntersectsLine = lineIntersectsLine;
 /**
- * Check if a line segment intersects a circle in 2D space
+ * Check if a line segment intersects a circle
  */
 function lineIntersectsCircle(line, circle) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.lineIntersectsCircle = lineIntersectsCircle;
 /**
- * Check if a line segment intersects a rectangle in 2D space
+ * Check if a line segment intersects a rectangle
  */
 function lineIntersectsRectangle(line, rectangle) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.lineIntersectsRectangle = lineIntersectsRectangle;
 /**
- * Check if a line segment intersects a polygon in 2D space
+ * Check if a line segment intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -2732,21 +2840,21 @@ function lineIntersectsPolygon(line, polygon) {
 }
 exports.lineIntersectsPolygon = lineIntersectsPolygon;
 /**
- * Check if two circles intersect in 2D space
+ * Check if two circles intersect
  */
 function circleIntersectsCircle(circleA, circleB) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.circleIntersectsCircle = circleIntersectsCircle;
 /**
- * Check if a circle intersects a rectangle in 2D space
+ * Check if a circle intersects a rectangle
  */
 function circleIntersectsRectangle(circle, rectangle) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.circleIntersectsRectangle = circleIntersectsRectangle;
 /**
- * Check if a circle intersects a polygon in 2D space
+ * Check if a circle intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -2755,14 +2863,14 @@ function circleIntersectsPolygon(circle, polygon) {
 }
 exports.circleIntersectsPolygon = circleIntersectsPolygon;
 /**
- * Check if two rectangles intersect in 2D space
+ * Check if two rectangles intersect
  */
 function rectangleIntersectsRectangle(rectangleA, rectangleB) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.rectangleIntersectsRectangle = rectangleIntersectsRectangle;
 /**
- * Check if a rectangle intersects a polygon in 2D space
+ * Check if a rectangle intersects a polygon
  *
  * Returns null if the polygon is invalid
  */
@@ -2771,7 +2879,7 @@ function rectangleIntersectsPolygon(rectangle, polygon) {
 }
 exports.rectangleIntersectsPolygon = rectangleIntersectsPolygon;
 /**
- * Check if two polygons intersect in 2D space
+ * Check if two polygons intersect
  *
  * Returns null if either polygon is invalid
  */

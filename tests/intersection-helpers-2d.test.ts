@@ -359,6 +359,7 @@ describe('IntersectionHelpers2D', () => {
 
   describe('polygonArea', () => {
     it('should return the area of a simple polygon', () => {
+      // Counter-clockwise winding order
       const polygon = {
         vertices: [
           { x: 0, y: 0 },
@@ -383,6 +384,20 @@ describe('IntersectionHelpers2D', () => {
       };
       const result = intersection2d.polygonArea(polygon);
       expect(result).toBe(12);
+    });
+
+    it('should work regardless of the winding order', () => {
+      // Clockwise winding order
+      const polygon = {
+        vertices: [
+          { x: 0, y: 2 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      };
+      const result = intersection2d.polygonArea(polygon);
+      expect(result).toBe(4); // Area of a 2x2 square
     });
 
     it('should return 0 for a degenerate polygon (all points collinear)', () => {
@@ -905,7 +920,7 @@ describe('IntersectionHelpers2D', () => {
       const result = intersection2d.pointInCircle(point, circle);
 
       expect(result.intersects).toBe(true);
-      expect(result.distance).toBe(0); // Point is exactly on the edge
+      expect(Math.abs(result.distance)).toBe(0); // Point is exactly on the edge
     });
 
     it('should return false when point is outside the circle', () => {
@@ -942,6 +957,157 @@ describe('IntersectionHelpers2D', () => {
 
       expect(result.intersects).toBe(true);
       expect(result.distance).toBe(-3); // Point is at center, so distance is -radius
+    });
+  });
+
+  describe('pointInRectangle', () => {
+    it('should return true when point is inside an axis-aligned rectangle', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      const point = { x: 1, y: 0.5 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeLessThan(0);
+      // For a point inside, closestPoint should be on the nearest edge
+      expect(result.closestPoint).toEqual({ x: 1, y: 1 }); // Top edge is closest
+    });
+
+    it('should return true when point is exactly on the rectangle edge', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      const point = { x: 2, y: 1 }; // On top edge
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(Math.abs(result.distance)).toBe(0);
+      expect(result.closestPoint).toEqual(point);
+    });
+
+    it('should return false when point is outside an axis-aligned rectangle', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      const point = { x: 3, y: 2 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(false);
+      expect(result.distance).toBeGreaterThan(0);
+      expect(result.closestPoint).toEqual({ x: 2, y: 1 }); // Closest point should be on the corner
+    });
+
+    it('should handle rotated rectangles - point inside', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const point = { x: 0, y: 0 }; // Center point
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeLessThan(0);
+      expect(result.closestPoint.x).toBeCloseTo(0.70711, 5);
+      expect(result.closestPoint.y).toBeCloseTo(-0.70711, 5);
+    });
+
+    it('should handle rotated rectangles - point outside', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const point = { x: 3, y: 0 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(false);
+      expect(result.distance).toBeGreaterThan(0);
+    });
+
+    it('should handle rectangles at non-origin positions', () => {
+      const rect = {
+        position: { x: 5, y: -3 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      const point = { x: 6, y: -2.5 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeLessThan(0);
+      expect(result.closestPoint).toStrictEqual({ x: 6, y: -2 }); // Closest point on the top edge
+    });
+
+    it('should handle ambiguous closest points deterministically', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      // Point equidistant from top and right edges
+      const point = { x: 3, y: 1.5 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(false);
+      // Should choose top edge as per specification
+      expect(result.closestPoint).toEqual({ x: 2, y: 1 });
+    });
+
+    it('should handle corner cases correctly', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      const point = { x: 2, y: 1 }; // Top-right corner
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(Math.abs(result.distance)).toBe(0);
+      expect(result.closestPoint).toEqual(point);
+    });
+
+    it('should handle zero-size rectangles', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      };
+      const point = { x: 0, y: 0 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(Math.abs(result.distance)).toBe(0);
+      expect(result.closestPoint).toEqual(point);
+    });
+
+    it('should handle points exactly at rectangle corners when rotated', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      // For a 2x2 square rotated 45 degrees, corners are at (±√2, 0) and (0, ±√2)
+      const point = { x: Math.SQRT2, y: 0 };
+      const result = intersection2d.pointInRectangle(point, rect);
+
+      // Due to floating point precision, the point might be considered
+      // either exactly on the edge (intersecting) or slightly outside
+      if (result.intersects) {
+        expect(result.distance).toBeCloseTo(0, 5);
+      } else {
+        expect(result.distance).toBeCloseTo(0, 4); // Slightly relaxed precision
+      }
+      expect(result.closestPoint.x).toBeCloseTo(point.x, 5);
+      expect(result.closestPoint.y).toBeCloseTo(point.y, 5);
     });
   });
 });
