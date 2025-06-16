@@ -310,8 +310,8 @@ describe('IntersectionHelpers2D', () => {
       const polygon = {
         vertices: [
           { x: 0, y: 0 },
-          { x: 0, y: 2 },
-          { x: 2, y: 2 },
+          { x: 0, y: -2 },
+          { x: 2, y: -2 },
           { x: 2, y: 0 },
         ],
       };
@@ -324,8 +324,8 @@ describe('IntersectionHelpers2D', () => {
         vertices: [
           { x: 0, y: 0 },
           { x: 2, y: 0 },
-          { x: 2, y: 2 },
-          { x: 0, y: 2 },
+          { x: 2, y: -2 },
+          { x: 0, y: -2 },
         ],
       };
       const result = intersection2d.polygonWindingOrder(polygon);

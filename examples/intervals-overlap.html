@@ -1,0 +1,172 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+}
+
+input.interval1 {
+  accent-color: blue;
+}
+
+input.interval2 {
+  accent-color: red;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div>
+  <label for="interval1Min">
+    Interval 1 Min:
+    <input type="range" class="interval1" id="interval1Min" value="-50" min="-100" max="100" step="1">
+  </label>
+  <label for="interval1Max">
+    Interval 1 Max:
+    <input type="range" class="interval1" id="interval1Max" value="0" min="-100" max="100" step="1">
+  </label>
+</div>
+
+<div>
+  <label for="interval2Min">
+    Interval 2 Min:
+    <input type="range" class="interval2" id="interval2Min" value="0" min="-100" max="100" step="1">
+  </label>
+  <label for="interval2Max">
+    Interval 2 Max:
+    <input type="range" class="interval2" id="interval2Max" value="50" min="-100" max="100" step="1">
+  </label>
+</div>
+
+<div id="output"></div>
+
+<canvas id="visualization" width="400" height="200"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const interval1MinInput = document.getElementById('interval1Min');
+const interval1MaxInput = document.getElementById('interval1Max');
+const interval2MinInput = document.getElementById('interval2Min');
+const interval2MaxInput = document.getElementById('interval2Max');
+const output = document.getElementById('output');
+
+const visualization = document.getElementById('visualization');
+visualization.width = 400;
+visualization.height = 200;
+const context = visualization.getContext('2d');
+
+const intervalsOverlap = intersectionUtilities.intervalsOverlap;
+
+interval1MinInput.addEventListener('input', update);
+interval1MaxInput.addEventListener('input', update);
+interval2MinInput.addEventListener('input', update);
+interval2MaxInput.addEventListener('input', update);
+
+function update() {
+  updateOutput();
+  updateVisualization();
+}
+update();
+
+/**
+ * Remap a number i from range [a1, a2] to range [b1, b2]
+ */
+function remap(i, a1, a2, b1, b2) {
+  return b1 + (i - a1) * (b2 - b1) / (a2 - a1);
+}
+
+function updateOutput() {
+  const interval1Min = parseFloat(interval1MinInput.value);
+  const interval1Max = parseFloat(interval1MaxInput.value);
+  const interval2Min = parseFloat(interval2MinInput.value);
+  const interval2Max = parseFloat(interval2MaxInput.value);
+
+  const outputText = [];
+  outputText.push(`Interval 1: [${interval1Min}, ${interval1Max}]`);
+  outputText.push(`Interval 2: [${interval2Min}, ${interval2Max}]`);
+  outputText.push(`Overlapping: ${intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)}`);
+  if (intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)) {
+    const overlapInterval = intersectionUtilities.overlapInterval(interval1Min, interval1Max, interval2Min, interval2Max);
+    outputText.push(`Overlap interval: [${overlapInterval[0]}, ${overlapInterval[1]}]`);
+  } else {
+    outputText.push('Overlap interval: None');
+  }
+  output.textContent = outputText.join(', ');
+}
+
+function updateVisualization() {
+  const interval1Min = parseFloat(interval1MinInput.value);
+  const interval1Max = parseFloat(interval1MaxInput.value);
+  const interval2Min = parseFloat(interval2MinInput.value);
+  const interval2Max = parseFloat(interval2MaxInput.value);
+
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw background grid lines
+  context.strokeStyle = '#eee';
+  context.setLineDash([]);
+  for (let x = 50; x <= 350; x += 30) {
+    context.beginPath();
+    context.moveTo(x, 50);
+    context.lineTo(x, 150);
+    context.stroke();
+  }
+
+  // Draw interval 1
+  context.fillStyle = 'rgba(0, 0, 255, 0.2)';
+  context.fillRect(
+    remap(interval1Min, -100, 100, 50, 350),
+    60,
+    remap(interval1Max, -100, 100, 50, 350) - remap(interval1Min, -100, 100, 50, 350),
+    30
+  );
+
+  // Draw interval 2
+  context.fillStyle = 'rgba(255, 0, 0, 0.2)';
+  context.fillRect(
+    remap(interval2Min, -100, 100, 50, 350),
+    110,
+    remap(interval2Max, -100, 100, 50, 350) - remap(interval2Min, -100, 100, 50, 350),
+    30
+  );
+
+  // Draw interval borders
+  context.strokeStyle = 'blue';
+  context.setLineDash([3, 3]);
+  context.strokeRect(
+    remap(interval1Min, -100, 100, 50, 350),
+    60,
+    remap(interval1Max, -100, 100, 50, 350) - remap(interval1Min, -100, 100, 50, 350),
+    30
+  );
+
+  context.strokeStyle = 'red';
+  context.strokeRect(
+    remap(interval2Min, -100, 100, 50, 350),
+    110,
+    remap(interval2Max, -100, 100, 50, 350) - remap(interval2Min, -100, 100, 50, 350),
+    30
+  );
+
+  // If intervals overlap, highlight the overlapping region
+  if (intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)) {
+    const [overlapStart, overlapEnd] = intersectionUtilities.overlapInterval(
+      interval1Min,
+      interval1Max,
+      interval2Min,
+      interval2Max
+    );
+
+    context.fillStyle = 'rgba(128, 0, 128, 0.3)';
+    context.fillRect(
+      remap(overlapStart, -100, 100, 50, 350),
+      60,
+      remap(overlapEnd, -100, 100, 50, 350) - remap(overlapStart, -100, 100, 50, 350),
+      80
+    );
+  }
+}
+
+</script>

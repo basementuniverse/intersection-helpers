@@ -14,6 +14,10 @@ npm install @basementuniverse/intersection-helpers
 
 ## How to use
 
+## Examples
+
+Examples can be found [here](/examples/index.html).
+
 ## General-purpose utility functions
 
 ## 2D geometry

@@ -206,7 +206,7 @@ export function polygonWindingOrder(
     const b = at(polygon.vertices, i + 1);
     sum += (b.x - a.x) * (b.y + a.y);
   }
-  return sum > 0 ? 'clockwise' : 'counter-clockwise';
+  return sum > 0 ? 'counter-clockwise' : 'clockwise';
 }
 
 /**
@@ -337,8 +337,8 @@ export function decomposePolygon(
   const keepWindingOrder = options?.keepWindingOrder ?? true;
   const originalWindingOrder = polygonWindingOrder(polygon);
   const vertices = polygon.vertices.map(v => [v.x, v.y]);
-  if (originalWindingOrder !== 'counter-clockwise') {
-    vertices.reverse(); // Ensure counter-clockwise winding
+  if (originalWindingOrder === 'counter-clockwise') {
+    vertices.reverse(); // Ensure clockwise winding
   }
 
   // Decompose the polygon

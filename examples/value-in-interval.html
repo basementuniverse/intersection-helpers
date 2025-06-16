@@ -1,0 +1,116 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+}
+
+input#value {
+  accent-color: green;
+}
+
+input#min {
+  accent-color: blue;
+}
+
+input#max {
+  accent-color: red;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<label for="value">
+  Value:
+  <input type="range" id="value" value="25" min="-100" max="100" step="1">
+</label>
+
+<label for="min">
+  Min:
+  <input type="range" id="min" value="-50" min="-100" max="100" step="1">
+</label>
+
+<label for="max">
+  Max:
+  <input type="range" id="max" value="50" min="-100" max="100" step="1">
+</label>
+
+<div id="output"></div>
+
+<canvas id="visualization" width="400" height="200"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const valueInput = document.getElementById('value');
+const minInput = document.getElementById('min');
+const maxInput = document.getElementById('max');
+const output = document.getElementById('output');
+
+const visualization = document.getElementById('visualization');
+visualization.width = 400;
+visualization.height = 200;
+const context = visualization.getContext('2d');
+
+const valueInInterval = intersectionUtilities.valueInInterval;
+
+valueInput.addEventListener('input', update);
+minInput.addEventListener('input', update);
+maxInput.addEventListener('input', update);
+
+function update() {
+  updateOutput();
+  updateVisualization();
+}
+update();
+
+/**
+ * Remap a number i from range [a1, a2] to range [b1, b2]
+ */
+function remap(i, a1, a2, b1, b2) {
+  return b1 + (i - a1) * (b2 - b1) / (a2 - a1);
+}
+
+function updateOutput() {
+  const value = parseFloat(valueInput.value);
+  const min = parseFloat(minInput.value);
+  const max = parseFloat(maxInput.value);
+  output.textContent = `Value: ${value}, Min: ${min}, Max: ${max}, In Interval: ${valueInInterval(value, min, max)}`;
+}
+
+function updateVisualization() {
+  const value = parseFloat(valueInput.value);
+  const min = parseFloat(minInput.value);
+  const max = parseFloat(maxInput.value);
+
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw the interval
+  context.fillStyle = 'lightgray';
+  context.fillRect(50, 50, 300, 100);
+
+  // Draw the min and max lines
+  context.strokeStyle = 'blue';
+  context.setLineDash([3, 3]);
+  context.beginPath();
+  context.moveTo(remap(min, -100, 100, 50, 350), 50);
+  context.lineTo(remap(min, -100, 100, 50, 350), 150);
+  context.stroke();
+
+  context.strokeStyle = 'red';
+  context.beginPath();
+  context.moveTo(remap(max, -100, 100, 50, 350), 50);
+  context.lineTo(remap(max, -100, 100, 50, 350), 150);
+  context.stroke();
+
+  // Draw the value line
+  context.strokeStyle = 'green';
+  context.setLineDash([]);
+  context.beginPath();
+  context.moveTo(remap(value, -100, 100, 50, 350), 50);
+  context.lineTo(remap(value, -100, 100, 50, 350), 150);
+  context.stroke();
+}
+
+</script>

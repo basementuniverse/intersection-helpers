@@ -1,0 +1,106 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+<a href="index.html">Back to examples</a><br>
+<div id="output"></div>
+<canvas id="visualization" width="400" height="400"></canvas>
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const context = visualization.getContext('2d');
+
+const distance = intersection2d.distance;
+const angleBetween = intersection2d.angleBetween;
+
+// Initial points
+let point1 = { x: 100, y: 200 };
+let point2 = { x: 300, y: 200 };
+let activePoint = null;
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  // Check if click is near either point
+  if (distance({ x, y }, point1) < 10) {
+    activePoint = point1;
+  } else if (distance({ x, y }, point2) < 10) {
+    activePoint = point2;
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  activePoint.x = event.clientX - rect.left;
+  activePoint.y = event.clientY - rect.top;
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw connecting line
+  context.strokeStyle = '#666';
+  context.setLineDash([5, 5]);
+  context.beginPath();
+  context.moveTo(point1.x, point1.y);
+  context.lineTo(point2.x, point2.y);
+  context.stroke();
+  context.setLineDash([]);
+
+  // Draw angle arc
+  const vector1 = { x: 1, y: 0 }; // Reference vector (horizontal)
+  const vector2 = {
+    x: point2.x - point1.x,
+    y: point2.y - point1.y
+  };
+
+  const angle = angleBetween(vector1, vector2);
+  const radius = 40;
+
+  context.strokeStyle = 'rgba(0, 128, 255, 0.5)';
+  context.beginPath();
+  context.arc(point1.x, point1.y, radius, 0, angle);
+  context.stroke();
+
+  // Draw points
+  context.fillStyle = 'blue';
+  context.beginPath();
+  context.arc(point1.x, point1.y, 6, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = 'red';
+  context.beginPath();
+  context.arc(point2.x, point2.y, 6, 0, Math.PI * 2);
+  context.fill();
+
+  // Update output text
+  const dist = distance(point1, point2);
+  output.textContent = `Distance: ${dist.toFixed(2)} pixels, Angle: ${angle.toFixed(2)} radians (${(angle * 180 / Math.PI).toFixed(1)}°)`;
+}
+
+update();
+
+</script>

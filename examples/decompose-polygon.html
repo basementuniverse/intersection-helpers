@@ -1,0 +1,251 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+button {
+  margin: 1em;
+  padding: 0.5em 1em;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div>
+  <button id="clear">Clear</button>
+  <button id="decompose">Decompose</button>
+</div>
+
+<div id="output"></div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const clearButton = document.getElementById('clear');
+const decomposeButton = document.getElementById('decompose');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  polygonIsConvex,
+  polygonSelfIntersects,
+  polygonIsValid,
+  polygonWindingOrder,
+  polygonArea,
+  polygonCentroid,
+  decomposePolygon,
+  distance
+} = intersection2d;
+
+// State
+let vertices = [];
+let activeVertex = null;
+let decomposedPolygons = null;
+let isDecomposed = false;
+
+// Colors for different polygons
+const colors = [
+  '#e41a1c',
+  '#377eb8',
+  '#4daf4a',
+  '#984ea3',
+  '#ff7f00',
+  '#a65628',
+  '#f781bf',
+  '#999999'
+];
+
+// Event listeners
+clearButton.addEventListener('click', () => {
+  vertices = [];
+  decomposedPolygons = null;
+  isDecomposed = false;
+  decomposeButton.disabled = true;
+  update();
+});
+
+decomposeButton.addEventListener('click', () => {
+  const polygon = { vertices };
+  decomposedPolygons = decomposePolygon(polygon);
+  if (decomposedPolygons) {
+    isDecomposed = true;
+    update();
+  }
+});
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  if (isDecomposed) return;  // Prevent modifications after decomposition
+
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing vertex
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      activeVertex = vertex;
+      return;
+    }
+  }
+
+  // If not dragging, add new vertex
+  vertices.push(point);
+  decomposeButton.disabled = vertices.length < 3;
+  update();
+}
+
+function handleMouseMove(event) {
+  if (!activeVertex || isDecomposed) return;
+
+  const rect = visualization.getBoundingClientRect();
+  activeVertex.x = event.clientX - rect.left;
+  activeVertex.y = event.clientY - rect.top;
+  update();
+}
+
+function handleMouseUp() {
+  activeVertex = null;
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  if (isDecomposed && decomposedPolygons) {
+    // Draw decomposed polygons
+    decomposedPolygons.forEach((polygon, i) => {
+      const color = colors[i % colors.length];
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+
+      // Draw polygon edges
+      context.beginPath();
+      context.moveTo(polygon.vertices[0].x, polygon.vertices[0].y);
+      for (let j = 1; j <= polygon.vertices.length; j++) {
+        const vertex = polygon.vertices[j % polygon.vertices.length];
+        context.lineTo(vertex.x, vertex.y);
+      }
+      context.stroke();
+
+      // Draw vertices with numbers
+      context.fillStyle = color;
+      polygon.vertices.forEach((vertex, j) => {
+        context.beginPath();
+        context.arc(vertex.x, vertex.y, 4, 0, Math.PI * 2);
+        context.fill();
+
+        // Draw vertex number
+        context.fillStyle = 'black';
+        context.font = '12px sans-serif';
+        context.textAlign = 'left';
+        context.textBaseline = 'bottom';
+        context.fillText(`${j + 1}`, vertex.x + 8, vertex.y - 4);
+        context.fillStyle = color;
+      });
+
+      // Draw polygon number in the center
+      const center = polygonCentroid(polygon);
+      if (center) {
+        context.fillStyle = color;
+        context.font = 'bold 16px sans-serif';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(`${i + 1}`, center.x, center.y);
+      }
+    });
+
+    // Update stats
+    const stats = [
+      `Number of polygons: ${decomposedPolygons.length}`,
+      `Total area: ${decomposedPolygons.reduce((sum, poly) => sum + (polygonArea(poly) ?? 0), 0).toFixed(2)}`
+    ];
+    output.textContent = stats.join(' | ');
+  } else {
+    // Draw the original polygon being created
+    if (vertices.length > 0) {
+      // Draw lines between vertices
+      context.strokeStyle = '#666';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.setLineDash([]);
+      context.moveTo(vertices[0].x, vertices[0].y);
+      for (let i = 1; i < vertices.length; i++) {
+        context.lineTo(vertices[i].x, vertices[i].y);
+      }
+      context.stroke();
+
+      // Draw dotted line back to first vertex if we have enough vertices
+      if (vertices.length >= 3) {
+        context.beginPath();
+        context.setLineDash([5, 5]);
+        context.moveTo(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y);
+        context.lineTo(vertices[0].x, vertices[0].y);
+        context.stroke();
+      }
+
+      // Draw vertices and their numbers
+      context.fillStyle = 'blue';
+      vertices.forEach((vertex, i) => {
+        context.beginPath();
+        context.arc(vertex.x, vertex.y, 4, 0, Math.PI * 2);
+        context.fill();
+
+        context.fillStyle = 'black';
+        context.font = '12px sans-serif';
+        context.textAlign = 'left';
+        context.textBaseline = 'bottom';
+        context.fillText(`${i + 1}`, vertex.x + 8, vertex.y - 4);
+        context.fillStyle = 'blue';
+      });
+    }
+
+    // Update stats
+    if (vertices.length < 3) {
+      output.textContent = `Add at least 3 vertices to create a polygon. Current vertices: ${vertices.length}`;
+      return;
+    }
+
+    const polygon = { vertices };
+    const valid = polygonIsValid(polygon);
+    const stats = [];
+
+    stats.push(`Valid: ${valid}`);
+    stats.push(`Self-intersecting: ${polygonSelfIntersects(polygon)}`);
+    stats.push(`Convex: ${polygonIsConvex(polygon)}`);
+
+    if (valid) {
+      const area = polygonArea(polygon);
+      if (area !== null) {
+        stats.push(`Area: ${area.toFixed(2)}`);
+      }
+    }
+
+    output.textContent = stats.join(' | ');
+  }
+}
+
+// Initial UI state
+decomposeButton.disabled = true;
+update();
+
+</script>

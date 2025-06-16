@@ -2415,7 +2415,7 @@ function polygonWindingOrder(polygon) {
         const b = (0, utils_1.at)(polygon.vertices, i + 1);
         sum += (b.x - a.x) * (b.y + a.y);
     }
-    return sum > 0 ? 'clockwise' : 'counter-clockwise';
+    return sum > 0 ? 'counter-clockwise' : 'clockwise';
 }
 exports.polygonWindingOrder = polygonWindingOrder;
 /**
@@ -2527,8 +2527,8 @@ function decomposePolygon(polygon, options) {
     const keepWindingOrder = (_a = options === null || options === void 0 ? void 0 : options.keepWindingOrder) !== null && _a !== void 0 ? _a : true;
     const originalWindingOrder = polygonWindingOrder(polygon);
     const vertices = polygon.vertices.map(v => [v.x, v.y]);
-    if (originalWindingOrder !== 'counter-clockwise') {
-        vertices.reverse(); // Ensure counter-clockwise winding
+    if (originalWindingOrder === 'counter-clockwise') {
+        vertices.reverse(); // Ensure clockwise winding
     }
     // Decompose the polygon
     let convexPolygons = [];
@@ -3027,10 +3027,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.utilities = exports.intersection3d = exports.intersection2d = void 0;
+exports.intersectionUtilities = exports.intersection3d = exports.intersection2d = void 0;
 exports.intersection2d = __importStar(__webpack_require__(/*! ./2d */ "./src/2d/index.ts"));
 exports.intersection3d = __importStar(__webpack_require__(/*! ./3d */ "./src/3d/index.ts"));
-exports.utilities = __importStar(__webpack_require__(/*! ./utilities */ "./src/utilities/index.ts"));
+exports.intersectionUtilities = __importStar(__webpack_require__(/*! ./utilities */ "./src/utilities/index.ts"));
 
 
 /***/ }),
@@ -3059,7 +3059,7 @@ exports.EPSILON = 1e-6;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.intervalsOverlap = exports.valueInInterval = void 0;
+exports.overlapInterval = exports.intervalsOverlap = exports.valueInInterval = void 0;
 /**
  * Check if a value is within a specified interval
  */
@@ -3074,6 +3074,18 @@ function intervalsOverlap(a1, a2, b1, b2) {
     return Math.max(a1, b1) <= Math.min(a2, b2);
 }
 exports.intervalsOverlap = intervalsOverlap;
+/**
+ * Get the overlapping part of two intervals (a1, a2) and (b1, b2)
+ *
+ * If the intervals do not overlap, return null
+ */
+function overlapInterval(a1, a2, b1, b2) {
+    if (!intervalsOverlap(a1, a2, b1, b2)) {
+        return null;
+    }
+    return [Math.max(a1, b1), Math.min(a2, b2)];
+}
+exports.overlapInterval = overlapInterval;
 
 
 /***/ })

@@ -1,0 +1,181 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<button id="clear">Clear</button><br>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const clearButton = document.getElementById('clear');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  polygonIsConvex,
+  polygonSelfIntersects,
+  polygonIsValid,
+  polygonWindingOrder,
+  polygonArea,
+  polygonCentroid,
+  distance
+} = intersection2d;
+
+// State
+let vertices = [];
+let activeVertex = null;
+
+// Event listeners
+clearButton.addEventListener('click', () => {
+  vertices = [];
+  update();
+});
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing vertex
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      activeVertex = vertex;
+      return;
+    }
+  }
+
+  // If not dragging, add new vertex
+  vertices.push(point);
+  update();
+}
+
+function handleMouseMove(event) {
+  if (!activeVertex) return;
+
+  const rect = visualization.getBoundingClientRect();
+  activeVertex.x = event.clientX - rect.left;
+  activeVertex.y = event.clientY - rect.top;
+  update();
+}
+
+function handleMouseUp() {
+  activeVertex = null;
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw polygon
+  if (vertices.length > 0) {
+    // Draw lines between vertices
+    context.strokeStyle = '#666';
+    context.beginPath();
+    context.setLineDash([]);
+    context.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      context.lineTo(vertices[i].x, vertices[i].y);
+    }
+    context.stroke();
+
+    // Draw dotted line back to first vertex if we have a polygon
+    if (vertices.length >= 3) {
+      context.beginPath();
+      context.setLineDash([5, 5]);
+      context.moveTo(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y);
+      context.lineTo(vertices[0].x, vertices[0].y);
+      context.stroke();
+    }
+
+    // Draw vertices and their numbers
+    context.fillStyle = 'blue';
+    vertices.forEach((vertex, i) => {
+      // Draw vertex point
+      context.beginPath();
+      context.arc(vertex.x, vertex.y, 4, 0, Math.PI * 2);
+      context.fill();
+
+      // Draw vertex number
+      context.fillStyle = 'black';
+      context.font = '12px sans-serif';
+      context.textAlign = 'left';
+      context.textBaseline = 'bottom';
+      context.fillText(`${i + 1}`, vertex.x + 8, vertex.y - 4);
+      context.fillStyle = 'blue';
+    });
+
+    // Draw centroid if we have a valid polygon
+    if (vertices.length >= 3) {
+      const polygon = { vertices };
+      const center = polygonCentroid(polygon);
+      if (center) {
+        context.strokeStyle = 'red';
+        context.lineWidth = 2;
+        context.setLineDash([]);
+        const size = 5;
+        context.beginPath();
+        context.moveTo(center.x - size, center.y - size);
+        context.lineTo(center.x + size, center.y + size);
+        context.moveTo(center.x + size, center.y - size);
+        context.lineTo(center.x - size, center.y + size);
+        context.stroke();
+        context.lineWidth = 1;
+      }
+    }
+  }
+
+  // Update stats
+  if (vertices.length < 3) {
+    output.textContent = `Add at least 3 vertices to create a polygon. Current vertices: ${vertices.length}`;
+    return;
+  }
+
+  const polygon = { vertices };
+  const valid = polygonIsValid(polygon);
+  const stats = [];
+
+  stats.push(`Valid: ${valid}`);
+  stats.push(`Self-intersecting: ${polygonSelfIntersects(polygon)}`);
+
+  if (valid) {
+    stats.push(`Convex: ${polygonIsConvex(polygon)}`);
+    stats.push(`Winding order: ${polygonWindingOrder(polygon)}`);
+
+    const area = polygonArea(polygon);
+    if (area !== null) {
+      stats.push(`Area: ${area.toFixed(2)}`);
+    }
+
+    const centroid = polygonCentroid(polygon);
+    if (centroid) {
+      stats.push(`Centroid: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+    }
+  }
+
+  output.textContent = stats.join(' | ');
+}
+
+update();
+
+</script>
