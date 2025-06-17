@@ -2631,9 +2631,7 @@ function pointInCircle(point, circle) {
         ? -(circle.radius - distanceToCenter) // Negative if inside
         : distanceToCenter - circle.radius; // Positive if outside
     // Calculate closest point on circle edge
-    const closestPoint = intersects
-        ? point // Point is inside, closest point is the point itself
-        : vec_1.vec2.add(circle.position, vec_1.vec2.mul(vec_1.vec2.nor(toPoint), circle.radius));
+    const closestPoint = vec_1.vec2.add(circle.position, vec_1.vec2.mul(vec_1.vec2.nor(toPoint), circle.radius));
     return {
         intersects,
         closestPoint,
@@ -2720,9 +2718,46 @@ exports.pointInRectangle = pointInRectangle;
  * Check if a point is inside a polygon
  *
  * Returns null if the polygon is invalid
+ *
+ * Also returns the closest point on the polygon edge and the distance to it
+ *
+ * If the point is inside the polygon, the distance will be negative
  */
 function pointInPolygon(point, polygon) {
-    throw new Error('not implemented yet'); // TODO
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Find if point is inside polygon using ray casting algorithm
+    let inside = false;
+    const vertices = polygon.vertices;
+    // We'll also keep track of the closest edge while we iterate
+    let minDistanceSquared = Infinity;
+    let closestPoint = point;
+    for (let i = 0; i < vertices.length; i++) {
+        const j = (i + 1) % vertices.length;
+        const vi = vertices[i];
+        const vj = vertices[j];
+        // Ray casting algorithm
+        if (vi.y > point.y !== vj.y > point.y &&
+            point.x < ((vj.x - vi.x) * (point.y - vi.y)) / (vj.y - vi.y) + vi.x) {
+            inside = !inside;
+        }
+        // Find closest point on this edge
+        const edge = { start: vi, end: vj };
+        const { closestPoint: edgeClosest, distance: edgeDistance } = pointOnLine(point, edge);
+        const distanceSquared = edgeDistance * edgeDistance;
+        if (distanceSquared < minDistanceSquared) {
+            minDistanceSquared = distanceSquared;
+            closestPoint = edgeClosest;
+        }
+    }
+    const distance = Math.sqrt(minDistanceSquared);
+    return {
+        intersects: inside,
+        closestPoint,
+        distance: inside ? -distance : distance,
+    };
 }
 exports.pointInPolygon = pointInPolygon;
 /**

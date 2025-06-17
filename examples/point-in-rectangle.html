@@ -1,0 +1,247 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  pointInRectangle,
+  distance,
+  angleBetween
+} = intersection2d;
+
+// Constants
+const POINT_RADIUS = 4;
+const ROTATION_OFFSET = 30; // Distance of rotation control from center
+
+// State
+const points = [
+  { x: 200, y: 200, color: 'blue', label: 'Center' },
+  { x: 300, y: 100, color: 'green', label: 'Size' },
+  { x: 230, y: 200, color: 'orange', label: 'Rotation' },
+  { x: 150, y: 150, color: 'red', label: 'Test point' }
+];
+let activePoint = null;
+let initialAngle = 0;
+let initialRotation = 0;
+let initialSizeAngle = 0;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      if (p === points[2]) { // Rotation point
+        // Store initial angle for relative rotation calculation
+        const center = points[0];
+        initialAngle = Math.atan2(point.y - center.y, point.x - center.x);
+
+        // Store current rectangle rotation
+        initialRotation = getRectangle().rotation || 0;
+
+        // Store initial angle to size point
+        const sizePoint = points[1];
+        initialSizeAngle = Math.atan2(sizePoint.y - center.y, sizePoint.x - center.x);
+      }
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const newX = event.clientX - rect.left;
+  const newY = event.clientY - rect.top;
+
+  if (activePoint === points[0]) { // Center point
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+
+    // Update center point
+    activePoint.x = newX;
+    activePoint.y = newY;
+
+    // Move size and rotation points to maintain relative positions
+    points[1].x += deltaX;
+    points[1].y += deltaY;
+    points[2].x += deltaX;
+    points[2].y += deltaY;
+  } else if (activePoint === points[2]) { // Rotation point
+    const center = points[0];
+    const currentAngle = Math.atan2(newY - center.y, newX - center.x);
+    const angleDiff = currentAngle - initialAngle;
+    const newRotation = initialRotation + angleDiff;
+
+    // Update rotation point position
+    activePoint.x = center.x + Math.cos(currentAngle) * ROTATION_OFFSET;
+    activePoint.y = center.y + Math.sin(currentAngle) * ROTATION_OFFSET;
+
+    // Rotate size point around center
+    const size = points[1];
+    const sizeRadius = distance(center, size);
+    points[1].x = center.x + Math.cos(initialSizeAngle + angleDiff) * sizeRadius;
+    points[1].y = center.y + Math.sin(initialSizeAngle + angleDiff) * sizeRadius;
+  } else {
+    // For other points (size and test), just move them directly
+    activePoint.x = newX;
+    activePoint.y = newY;
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function getRectangle() {
+  const center = points[0];
+  const sizePoint = points[1];
+  const rotationPoint = points[2];
+
+  // Calculate rotation from rotation control point
+  const rotation = Math.atan2(rotationPoint.y - center.y, rotationPoint.x - center.x);
+
+  // Calculate width and height as the doubled distance from center to size point
+  // projected onto the rotated axes
+  const relativeX = sizePoint.x - center.x;
+  const relativeY = sizePoint.y - center.y;
+  const cosRotation = Math.cos(-rotation);
+  const sinRotation = Math.sin(-rotation);
+  const width = 2 * (relativeX * cosRotation - relativeY * sinRotation);
+  const height = 2 * (relativeX * sinRotation + relativeY * cosRotation);
+
+  return {
+    position: center,
+    size: { x: Math.abs(width), y: Math.abs(height) },
+    rotation: rotation
+  };
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Get points
+  const testPoint = points[3];
+  const rectangle = getRectangle();
+
+  // Test point against rectangle
+  const result = pointInRectangle(testPoint, rectangle);
+
+  // Draw rectangle
+  context.save();
+  context.strokeStyle = '#666';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+
+  // Translate and rotate around center
+  context.translate(rectangle.position.x, rectangle.position.y);
+  context.rotate(rectangle.rotation || 0);
+
+  // Draw rectangle
+  context.strokeRect(
+    -rectangle.size.x / 2,
+    -rectangle.size.y / 2,
+    rectangle.size.x,
+    rectangle.size.y
+  );
+  context.restore();
+
+  // Draw lines from center to control points
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+
+  // Line to size control
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[1].x, points[1].y);
+  context.stroke();
+
+  // Line to rotation control
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[2].x, points[2].y);
+  context.stroke();
+
+  // Draw line from test point to closest point
+  if (result.closestPoint) {
+    context.strokeStyle = '#999';
+    context.lineWidth = 1;
+    context.setLineDash([]);
+    context.beginPath();
+    context.moveTo(testPoint.x, testPoint.y);
+    context.lineTo(result.closestPoint.x, result.closestPoint.y);
+    context.stroke();
+
+    // Draw closest point
+    context.strokeStyle = 'purple';
+    context.lineWidth = 2;
+    const size = 5;
+    context.beginPath();
+    context.moveTo(result.closestPoint.x - size, result.closestPoint.y - size);
+    context.lineTo(result.closestPoint.x + size, result.closestPoint.y + size);
+    context.moveTo(result.closestPoint.x + size, result.closestPoint.y - size);
+    context.lineTo(result.closestPoint.x - size, result.closestPoint.y + size);
+    context.stroke();
+  }
+
+  // Draw points with labels
+  points.forEach(point => {
+    // Draw point
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    // Draw label
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  const width = rectangle.size.x.toFixed(2);
+  const height = rectangle.size.y.toFixed(2);
+  const rotation = ((rectangle.rotation || 0) * 180 / Math.PI).toFixed(2);
+  output.textContent = `Intersects: ${result.intersects}, Distance: ${result.distance.toFixed(2)}, Size: ${width}x${height}, Rotation: ${rotation}°`;
+}
+
+// Initial render
+update();
+
+</script>

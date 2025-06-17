@@ -1,0 +1,178 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  pointInCircle,
+  distance
+} = intersection2d;
+
+// Constants
+const POINT_RADIUS = 4;
+
+// State
+const points = [
+  { x: 200, y: 200, color: 'blue', label: 'Center' },
+  { x: 300, y: 200, color: 'green', label: 'Circle size' },
+  { x: 150, y: 150, color: 'red', label: 'Test point' }
+];
+let activePoint = null;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const newX = event.clientX - rect.left;
+  const newY = event.clientY - rect.top;
+
+  // If moving the center point, move the radius point with it
+  if (activePoint === points[0]) { // Center point
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+
+    // Update center point
+    activePoint.x = newX;
+    activePoint.y = newY;
+
+    // Move radius point to maintain relative position
+    points[1].x += deltaX;
+    points[1].y += deltaY;
+  } else {
+    // For other points, just move them directly
+    activePoint.x = newX;
+    activePoint.y = newY;
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Get points
+  const center = points[0];
+  const radiusPoint = points[1];
+  const testPoint = points[2];
+
+  // Calculate radius from radiusPoint
+  const radius = distance(center, radiusPoint);
+
+  // Create circle
+  const circle = {
+    position: center,
+    radius: radius
+  };
+
+  // Test point against circle
+  const result = pointInCircle(testPoint, circle);
+
+  // Draw circle
+  context.strokeStyle = '#666';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+  context.beginPath();
+  context.arc(center.x, center.y, radius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw radius line
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+  context.beginPath();
+  context.moveTo(center.x, center.y);
+  context.lineTo(radiusPoint.x, radiusPoint.y);
+  context.stroke();
+
+  // Draw line from test point to closest point
+  if (result.closestPoint) {
+    context.strokeStyle = '#999';
+    context.lineWidth = 1;
+    context.setLineDash([]);
+    context.beginPath();
+    context.moveTo(testPoint.x, testPoint.y);
+    context.lineTo(result.closestPoint.x, result.closestPoint.y);
+    context.stroke();
+
+    // Draw closest point
+    context.strokeStyle = 'purple';
+    context.lineWidth = 2;
+    const size = 5;
+    context.beginPath();
+    context.moveTo(result.closestPoint.x - size, result.closestPoint.y - size);
+    context.lineTo(result.closestPoint.x + size, result.closestPoint.y + size);
+    context.moveTo(result.closestPoint.x + size, result.closestPoint.y - size);
+    context.lineTo(result.closestPoint.x - size, result.closestPoint.y + size);
+    context.stroke();
+  }
+
+  // Draw points with labels
+  points.forEach(point => {
+    // Draw point
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    // Draw label
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  output.textContent = `Intersects: ${result.intersects}, Distance: ${result.distance.toFixed(2)}, Circle radius: ${radius.toFixed(2)}`;
+}
+
+// Initial render
+update();
+
+</script>

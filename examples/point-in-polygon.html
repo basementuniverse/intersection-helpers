@@ -1,0 +1,201 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<button id="clear">Clear</button><br>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const clearButton = document.getElementById('clear');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  pointInPolygon,
+  distance
+} = intersection2d;
+
+// Constants
+const POINT_RADIUS = 4;
+
+// State
+const vertices = [];
+const testPoint = { x: 150, y: 150, color: 'red', label: 'Test point' };
+let activePoint = null;
+let hoveredVertex = null;
+
+// Event listeners
+clearButton.addEventListener('click', () => {
+  vertices.length = 0;
+  update();
+});
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near test point
+  if (distance(point, testPoint) < 10) {
+    activePoint = testPoint;
+    return;
+  }
+
+  // Check if click is near any existing vertex
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      activePoint = vertex;
+      return;
+    }
+  }
+
+  // If not dragging, add new vertex
+  vertices.push({ x: point.x, y: point.y });
+  update();
+}
+
+function handleMouseMove(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  if (activePoint) {
+    // Update the position of the active point
+    activePoint.x = point.x;
+    activePoint.y = point.y;
+    update();
+    return;
+  }
+
+  // Update hover state
+  hoveredVertex = null;
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      hoveredVertex = vertex;
+      break;
+    }
+  }
+  if (distance(point, testPoint) < 10) {
+    hoveredVertex = testPoint;
+  }
+  visualization.style.cursor = hoveredVertex ? 'pointer' : 'default';
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Create polygon if we have enough vertices
+  const polygon = vertices.length >= 3 ? { vertices } : null;
+  const result = polygon ? pointInPolygon(testPoint, polygon) : null;
+
+  // Draw polygon
+  if (vertices.length > 0) {
+    // Draw lines between vertices
+    context.strokeStyle = '#666';
+    context.lineWidth = 2;
+    context.beginPath();
+    context.setLineDash([]);
+    context.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      context.lineTo(vertices[i].x, vertices[i].y);
+    }
+    // Close the polygon if we have at least 3 vertices
+    if (vertices.length >= 3) {
+      context.lineTo(vertices[0].x, vertices[0].y);
+    }
+    context.stroke();
+
+    // Draw vertices and their numbers
+    context.fillStyle = 'blue';
+    vertices.forEach((vertex, i) => {
+      // Draw vertex point
+      context.beginPath();
+      context.arc(vertex.x, vertex.y, POINT_RADIUS, 0, Math.PI * 2);
+      context.fill();
+
+      // Draw vertex number
+      context.fillStyle = 'black';
+      context.font = '12px sans-serif';
+      context.textAlign = 'left';
+      context.textBaseline = 'bottom';
+      context.fillText(`${i + 1}`, vertex.x + 8, vertex.y - 4);
+      context.fillStyle = 'blue';
+    });
+  }
+
+  // Draw test point
+  context.fillStyle = testPoint.color;
+  context.beginPath();
+  context.arc(testPoint.x, testPoint.y, POINT_RADIUS, 0, Math.PI * 2);
+  context.fill();
+
+  // Draw test point label
+  context.fillStyle = 'black';
+  context.font = '12px sans-serif';
+  context.textAlign = 'left';
+  context.textBaseline = 'bottom';
+  context.fillText(testPoint.label, testPoint.x + 8, testPoint.y - 4);
+
+  // Draw line from test point to closest point if we have a result
+  if (result && result.closestPoint) {
+    context.strokeStyle = '#999';
+    context.lineWidth = 1;
+    context.setLineDash([]);
+    context.beginPath();
+    context.moveTo(testPoint.x, testPoint.y);
+    context.lineTo(result.closestPoint.x, result.closestPoint.y);
+    context.stroke();
+
+    // Draw closest point
+    context.strokeStyle = 'purple';
+    context.lineWidth = 2;
+    const size = 5;
+    context.beginPath();
+    context.moveTo(result.closestPoint.x - size, result.closestPoint.y - size);
+    context.lineTo(result.closestPoint.x + size, result.closestPoint.y + size);
+    context.moveTo(result.closestPoint.x + size, result.closestPoint.y - size);
+    context.lineTo(result.closestPoint.x - size, result.closestPoint.y + size);
+    context.stroke();
+  }
+
+  // Update output text
+  if (vertices.length < 3) {
+    output.textContent = `Add at least 3 vertices to create a polygon. Current vertices: ${vertices.length}`;
+  } else if (result) {
+    output.textContent = `Intersects: ${result.intersects}, Distance: ${result.distance.toFixed(2)}`;
+  }
+}
+
+// Initial render
+update();
+
+</script>

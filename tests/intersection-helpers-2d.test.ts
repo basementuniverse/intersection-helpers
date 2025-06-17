@@ -1110,4 +1110,124 @@ describe('IntersectionHelpers2D', () => {
       expect(result.closestPoint.y).toBeCloseTo(point.y, 5);
     });
   });
+
+  describe('pointInPolygon', () => {
+    it('should return true when point is inside a simple polygon', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 4, y: 4 },
+          { x: -2, y: 4 },
+        ],
+      };
+      const point = { x: 1, y: 1 };
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).not.toBeNull();
+      expect(result!.intersects).toBe(true);
+      expect(result!.distance).toBeLessThan(0);
+      expect(result!.closestPoint).toEqual({ x: 1, y: 0 }); // Closest to top edge
+    });
+
+    it('should return true when point is exactly on the polygon edge', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 4, y: 4 },
+          { x: -2, y: 4 },
+        ],
+      };
+      const point = { x: 1, y: 0 }; // On top edge
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).not.toBeNull();
+      expect(result!.intersects).toBe(true);
+      expect(Math.abs(result!.distance)).toBe(0);
+      expect(result!.closestPoint).toEqual(point);
+    });
+
+    it('should return false when point is outside a polygon', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const point = { x: 3, y: 1 };
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).not.toBeNull();
+      expect(result!.intersects).toBe(false);
+      expect(result!.distance).toBeGreaterThan(0);
+      expect(result!.closestPoint).toEqual({ x: 2, y: 1 }); // Closest point on right edge
+    });
+
+    it('should handle concave polygons correctly', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 1, y: 1 }, // Creates a concave point
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      // Point inside the concave region
+      const point = { x: 0.5, y: 0.5 };
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).not.toBeNull();
+      expect(result!.intersects).toBe(true);
+      expect(result!.distance).toBeLessThan(0);
+    });
+
+    it('should return null for an invalid polygon (self-intersecting)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const point = { x: 1, y: 1 };
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null for a polygon with fewer than 3 vertices', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+        ],
+      };
+      const point = { x: 1, y: 0 };
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).toBeNull();
+    });
+
+    it('should work correctly with counter-clockwise winding order', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 0, y: 2 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+        ],
+      };
+      const point = { x: 1, y: 1 };
+      const result = intersection2d.pointInPolygon(point, polygon);
+
+      expect(result).not.toBeNull();
+      expect(result!.intersects).toBe(true);
+      expect(result!.distance).toBeLessThan(0);
+    });
+  });
 });

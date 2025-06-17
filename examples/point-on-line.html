@@ -1,0 +1,188 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+</div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const snapCheckbox = document.getElementById('snapToGrid');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  pointOnLine,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+
+// State
+const points = [
+  { x: 100, y: 200, color: 'blue', label: 'Line start' },
+  { x: 200, y: 200, color: 'green', label: 'Line end' },
+  { x: 150, y: 150, color: 'red', label: 'Test point' }
+];
+let activePoint = null;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  activePoint.x = snapToGrid(event.clientX - rect.left);
+  activePoint.y = snapToGrid(event.clientY - rect.top);
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+
+  // Draw vertical lines
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw grid if enabled
+  drawGrid();
+
+  // Create line and test point
+  const lineStart = points[0];
+  const lineEnd = points[1];
+  const line = {
+    start: lineStart,
+    end: lineEnd
+  };
+  const testPoint = points[2];
+
+  // Test point against line
+  const result = pointOnLine(testPoint, line);
+
+  // Draw line segment
+  context.strokeStyle = '#666';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+  context.beginPath();
+  context.moveTo(lineStart.x, lineStart.y);
+  context.lineTo(lineEnd.x, lineEnd.y);
+  context.stroke();
+
+  // Draw line from test point to closest point
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(testPoint.x, testPoint.y);
+  context.lineTo(result.closestPoint.x, result.closestPoint.y);
+  context.stroke();
+
+  // Draw closest point
+  context.strokeStyle = 'purple';
+  context.lineWidth = 2;
+  const size = 5;
+  context.beginPath();
+  context.moveTo(result.closestPoint.x - size, result.closestPoint.y - size);
+  context.lineTo(result.closestPoint.x + size, result.closestPoint.y + size);
+  context.moveTo(result.closestPoint.x + size, result.closestPoint.y - size);
+  context.lineTo(result.closestPoint.x - size, result.closestPoint.y + size);
+  context.stroke();
+
+  // Draw points with labels
+  points.forEach(point => {
+    // Draw point
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    // Draw label
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  output.textContent = `Intersects: ${result.intersects}, Distance: ${result.distance.toFixed(2)}`;
+}
+
+// Initial render
+update();
+
+</script>
