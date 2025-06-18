@@ -1,0 +1,230 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+.controls {
+  margin: 1em;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div class="controls">
+  <label>
+    Grid Size:
+    <input type="range" id="gridSize" min="10" max="50" value="20" step="5">
+    <span id="gridSizeValue">20px</span>
+  </label>
+</div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const gridSizeSlider = document.getElementById('gridSize');
+const gridSizeValue = document.getElementById('gridSizeValue');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  rayTraverseGrid,
+  distance
+} = intersection2d;
+
+// State
+const RAY_RADIUS = 50;
+const points = [
+  { x: 100, y: 200, color: 'blue', label: 'Ray origin' },
+  { x: 150, y: 200, color: 'green', label: 'Ray direction' }
+];
+let activePoint = null;
+let directionControlPointAngle = 0;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+gridSizeSlider.addEventListener('input', handleGridSizeChange);
+
+function handleGridSizeChange() {
+  const value = gridSizeSlider.value;
+  gridSizeValue.textContent = `${value}px`;
+  update();
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+
+      // If we're clicking the origin point, calculate the angle to the direction point
+      if (activePoint === points[0]) {
+        const dx = points[1].x - points[0].x;
+        const dy = points[1].y - points[0].y;
+        directionControlPointAngle = Math.atan2(dy, dx);
+      }
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+
+  if (activePoint === points[0]) {
+    // Moving origin - update both points
+    activePoint.x = Math.max(0, Math.min(mouseX, visualization.width));
+    activePoint.y = Math.max(0, Math.min(mouseY, visualization.height));
+
+    // Update direction point to maintain fixed distance and angle
+    points[1].x = activePoint.x + RAY_RADIUS * Math.cos(directionControlPointAngle);
+    points[1].y = activePoint.y + RAY_RADIUS * Math.sin(directionControlPointAngle);
+  } else {
+    // Moving direction point - maintain fixed distance from origin
+    const dx = mouseX - points[0].x;
+    const dy = mouseY - points[0].y;
+    const angle = Math.atan2(dy, dx);
+
+    activePoint.x = points[0].x + RAY_RADIUS * Math.cos(angle);
+    activePoint.y = points[0].y + RAY_RADIUS * Math.sin(angle);
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function drawGrid(cellSize) {
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+
+  // Draw vertical lines
+  for (let x = 0; x <= visualization.width; x += cellSize) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y <= visualization.height; y += cellSize) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  const cellSize = parseInt(gridSizeSlider.value);
+
+  // Draw grid
+  drawGrid(cellSize);
+
+  // Calculate ray
+  const rayOrigin = points[0];
+  const rayDirection = {
+    x: points[1].x - rayOrigin.x,
+    y: points[1].y - rayOrigin.y
+  };
+
+  const ray = {
+    origin: rayOrigin,
+    direction: rayDirection
+  };
+
+  // Define grid bounds
+  const gridTopLeft = { x: 0, y: 0 };
+  const gridBottomRight = { x: Math.ceil(visualization.width / cellSize), y: Math.ceil(visualization.height / cellSize) };
+
+  // Get traversed cells
+  const traversedCells = rayTraverseGrid(ray, cellSize, gridTopLeft, gridBottomRight);
+
+  // Highlight traversed cells
+  context.fillStyle = 'rgba(0, 255, 0, 0.2)';
+  for (const cell of traversedCells.cells) {
+    context.fillRect(
+      cell.x * cellSize,
+      cell.y * cellSize,
+      cellSize,
+      cellSize
+    );
+  }
+
+  // Draw extended ray line with dashes
+  context.strokeStyle = '#666';
+  context.lineWidth = 2;
+  context.setLineDash([5, 5]);
+  context.beginPath();
+  context.moveTo(rayOrigin.x, rayOrigin.y);
+
+  // Calculate ray extension to canvas edge
+  const rayAngle = Math.atan2(rayDirection.y, rayDirection.x);
+  const rayLength = Math.max(visualization.width, visualization.height) * 2;
+  const extendedX = rayOrigin.x + Math.cos(rayAngle) * rayLength;
+  const extendedY = rayOrigin.y + Math.sin(rayAngle) * rayLength;
+
+  context.lineTo(extendedX, extendedY);
+  context.stroke();
+  context.setLineDash([]); // Reset dash pattern
+
+  // Draw points with labels
+  points.forEach(point => {
+    // Draw point
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, 4, 0, Math.PI * 2);
+    context.fill();
+
+    // Draw label
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  output.textContent = `Cells traversed: ${traversedCells.cells.length}`;
+}
+
+// Initialize direction point at fixed radius from origin
+points[1].x = points[0].x + RAY_RADIUS;
+points[1].y = points[0].y;
+
+// Initial render
+update();
+
+</script>

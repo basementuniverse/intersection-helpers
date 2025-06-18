@@ -1,0 +1,232 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+</div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const snapCheckbox = document.getElementById('snapToGrid');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  rayIntersectsRay,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+
+// State
+const points = [
+  { x: 100, y: 200, color: 'blue', label: 'Ray A origin' },
+  { x: 200, y: 200, color: 'green', label: 'Ray A direction' },
+  { x: 300, y: 100, color: 'red', label: 'Ray B origin' },
+  { x: 200, y: 300, color: 'purple', label: 'Ray B direction' }
+];
+let activePoint = null;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  activePoint.x = snapToGrid(event.clientX - rect.left);
+  activePoint.y = snapToGrid(event.clientY - rect.top);
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+
+  // Draw vertical lines
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw grid if enabled
+  drawGrid();
+
+  // Calculate ray directions
+  const rayAOrigin = points[0];
+  const rayADirection = {
+    x: points[1].x - rayAOrigin.x,
+    y: points[1].y - rayAOrigin.y
+  };
+
+  const rayBOrigin = points[2];
+  const rayBDirection = {
+    x: points[3].x - rayBOrigin.x,
+    y: points[3].y - rayBOrigin.y
+  };
+
+  // Create rays
+  const rayA = {
+    origin: rayAOrigin,
+    direction: rayADirection
+  };
+  const rayB = {
+    origin: rayBOrigin,
+    direction: rayBDirection
+  };
+
+  // Test ray intersection
+  const result = rayIntersectsRay(rayA, rayB);
+
+  // Draw infinite rays
+  const rayLength = Math.max(visualization.width, visualization.height);
+
+  // Draw ray A
+  context.strokeStyle = '#666';
+  context.lineWidth = 1;
+  context.setLineDash([5, 5]);
+  context.beginPath();
+
+  const normalizedDirA = {
+    x: rayADirection.x / Math.hypot(rayADirection.x, rayADirection.y),
+    y: rayADirection.y / Math.hypot(rayADirection.x, rayADirection.y)
+  };
+  const farPointA = {
+    x: rayAOrigin.x + normalizedDirA.x * rayLength,
+    y: rayAOrigin.y + normalizedDirA.y * rayLength
+  };
+
+  context.moveTo(rayAOrigin.x, rayAOrigin.y);
+  context.lineTo(farPointA.x, farPointA.y);
+  context.stroke();
+
+  // Draw ray B
+  context.strokeStyle = '#999';
+  context.beginPath();
+
+  const normalizedDirB = {
+    x: rayBDirection.x / Math.hypot(rayBDirection.x, rayBDirection.y),
+    y: rayBDirection.y / Math.hypot(rayBDirection.x, rayBDirection.y)
+  };
+  const farPointB = {
+    x: rayBOrigin.x + normalizedDirB.x * rayLength,
+    y: rayBOrigin.y + normalizedDirB.y * rayLength
+  };
+
+  context.moveTo(rayBOrigin.x, rayBOrigin.y);
+  context.lineTo(farPointB.x, farPointB.y);
+  context.stroke();
+  context.setLineDash([]);
+
+  // Draw intersection point if it exists
+  if (result.intersects && result.intersectionPoint) {
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    const size = 5;
+    context.beginPath();
+    context.moveTo(result.intersectionPoint.x - size, result.intersectionPoint.y - size);
+    context.lineTo(result.intersectionPoint.x + size, result.intersectionPoint.y + size);
+    context.moveTo(result.intersectionPoint.x + size, result.intersectionPoint.y - size);
+    context.lineTo(result.intersectionPoint.x - size, result.intersectionPoint.y + size);
+    context.stroke();
+  }
+
+  // Draw points with labels
+  points.forEach(point => {
+    // Draw point
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    // Draw label
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  output.textContent = `Intersects: ${result.intersects}${
+    result.intersectionPoint
+      ? `, at (${result.intersectionPoint.x.toFixed(1)}, ${result.intersectionPoint.y.toFixed(1)})`
+      : ''
+  }`;
+}
+
+// Initial render
+update();
+
+</script>
