@@ -1,0 +1,269 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+</div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const snapCheckbox = document.getElementById('snapToGrid');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  lineIntersectsRectangle,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+const ROTATION_OFFSET = 30;
+
+// State
+const points = [
+  { x: 200, y: 200, color: 'blue', label: 'Rectangle center' },
+  { x: 300, y: 100, color: 'green', label: 'Rectangle size' },
+  { x: 230, y: 200, color: 'orange', label: 'Rectangle rotation' },
+  { x: 100, y: 150, color: 'red', label: 'Line start' },
+  { x: 300, y: 150, color: 'purple', label: 'Line end' }
+];
+let activePoint = null;
+let initialAngle = 0;
+let initialRotation = 0;
+let initialSizeAngle = 0;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      if (p === points[2]) { // Rotation point
+        const center = points[0];
+        initialAngle = Math.atan2(point.y - center.y, point.x - center.x);
+        initialRotation = getRectangle().rotation || 0;
+        initialSizeAngle = Math.atan2(points[1].y - center.y, points[1].x - center.x);
+      }
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const newX = snapToGrid(event.clientX - rect.left);
+  const newY = snapToGrid(event.clientY - rect.top);
+
+  if (activePoint === points[0]) { // Rectangle center
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+    activePoint.x = newX;
+    activePoint.y = newY;
+    points[1].x += deltaX;
+    points[1].y += deltaY;
+    points[2].x += deltaX;
+    points[2].y += deltaY;
+  } else if (activePoint === points[2]) { // Rotation point
+    const center = points[0];
+    const currentAngle = Math.atan2(newY - center.y, newX - center.x);
+    const angleDiff = currentAngle - initialAngle;
+    const newRotation = initialRotation + angleDiff;
+
+    activePoint.x = center.x + Math.cos(currentAngle) * ROTATION_OFFSET;
+    activePoint.y = center.y + Math.sin(currentAngle) * ROTATION_OFFSET;
+
+    const size = points[1];
+    const sizeRadius = distance(center, size);
+    points[1].x = center.x + Math.cos(initialSizeAngle + angleDiff) * sizeRadius;
+    points[1].y = center.y + Math.sin(initialSizeAngle + angleDiff) * sizeRadius;
+  } else {
+    activePoint.x = newX;
+    activePoint.y = newY;
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function getRectangle() {
+  const center = points[0];
+  const sizePoint = points[1];
+  const rotationPoint = points[2];
+  const rotation = Math.atan2(rotationPoint.y - center.y, rotationPoint.x - center.x);
+
+  const relativeX = sizePoint.x - center.x;
+  const relativeY = sizePoint.y - center.y;
+  const cosRotation = Math.cos(-rotation);
+  const sinRotation = Math.sin(-rotation);
+  const width = 2 * (relativeX * cosRotation - relativeY * sinRotation);
+  const height = 2 * (relativeX * sinRotation + relativeY * cosRotation);
+
+  return {
+    position: center,
+    size: { x: Math.abs(width), y: Math.abs(height) },
+    rotation
+  };
+}
+
+function getLine() {
+  return {
+    start: points[3],
+    end: points[4]
+  };
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+  drawGrid();
+
+  // Create line and rectangle
+  const line = getLine();
+  const rectangle = getRectangle();
+
+  // Test intersection
+  const result = lineIntersectsRectangle(line, rectangle);
+
+  // Draw rectangle
+  context.save();
+  context.strokeStyle = '#666';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+  context.translate(rectangle.position.x, rectangle.position.y);
+  context.rotate(rectangle.rotation);
+  context.strokeRect(
+    -rectangle.size.x / 2,
+    -rectangle.size.y / 2,
+    rectangle.size.x,
+    rectangle.size.y
+  );
+  context.restore();
+
+  // Draw line
+  context.strokeStyle = '#666';
+  context.lineWidth = 1;
+  context.setLineDash([]);
+  context.beginPath();
+  context.moveTo(line.start.x, line.start.y);
+  context.lineTo(line.end.x, line.end.y);
+  context.stroke();
+
+  // Draw intersection points
+  if (result.intersects && result.intersectionPoints) {
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    for (const point of result.intersectionPoints) {
+      const size = 5;
+      context.beginPath();
+      context.moveTo(point.x - size, point.y - size);
+      context.lineTo(point.x + size, point.y + size);
+      context.moveTo(point.x + size, point.y - size);
+      context.lineTo(point.x - size, point.y + size);
+      context.stroke();
+    }
+  }
+
+  // Draw control lines
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[1].x, points[1].y);
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[2].x, points[2].y);
+  context.stroke();
+
+  // Draw points with labels
+  context.setLineDash([]);
+  points.forEach(point => {
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  output.textContent = `Intersects: ${result.intersects}${
+    result.intersectionPoints
+      ? `, Points: ${result.intersectionPoints.length}`
+      : ''
+  }`;
+}
+
+// Initial render
+update();
+
+</script>

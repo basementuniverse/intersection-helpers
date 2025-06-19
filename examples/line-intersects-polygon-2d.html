@@ -1,0 +1,260 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+</div>
+<button id="clear">Clear polygon</button><br>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const clearButton = document.getElementById('clear');
+const snapCheckbox = document.getElementById('snapToGrid');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  lineIntersectsPolygon,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+
+// State
+const vertices = [];
+const linePoints = [
+  { x: 100, y: 150, color: 'red', label: 'Line start' },
+  { x: 300, y: 150, color: 'purple', label: 'Line end' }
+];
+let activePoint = null;
+let hoveredVertex = null;
+
+// Event listeners
+clearButton.addEventListener('click', () => {
+  vertices.length = 0;
+  update();
+});
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: snapToGrid(event.clientX - rect.left),
+    y: snapToGrid(event.clientY - rect.top)
+  };
+
+  // Check if click is near line points
+  for (const p of linePoints) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      return;
+    }
+  }
+
+  // Check if click is near any existing vertex
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      activePoint = vertex;
+      return;
+    }
+  }
+
+  // If not dragging, add new vertex
+  vertices.push({ x: point.x, y: point.y });
+  update();
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) {
+    // Update hover state
+    const rect = visualization.getBoundingClientRect();
+    const point = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+
+    hoveredVertex = null;
+    for (const vertex of vertices) {
+      if (distance(point, vertex) < 10) {
+        hoveredVertex = vertex;
+        break;
+      }
+    }
+    for (const p of linePoints) {
+      if (distance(point, p) < 10) {
+        hoveredVertex = p;
+        break;
+      }
+    }
+    visualization.style.cursor = hoveredVertex ? 'pointer' : 'default';
+    return;
+  }
+
+  const rect = visualization.getBoundingClientRect();
+  activePoint.x = snapToGrid(event.clientX - rect.left);
+  activePoint.y = snapToGrid(event.clientY - rect.top);
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function getLine() {
+  return {
+    start: linePoints[0],
+    end: linePoints[1]
+  };
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+  drawGrid();
+
+  // Create line and polygon
+  const line = getLine();
+  const polygon = vertices.length >= 3 ? { vertices } : null;
+
+  // Test intersection
+  const result = polygon ? lineIntersectsPolygon(line, polygon) : null;
+
+  // Draw polygon
+  if (vertices.length > 0) {
+    context.strokeStyle = '#666';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    context.beginPath();
+    context.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      context.lineTo(vertices[i].x, vertices[i].y);
+    }
+    if (vertices.length >= 3) {
+      context.closePath();
+    }
+    context.stroke();
+  }
+
+  // Draw line
+  context.strokeStyle = '#666';
+  context.lineWidth = 1;
+  context.setLineDash([]);
+  context.beginPath();
+  context.moveTo(line.start.x, line.start.y);
+  context.lineTo(line.end.x, line.end.y);
+  context.stroke();
+
+  // Draw intersection points
+  if (result?.intersects && result.intersectionPoints) {
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    for (const point of result.intersectionPoints) {
+      const size = 5;
+      context.beginPath();
+      context.moveTo(point.x - size, point.y - size);
+      context.lineTo(point.x + size, point.y + size);
+      context.moveTo(point.x + size, point.y - size);
+      context.lineTo(point.x - size, point.y + size);
+      context.stroke();
+    }
+  }
+
+  // Draw polygon vertices and their numbers
+  context.setLineDash([]);
+  vertices.forEach((vertex, i) => {
+    context.fillStyle = 'blue';
+    context.beginPath();
+    context.arc(vertex.x, vertex.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(`${i + 1}`, vertex.x + 8, vertex.y - 4);
+  });
+
+  // Draw line points with labels
+  linePoints.forEach(point => {
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  if (vertices.length < 3) {
+    output.textContent = `Add at least 3 vertices to create a polygon. Current vertices: ${vertices.length}`;
+  } else if (result) {
+    output.textContent = `Intersects: ${result.intersects}${
+      result.intersectionPoints
+        ? `, Points: ${result.intersectionPoints.length}`
+        : ''
+    }`;
+  }
+}
+
+// Initial render
+update();
+
+</script>

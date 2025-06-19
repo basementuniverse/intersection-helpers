@@ -1079,36 +1079,16 @@ export function rayIntersectsPolygon(
       return null;
     }
 
-    // Create a map of original edges for filtering
-    const originalEdges = new Set<string>();
-    for (let i = 0; i < polygon.vertices.length; i++) {
-      const start = polygon.vertices[i];
-      const end = polygon.vertices[(i + 1) % polygon.vertices.length];
-      // Store edges in both directions to handle different vertex ordering
-      originalEdges.add(`${start.x},${start.y}-${end.x},${end.y}`);
-      originalEdges.add(`${end.x},${end.y}-${start.x},${start.y}`);
-    }
-
+    // Find outer edges from the decomposed polygons
+    const outerEdges = findOuterEdges(convexPolygons);
     let intersectionPoints: Point[] = [];
 
-    // Check each convex polygon for intersections
-    for (const convexPoly of convexPolygons) {
-      const vertices = convexPoly.vertices;
-      for (let i = 0; i < vertices.length; i++) {
-        const start = vertices[i];
-        const end = vertices[(i + 1) % vertices.length];
-
-        // Only check edges that were part of the original polygon
-        const edgeKey = `${start.x},${start.y}-${end.x},${end.y}`;
-        if (!originalEdges.has(edgeKey)) {
-          continue;
-        }
-
-        const line = { start, end };
-        const intersection = rayIntersectsLine(ray, line);
-        if (intersection.intersects && intersection.intersectionPoint) {
-          intersectionPoints.push(intersection.intersectionPoint);
-        }
+    // Check each outer edge for intersections
+    for (const [start, end] of outerEdges) {
+      const edge = { start, end };
+      const intersection = rayIntersectsLine(ray, edge);
+      if (intersection.intersects && intersection.intersectionPoint) {
+        intersectionPoints.push(intersection.intersectionPoint);
       }
     }
 
@@ -1134,13 +1114,14 @@ export function rayIntersectsPolygon(
   const vertices = polygon.vertices;
   let intersectionPoints: Point[] = [];
 
+  // Check each edge of the polygon
   for (let i = 0; i < vertices.length; i++) {
-    const line = {
+    const edge = {
       start: vertices[i],
       end: vertices[(i + 1) % vertices.length],
     };
 
-    const intersection = rayIntersectsLine(ray, line);
+    const intersection = rayIntersectsLine(ray, edge);
     if (intersection.intersects && intersection.intersectionPoint) {
       intersectionPoints.push(intersection.intersectionPoint);
     }
@@ -1357,7 +1338,60 @@ export function lineIntersectsRectangle(
   intersects: boolean;
   intersectionPoints?: Point[];
 } {
-  throw new Error('not implemented yet'); // TODO
+  // Edge case: zero-size rectangle
+  if (
+    rectangle.size.x < constants.EPSILON ||
+    rectangle.size.y < constants.EPSILON
+  ) {
+    return {
+      intersects: false,
+    };
+  }
+
+  // Get vertices of the rectangle in clockwise order
+  const vertices = rectangleVertices(rectangle);
+
+  // If both endpoints are inside, line is completely contained
+  if (
+    pointInRectangle(line.start, rectangle).intersects &&
+    pointInRectangle(line.end, rectangle).intersects
+  ) {
+    return {
+      intersects: true,
+    };
+  }
+
+  let intersectionPoints: Point[] = [];
+
+  // Check each edge of the rectangle for intersection
+  for (let i = 0; i < 4; i++) {
+    const rectEdge = {
+      start: vertices[i],
+      end: vertices[(i + 1) % 4],
+    };
+
+    const intersection = lineIntersectsLine(line, rectEdge);
+    if (intersection.intersects && intersection.intersectionPoint) {
+      intersectionPoints.push(intersection.intersectionPoint);
+    }
+  }
+
+  // Remove duplicate intersection points and sort by distance to line start
+  intersectionPoints = removeDuplicateVertices(intersectionPoints);
+  if (intersectionPoints.length > 1) {
+    const lineDir = vec2.nor(vec2.sub(line.end, line.start));
+    intersectionPoints.sort((a, b) => {
+      const distA = vec2.dot(vec2.sub(a, line.start), lineDir);
+      const distB = vec2.dot(vec2.sub(b, line.start), lineDir);
+      return distA - distB;
+    });
+  }
+
+  return {
+    intersects: intersectionPoints.length > 0,
+    intersectionPoints:
+      intersectionPoints.length > 0 ? intersectionPoints : undefined,
+  };
 }
 
 /**
@@ -1372,7 +1406,118 @@ export function lineIntersectsPolygon(
   intersects: boolean;
   intersectionPoints?: Point[];
 } | null {
-  throw new Error('not implemented yet'); // TODO
+  // First check if the polygon is valid
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+
+  // If polygon is not convex, decompose it into convex polygons
+  if (!polygonIsConvex(polygon)) {
+    const convexPolygons = decomposePolygon(polygon);
+    if (!convexPolygons) {
+      return null;
+    }
+
+    // Special case: line segment is entirely inside polygon
+    const midpoint = {
+      x: (line.start.x + line.end.x) / 2,
+      y: (line.start.y + line.end.y) / 2,
+    };
+    const pointInside = pointInPolygon(midpoint, polygon);
+    const startInside = pointInPolygon(line.start, polygon);
+    const endInside = pointInPolygon(line.end, polygon);
+    if (
+      pointInside?.intersects &&
+      startInside?.intersects &&
+      endInside?.intersects
+    ) {
+      return {
+        intersects: true,
+      };
+    }
+
+    // Find outer edges from the decomposed polygons
+    const outerEdges = findOuterEdges(convexPolygons);
+    let intersectionPoints: Point[] = [];
+
+    // Check each outer edge for intersections
+    for (const [start, end] of outerEdges) {
+      const edge = { start, end };
+      const intersection = lineIntersectsLine(line, edge);
+      if (intersection.intersects && intersection.intersectionPoint) {
+        intersectionPoints.push(intersection.intersectionPoint);
+      }
+    }
+
+    // Remove duplicate intersection points and sort by distance to line start
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+      const lineDir = vec2.nor(vec2.sub(line.end, line.start));
+      intersectionPoints.sort((a, b) => {
+        const distA = vec2.dot(vec2.sub(a, line.start), lineDir);
+        const distB = vec2.dot(vec2.sub(b, line.start), lineDir);
+        return distA - distB;
+      });
+    }
+
+    return {
+      intersects: intersectionPoints.length > 0,
+      intersectionPoints:
+        intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+  }
+
+  // For convex polygons, check each edge
+  const vertices = polygon.vertices;
+  let intersectionPoints: Point[] = [];
+
+  // Special case: line segment is entirely inside polygon
+  const midpoint = {
+    x: (line.start.x + line.end.x) / 2,
+    y: (line.start.y + line.end.y) / 2,
+  };
+  const pointInside = pointInPolygon(midpoint, polygon);
+  const startInside = pointInPolygon(line.start, polygon);
+  const endInside = pointInPolygon(line.end, polygon);
+  if (
+    pointInside?.intersects &&
+    startInside?.intersects &&
+    endInside?.intersects
+  ) {
+    return {
+      intersects: true,
+    };
+  }
+
+  // Check each edge of the polygon
+  for (let i = 0; i < vertices.length; i++) {
+    const edge = {
+      start: vertices[i],
+      end: vertices[(i + 1) % vertices.length],
+    };
+
+    const intersection = lineIntersectsLine(line, edge);
+    if (intersection.intersects && intersection.intersectionPoint) {
+      intersectionPoints.push(intersection.intersectionPoint);
+    }
+  }
+
+  // Remove duplicate intersection points and sort by distance to line start
+  intersectionPoints = removeDuplicateVertices(intersectionPoints);
+  if (intersectionPoints.length > 1) {
+    const lineDir = vec2.nor(vec2.sub(line.end, line.start));
+    intersectionPoints.sort((a, b) => {
+      const distA = vec2.dot(vec2.sub(a, line.start), lineDir);
+      const distB = vec2.dot(vec2.sub(b, line.start), lineDir);
+      return distA - distB;
+    });
+  }
+
+  return {
+    intersects: intersectionPoints.length > 0,
+    intersectionPoints:
+      intersectionPoints.length > 0 ? intersectionPoints : undefined,
+  };
 }
 
 /**
@@ -1466,4 +1611,86 @@ export function polygonIntersectsPolygon(
   intersectionPoints?: Point[];
 } | null {
   throw new Error('not implemented yet'); // TODO
+}
+
+/**
+ * Find outer edges in a list of polygons by counting occurrences
+ *
+ * We assume that the polygons were the result of decomposing a concave polygon
+ * into a set of convex polygons, and as such they are all convex and share
+ * one or more edges
+ *
+ * This means we can identify outer edges because they'll only appear once
+ * in the list of edges, while inner edges will appear twice (once for each
+ * polygon that shares them)
+ */
+function findOuterEdges(polygons: Polygon[]): [Point, Point][] {
+  // Map to track edge occurrences using a unique key that considers
+  // collinearity and shared endpoints
+  const edgeCounts = new Map<string, { count: number; edge: [Point, Point] }>();
+
+  // Helper to get a normalized key for an edge that handles collinear segments
+  const getEdgeKey = (a: Point, b: Point): string => {
+    // Sort points to ensure consistent order
+    const [p1, p2] = [a, b].sort((x, y) =>
+      x.x === y.x ? x.y - y.y : x.x - y.x
+    );
+    return `${p1.x},${p1.y}-${p2.x},${p2.y}`;
+  };
+
+  // Helper to check if two edges are effectively the same (collinear and
+  // sharing endpoint)
+  const edgesAreCollinear = (
+    edge1: [Point, Point],
+    edge2: [Point, Point]
+  ): boolean => {
+    // Check if any endpoints are the same
+    const [a1, b1] = edge1;
+    const [a2, b2] = edge2;
+
+    const sharesEndpoint =
+      vec2.eq(a1, a2) || vec2.eq(a1, b2) || vec2.eq(b1, a2) || vec2.eq(b1, b2);
+
+    if (!sharesEndpoint) {
+      return false;
+    }
+
+    // Check if edges are collinear
+    return pointsAreCollinear(a1, b1, a2) && pointsAreCollinear(a1, b1, b2);
+  };
+
+  // First pass: count edges
+  for (const polygon of polygons) {
+    const vertices = polygon.vertices;
+    for (let i = 0; i < vertices.length; i++) {
+      const start = vertices[i];
+      const end = vertices[(i + 1) % vertices.length];
+      const edge: [Point, Point] = [start, end];
+      const key = getEdgeKey(start, end);
+
+      // Check if we already have a collinear edge that shares an endpoint
+      let foundCollinear = false;
+      for (const data of edgeCounts.values()) {
+        if (edgesAreCollinear(edge, data.edge)) {
+          data.count++;
+          foundCollinear = true;
+          break;
+        }
+      }
+
+      if (!foundCollinear) {
+        edgeCounts.set(key, { count: 1, edge });
+      }
+    }
+  }
+
+  // Second pass: collect edges that appear only once
+  const outerEdges: [Point, Point][] = [];
+  for (const { count, edge } of edgeCounts.values()) {
+    if (count === 1) {
+      outerEdges.push(edge);
+    }
+  }
+
+  return outerEdges;
 }

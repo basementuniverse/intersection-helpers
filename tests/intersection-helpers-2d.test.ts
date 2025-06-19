@@ -2065,12 +2065,11 @@ describe('IntersectionHelpers2D', () => {
       };
       const polygon = {
         vertices: [
-          { x: -2, y: 1 },
-          { x: 0, y: 1 },
-          { x: 0, y: -1 },
-          { x: 2, y: -1 },
-          { x: 2, y: 2 },
-          { x: -2, y: 2 },
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 }, // Concave point
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
         ],
       };
 
@@ -2091,10 +2090,10 @@ describe('IntersectionHelpers2D', () => {
       };
       const polygon = {
         vertices: [
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
           { x: 1, y: 1 },
-          { x: 0, y: 1 },
+          { x: -1, y: 1 },
         ],
       };
 
@@ -2111,10 +2110,10 @@ describe('IntersectionHelpers2D', () => {
       };
       const polygon = {
         vertices: [
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
           { x: 1, y: 1 },
-          { x: 0, y: 1 },
+          { x: -1, y: 1 },
         ],
       };
 
@@ -2131,10 +2130,10 @@ describe('IntersectionHelpers2D', () => {
       };
       const polygon = {
         vertices: [
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
           { x: 1, y: 1 },
-          { x: 0, y: 1 },
+          { x: -1, y: 1 },
         ],
       };
 
@@ -2142,8 +2141,7 @@ describe('IntersectionHelpers2D', () => {
       expect(result).not.toBeNull();
       expect(result?.intersects).toBe(true);
       expect(result?.intersectionPoints).toHaveLength(1);
-      expect(result?.intersectionPoints![0].x).toBeCloseTo(1);
-      expect(result?.intersectionPoints![0].y).toBeCloseTo(0.5);
+      expect(result?.intersectionPoints![0]).toEqual({ x: 1, y: 0.5 });
     });
 
     it('should return null for invalid polygon (fewer than 3 vertices)', () => {
@@ -2171,8 +2169,8 @@ describe('IntersectionHelpers2D', () => {
         vertices: [
           { x: 0, y: 0 },
           { x: 1, y: 1 },
-          { x: 0, y: 1 },
           { x: 1, y: 0 },
+          { x: 0, y: 1 },
         ],
       };
 
@@ -2208,7 +2206,8 @@ describe('IntersectionHelpers2D', () => {
         vertices: [
           { x: -1, y: -1 },
           { x: 1, y: -1 },
-          { x: 0, y: 1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
         ],
       };
 
@@ -2323,6 +2322,348 @@ describe('IntersectionHelpers2D', () => {
 
       expect(result.intersects).toBe(false);
       expect(result.intersectionPoint).toBeUndefined();
+    });
+  });
+
+  describe('lineIntersectsRectangle', () => {
+    it('should return true with two intersection points when line passes through rectangle', () => {
+      const line = {
+        start: { x: -2, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return true with one intersection point when line ends inside rectangle', () => {
+      const line = {
+        start: { x: -2, y: 1 },
+        end: { x: 0, y: 1 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 1 });
+    });
+
+    it('should return true without intersection points when line is entirely inside rectangle', () => {
+      const line = {
+        start: { x: -0.5, y: 0 },
+        end: { x: 0.5, y: 0 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return false when line misses rectangle', () => {
+      const line = {
+        start: { x: -2, y: 2 },
+        end: { x: 2, y: 2 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle line starting on rectangle edge', () => {
+      const line = {
+        start: { x: -1, y: 0 },
+        end: { x: -2, y: 0 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+    });
+
+    it('should handle rotated rectangle - passing through', () => {
+      const line = {
+        start: { x: -2, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      // At 45 degree rotation, intersection points should be approximately (-√2, 0) and (√2, 0)
+      expect(result.intersectionPoints![0].x).toBeCloseTo(-Math.sqrt(2), 5);
+      expect(result.intersectionPoints![0].y).toBeCloseTo(0, 5);
+      expect(result.intersectionPoints![1].x).toBeCloseTo(Math.sqrt(2), 5);
+      expect(result.intersectionPoints![1].y).toBeCloseTo(0, 5);
+    });
+
+    it('should handle rectangle at non-origin position', () => {
+      const line = {
+        start: { x: 0, y: 0 },
+        end: { x: 4, y: 4 },
+      };
+      const rectangle = {
+        position: { x: 2, y: 2 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0].x).toBeCloseTo(1, 5);
+      expect(result.intersectionPoints![0].y).toBeCloseTo(1, 5);
+      expect(result.intersectionPoints![1].x).toBeCloseTo(3, 5);
+      expect(result.intersectionPoints![1].y).toBeCloseTo(3, 5);
+    });
+
+    it('should handle zero-size rectangle', () => {
+      const line = {
+        start: { x: -1, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle zero-length line', () => {
+      const line = {
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 0 },
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.lineIntersectsRectangle(line, rectangle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+  });
+
+  describe('lineIntersectsPolygon', () => {
+    it('should return true with two intersection points when line passes through convex polygon', () => {
+      const line = {
+        start: { x: -2, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+      expect(result?.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result?.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return true with two intersection points when line passes through concave polygon', () => {
+      const line = {
+        start: { x: -2, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 }, // Concave point
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+      expect(result?.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result?.intersectionPoints![1]).toEqual({ x: 0, y: 0 });
+    });
+
+    it('should return false when line misses polygon', () => {
+      const line = {
+        start: { x: -2, y: 2 },
+        end: { x: 2, y: 2 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return true without intersection points when line is entirely inside polygon', () => {
+      const line = {
+        start: { x: -0.5, y: 0 },
+        end: { x: 0.5, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return true with one intersection point when line starts inside polygon', () => {
+      const line = {
+        start: { x: 0, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(1);
+      expect(result?.intersectionPoints![0]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return null for invalid polygon (self-intersecting)', () => {
+      const line = {
+        start: { x: -1, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+          { x: 1, y: 0 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for polygon with fewer than 3 vertices', () => {
+      const line = {
+        start: { x: -1, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should handle zero-length line', () => {
+      const line = {
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle line exactly at polygon vertex', () => {
+      const line = {
+        start: { x: -2, y: 1 },
+        end: { x: 0, y: 1 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.lineIntersectsPolygon(line, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(1);
+      expect(result?.intersectionPoints![0]).toEqual({ x: -1, y: 1 });
     });
   });
 });
