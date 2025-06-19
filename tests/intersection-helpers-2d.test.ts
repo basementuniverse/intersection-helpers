@@ -1242,26 +1242,1087 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('rayTraverseGrid', () => {
-    // TODO
+    it('should handle a horizontal ray aligned with grid', () => {
+      const ray = {
+        origin: { x: 0, y: 5 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        10, // cellSize
+        { x: 0, y: 0 }, // gridTopLeft
+        { x: 3, y: 1 }, // gridBottomRight
+        4 // maxCells
+      );
+
+      expect(result.cells).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+      ]);
+    });
+
+    it('should handle a diagonal ray', () => {
+      const ray = {
+        origin: { x: 0, y: -1 },
+        direction: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        10,
+        { x: 0, y: 0 },
+        { x: 3, y: 3 }
+      );
+
+      expect(result.cells).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 2, y: 2 },
+      ]);
+    });
+
+    it('should respect maxCells parameter', () => {
+      const ray = {
+        origin: { x: 0, y: -1 },
+        direction: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        10,
+        { x: 0, y: 0 },
+        { x: 10, y: 10 },
+        3
+      );
+
+      expect(result.cells).toHaveLength(3);
+      expect(result.cells).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+      ]);
+    });
+
+    it('should handle ray starting outside grid bounds', () => {
+      const ray = {
+        origin: { x: -20, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        10,
+        { x: 0, y: -1 },
+        { x: 3, y: 1 }
+      );
+
+      expect(result.cells).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+      ]);
+    });
+
+    it('should handle ray missing grid entirely', () => {
+      const ray = {
+        origin: { x: 0, y: -5 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        10,
+        { x: 0, y: 0 },
+        { x: 3, y: 3 }
+      );
+
+      expect(result.cells).toHaveLength(0);
+    });
+
+    it('should handle zero direction ray', () => {
+      const ray = {
+        origin: { x: 1, y: 1 },
+        direction: { x: 0, y: 0 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        1,
+        { x: 0, y: 0 },
+        { x: 3, y: 3 },
+        4
+      );
+
+      expect(result.cells).toHaveLength(0);
+    });
+
+    it('should handle invalid cell size', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        0, // invalid cell size
+        { x: 0, y: 0 },
+        { x: 3, y: 3 },
+        4
+      );
+
+      expect(result.cells).toHaveLength(0);
+    });
+
+    it('should handle vertical ray', () => {
+      const ray = {
+        origin: { x: 1, y: 0 },
+        direction: { x: 0, y: 1 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        1,
+        { x: 0, y: 0 },
+        { x: 3, y: 3 },
+        4
+      );
+
+      expect(result.cells).toEqual([
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+      ]);
+    });
+
+    it('should handle non-normalized direction vector', () => {
+      const ray = {
+        origin: { x: 0, y: 1 },
+        direction: { x: 2, y: 0 }, // non-normalized
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        10,
+        { x: 0, y: -1 },
+        { x: 3, y: 1 },
+        4
+      );
+
+      expect(result.cells).toEqual([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+      ]);
+    });
+
+    it('should handle ray starting exactly on cell boundary', () => {
+      const ray = {
+        origin: { x: 1, y: 0 }, // exactly on boundary between cells
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayTraverseGrid(
+        ray,
+        1,
+        { x: 0, y: -1 },
+        { x: 3, y: 1 },
+        4
+      );
+
+      expect(result.cells).toEqual([
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+      ]);
+    });
   });
 
   describe('rayIntersectsRay', () => {
-    // TODO
+    it('should return true with intersection point when rays intersect', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 1, y: -1 },
+        direction: { x: 0, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return false when rays are parallel', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 0, y: 1 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return true without intersection point for overlapping collinear rays (same direction)', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return false for collinear rays pointing in opposite directions', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 2, y: 0 },
+        direction: { x: -1, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return true without intersection point for identical rays', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle rays with non-normalized direction vectors', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 2, y: 0 }, // non-normalized
+      };
+      const rayB = {
+        origin: { x: 1, y: -1 },
+        direction: { x: 0, y: 2 }, // non-normalized
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return false when rays do not intersect', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 1, y: 1 },
+        direction: { x: 0, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle rays with zero direction vectors', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsRay(rayA, rayB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
   });
 
   describe('rayIntersectsLine', () => {
-    // TODO
+    it('should return true with intersection point when ray intersects line', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: -1 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return false when ray misses line segment', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: 1 },
+        end: { x: 1, y: 2 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return false when ray points away from line', () => {
+      const ray = {
+        origin: { x: 2, y: 0 },
+        direction: { x: 1, y: 0 }, // pointing right, away from line
+      };
+      const line = {
+        start: { x: 1, y: -1 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle when ray starts on the line', () => {
+      const ray = {
+        origin: { x: 1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: -1 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle ray parallel to line segment', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const line = {
+        start: { x: 0, y: 1 },
+        end: { x: 2, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle ray collinear with line segment - overlapping', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle ray collinear with line segment - non-overlapping', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: -1, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle rays with non-normalized direction vectors', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 2, y: 0 }, // non-normalized
+      };
+      const line = {
+        start: { x: 1, y: -1 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle ray with zero direction vector', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: -1 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle zero-length line segment', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const line = {
+        start: { x: 1, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const result = intersection2d.rayIntersectsLine(ray, line);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
   });
 
   describe('rayIntersectsCircle', () => {
-    // TODO
+    it('should return true with two intersection points when ray passes through circle', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return true with one intersection point when ray is tangent to circle', () => {
+      const ray = {
+        origin: { x: -2, y: 1 },
+        direction: { x: 1, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0]).toEqual({ x: 0, y: 1 });
+    });
+
+    it('should return false when ray misses circle', () => {
+      const ray = {
+        origin: { x: -2, y: 2 },
+        direction: { x: 1, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return false when ray points away from circle', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: -1, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle ray starting inside the circle', () => {
+      const ray = {
+        origin: { x: 0.5, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle ray starting on circle edge', () => {
+      const ray = {
+        origin: { x: 1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle ray with zero direction vector', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 },
+      };
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle circle at non-origin position', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 1 },
+      };
+      const circle = {
+        position: { x: 2, y: 2 },
+        radius: 1,
+      };
+      const result = intersection2d.rayIntersectsCircle(ray, circle);
+
+      expect(result.intersects).toBe(true);
+      // The intersection points will be approximately (1.293, 1.293) and (2.707, 2.707)
+      expect(result.intersectionPoints).toHaveLength(2);
+      const [p1, p2] = result.intersectionPoints!;
+      expect(p1.x).toBeCloseTo(2 - Math.sqrt(0.5), 3);
+      expect(p1.y).toBeCloseTo(2 - Math.sqrt(0.5), 3);
+      expect(p2.x).toBeCloseTo(2 + Math.sqrt(0.5), 3);
+      expect(p2.y).toBeCloseTo(2 + Math.sqrt(0.5), 3);
+    });
   });
 
   describe('rayIntersectsRectangle', () => {
-    // TODO
+    it('should return true with two intersection points when ray passes through rectangle', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return true with one intersection point when ray touches rectangle corner', () => {
+      const ray = {
+        origin: { x: -2, y: Math.sqrt(2) - 0.0000001 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0].x).toBeCloseTo(0, 5);
+      expect(result.intersectionPoints![0].y).toBeCloseTo(Math.sqrt(2), 5);
+    });
+
+    it('should return false when ray misses rectangle', () => {
+      const ray = {
+        origin: { x: -2, y: 2 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return false when ray points away from rectangle', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: -1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle ray starting inside the rectangle', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(1);
+      expect(result.intersectionPoints![0]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle ray starting on rectangle edge', () => {
+      const ray = {
+        origin: { x: -1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle ray with zero direction vector', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle rotated rectangle - passing through', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      // At 45 degree rotation, intersection points should be approximately (-√2, 0) and (√2, 0)
+      expect(result.intersectionPoints![0].x).toBeCloseTo(-Math.sqrt(2), 5);
+      expect(result.intersectionPoints![0].y).toBeCloseTo(0, 5);
+      expect(result.intersectionPoints![1].x).toBeCloseTo(Math.sqrt(2), 5);
+      expect(result.intersectionPoints![1].y).toBeCloseTo(0, 5);
+    });
+
+    it('should handle ray with non-normalized direction vector', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: 2, y: 0 }, // non-normalized
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
+      expect(result.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle rectangle at non-origin position', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 1 },
+      };
+      const rect = {
+        position: { x: 2, y: 2 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+      expect(result.intersectionPoints![0].x).toBeCloseTo(1, 5);
+      expect(result.intersectionPoints![0].y).toBeCloseTo(1, 5);
+      expect(result.intersectionPoints![1].x).toBeCloseTo(3, 5);
+      expect(result.intersectionPoints![1].y).toBeCloseTo(3, 5);
+    });
+
+    it('should handle zero-size rectangle', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      };
+      const result = intersection2d.rayIntersectsRectangle(ray, rect);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
   });
 
   describe('rayIntersectsPolygon', () => {
-    // TODO
+    it('should return true with intersection points when ray passes through convex polygon', () => {
+      const ray = {
+        origin: { x: -1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 1 },
+          { x: 1, y: 0 },
+          { x: 0, y: -1 },
+          { x: -1, y: 0 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+
+      // Verify points are ordered by distance from ray origin
+      const [p1, p2] = result!.intersectionPoints!;
+      expect(p1.x).toBeLessThan(p2.x);
+    });
+
+    it('should return true with intersection points when ray passes through concave polygon', () => {
+      const ray = {
+        origin: { x: -1, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -2, y: 1 },
+          { x: 0, y: 1 },
+          { x: 0, y: -1 },
+          { x: 2, y: -1 },
+          { x: 2, y: 2 },
+          { x: -2, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+
+      // Verify points are ordered by distance from ray origin
+      const [p1, p2] = result!.intersectionPoints!;
+      expect(p1.x).toBeLessThan(p2.x);
+    });
+
+    it('should return false when ray misses polygon', () => {
+      const ray = {
+        origin: { x: 0, y: 2 },
+        direction: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 1, y: 1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return false when ray points away from polygon', () => {
+      const ray = {
+        origin: { x: -2, y: 0 },
+        direction: { x: -1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 1, y: 1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle ray starting inside polygon', () => {
+      const ray = {
+        origin: { x: 0.5, y: 0.5 },
+        direction: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 1, y: 1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(1);
+      expect(result?.intersectionPoints![0].x).toBeCloseTo(1);
+      expect(result?.intersectionPoints![0].y).toBeCloseTo(0.5);
+    });
+
+    it('should return null for invalid polygon (fewer than 3 vertices)', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid polygon (self-intersecting)', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+          { x: 0, y: 1 },
+          { x: 1, y: 0 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should handle ray with non-normalized direction vector', () => {
+      const ray = {
+        origin: { x: -1, y: 0 },
+        direction: { x: 2, y: 0 }, // Non-normalized direction
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 1 },
+          { x: 1, y: 0 },
+          { x: 0, y: -1 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should handle ray with zero direction vector', () => {
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 },
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rayIntersectsPolygon(ray, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+  });
+
+  describe('lineIntersectsLine', () => {
+    it('should return true with intersection point when lines intersect', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const lineB = {
+        start: { x: 1, y: 0 },
+        end: { x: 0, y: 1 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toEqual({ x: 0.5, y: 0.5 });
+    });
+
+    it('should return false when lines do not intersect', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const lineB = {
+        start: { x: 2, y: 2 },
+        end: { x: 3, y: 3 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return false when lines are parallel', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const lineB = {
+        start: { x: 0, y: 1 },
+        end: { x: 1, y: 2 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return true without intersection point for overlapping collinear lines (same direction)', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const lineB = {
+        start: { x: 1, y: 1 },
+        end: { x: 2, y: 2 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return false for collinear lines pointing in opposite directions', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const lineB = {
+        start: { x: 3, y: 0 },
+        end: { x: 2, y: 0 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should return true without intersection point for identical lines', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
+
+    it('should handle zero-length lines', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 0 }, // zero-length line
+      };
+      const lineB = {
+        start: { x: 1, y: 1 },
+        end: { x: 2, y: 2 },
+      };
+      const result = intersection2d.lineIntersectsLine(lineA, lineB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoint).toBeUndefined();
+    });
   });
 });

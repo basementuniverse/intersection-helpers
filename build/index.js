@@ -2458,6 +2458,20 @@ function polygonCentroid(polygon) {
 }
 exports.polygonCentroid = polygonCentroid;
 /**
+ * Remove duplicate vertices from a list of vertices
+ */
+function removeDuplicateVertices(vertices) {
+    const result = [];
+    const n = vertices.length;
+    for (let i = 0; i < n; i++) {
+        const current = vertices[i];
+        if (!result.some(v => vec_1.vec2.len(vec_1.vec2.sub(current, v)) < constants.EPSILON)) {
+            result.push(current);
+        }
+    }
+    return result;
+}
+/**
  * Remove duplicate adjacent vertices from a list of vertices
  */
 function removeDuplicateAdjacentVertices(vertices) {
@@ -2466,7 +2480,7 @@ function removeDuplicateAdjacentVertices(vertices) {
     for (let i = 0; i < n; i++) {
         const current = vertices[i];
         const next = (0, utils_1.at)(vertices, i + 1);
-        if (!vec_1.vec2.eq(current, next)) {
+        if (vec_1.vec2.len(vec_1.vec2.sub(current, next)) >= constants.EPSILON) {
             result.push(current);
         }
     }
@@ -2654,7 +2668,8 @@ function pointInRectangle(point, rectangle) {
     // Edge case: zero-size rectangle
     if (rectangle.size.x < constants.EPSILON ||
         rectangle.size.y < constants.EPSILON) {
-        // If the rectangle has no size, check if the point is at the rectangle's position
+        // If the rectangle has no size, check if the point is at the rectangle's
+        // position
         const isAtPosition = vec_1.vec2.eq(point, rectangle.position);
         return {
             intersects: isAtPosition,
@@ -2667,7 +2682,7 @@ function pointInRectangle(point, rectangle) {
     // Convert rectangle to polygon
     const vertices = rectangleVertices(rectangle);
     const polygonResult = pointInPolygon(point, { vertices });
-    // This should never happen since rectangleVertices always returns valid vertices
+    // We should always have a polygonResult, but just in case...
     if (!polygonResult) {
         throw new Error('Invalid rectangle vertices');
     }
@@ -2734,8 +2749,15 @@ function rayTraverseGrid(ray, cellSize, gridTopLeft, gridBottomRight, maxCells =
     if (cellSize <= 0) {
         return { cells: [] }; // Invalid cell size, return empty cells array
     }
+    // Set a limit on the number of cells traversed
     const HARD_LIMIT = 10000;
-    maxCells = maxCells === -1 ? HARD_LIMIT : Math.max(maxCells, HARD_LIMIT);
+    maxCells = (0, utils_1.clamp)(maxCells === -1 ? HARD_LIMIT : maxCells, 0, HARD_LIMIT);
+    if (maxCells <= 0) {
+        return { cells: [] }; // No cells to traverse
+    }
+    // Make sure the grid top-left and bottom-right boundaries are integers
+    gridTopLeft = vec_1.vec2.map(gridTopLeft, Math.floor);
+    gridBottomRight = vec_1.vec2.map(gridBottomRight, Math.ceil);
     const cells = [];
     // Normalize ray direction and handle zero components
     const rayDir = vec_1.vec2.nor(ray.direction);
@@ -2839,6 +2861,12 @@ function rayIntersectsRay(rayA, rayB) {
     // Normalize the direction vectors
     const dirA = vec_1.vec2.nor(rayA.direction);
     const dirB = vec_1.vec2.nor(rayB.direction);
+    // If either ray has zero direction, they cannot intersect
+    if (vec_1.vec2.eq(dirA, (0, vec_1.vec2)()) || vec_1.vec2.eq(dirB, (0, vec_1.vec2)())) {
+        return {
+            intersects: false,
+        };
+    }
     // Calculate the cross product determinant
     const det = vec_1.vec2.cross(dirA, dirB);
     // Get the vector between starting points
@@ -2849,12 +2877,11 @@ function rayIntersectsRay(rayA, rayB) {
         if (Math.abs(vec_1.vec2.cross(startDiff, dirA)) < constants.EPSILON) {
             // Rays are collinear - check if they overlap
             const t = vec_1.vec2.dot(startDiff, dirA);
-            // If t ≥ 0, rayB's origin is ahead of rayA's origin in rayA's direction
-            // If t ≤ 0, rayA's origin is ahead of rayB's origin in rayB's direction
-            // If dot(dirA, dirB) ≈ -1, rays point in opposite directions
-            // Rays intersect (overlap) if they point in the same direction and one origin
-            // is ahead of the other in that direction
-            if (t <= 0 && vec_1.vec2.dot(dirA, dirB) > -constants.EPSILON) {
+            // For rays pointing in the same direction:
+            // If t <= 0: rayA's origin is behind or at rayB's origin
+            // If t >= 0: rayB's origin is behind or at rayA's origin
+            // dot(dirA, dirB) should be close to 1 for same direction
+            if ((t <= 0 || t >= 0) && vec_1.vec2.dot(dirA, dirB) > 1 - constants.EPSILON) {
                 return {
                     intersects: true,
                     // No single intersection point for overlapping rays
@@ -2868,7 +2895,7 @@ function rayIntersectsRay(rayA, rayB) {
     // Calculate intersection parameters
     const t = vec_1.vec2.cross(startDiff, dirB) / det;
     const s = vec_1.vec2.cross(startDiff, dirA) / det;
-    // Check if intersection occurs on both rays (t ≥ 0 and s ≥ 0)
+    // Check if intersection occurs on both rays (t >= 0 and s >= 0)
     if (t >= 0 && s >= 0) {
         return {
             intersects: true,
@@ -2888,6 +2915,12 @@ function rayIntersectsLine(ray, line) {
     const lineDir = vec_1.vec2.sub(line.end, line.start);
     // Normalize the ray direction
     const rayDir = vec_1.vec2.nor(ray.direction);
+    // If either the ray or the line has zero direction, they cannot intersect
+    if (vec_1.vec2.eq(lineDir, (0, vec_1.vec2)()) || vec_1.vec2.eq(rayDir, (0, vec_1.vec2)())) {
+        return {
+            intersects: false,
+        };
+    }
     // Calculate the cross product determinant
     const det = vec_1.vec2.cross(rayDir, lineDir);
     // Get the vector between ray origin and line start
@@ -2914,7 +2947,8 @@ function rayIntersectsLine(ray, line) {
     // Calculate intersection parameters
     const t = vec_1.vec2.cross(startDiff, lineDir) / det; // Ray parameter
     const s = vec_1.vec2.cross(startDiff, rayDir) / det; // Line parameter
-    // Check if intersection occurs on the ray (t ≥ 0) and within the line segment (0 ≤ s ≤ 1)
+    // Check if intersection occurs on the ray (t >= 0) and within the line
+    // segment (0 <= s <= 1)
     if (t >= 0 && s >= 0 && s <= 1) {
         return {
             intersects: true,
@@ -2970,13 +3004,14 @@ function rayIntersectsCircle(ray, circle) {
         return { intersects: false };
     }
     // Calculate intersection points for positive t values
-    const intersectionPoints = [];
+    let intersectionPoints = [];
     if (t1 >= 0) {
         intersectionPoints.push(vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDir, t1)));
     }
     if (t2 >= 0) {
         intersectionPoints.push(vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDir, t2)));
     }
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
     return {
         intersects: intersectionPoints.length > 0,
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
@@ -2989,7 +3024,7 @@ exports.rayIntersectsCircle = rayIntersectsCircle;
 function rayIntersectsRectangle(ray, rectangle) {
     // Get vertices of the rectangle in clockwise order
     const vertices = rectangleVertices(rectangle);
-    const intersectionPoints = [];
+    let intersectionPoints = [];
     // Check each edge of the rectangle for intersection
     for (let i = 0; i < 4; i++) {
         const line = {
@@ -2998,14 +3033,11 @@ function rayIntersectsRectangle(ray, rectangle) {
         };
         const intersection = rayIntersectsLine(ray, line);
         if (intersection.intersects && intersection.intersectionPoint) {
-            // Only add unique intersection points
-            if (!intersectionPoints.some(p => vec_1.vec2.len(vec_1.vec2.sub(p, intersection.intersectionPoint)) <
-                constants.EPSILON)) {
-                intersectionPoints.push(intersection.intersectionPoint);
-            }
+            intersectionPoints.push(intersection.intersectionPoint);
         }
     }
-    // Sort intersection points by distance from ray origin
+    // Remove duplicate intersection points and sort by distance to ray origin
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
     if (intersectionPoints.length > 1) {
         const rayDir = vec_1.vec2.nor(ray.direction);
         intersectionPoints.sort((a, b) => {
@@ -3045,7 +3077,7 @@ function rayIntersectsPolygon(ray, polygon) {
             originalEdges.add(`${start.x},${start.y}-${end.x},${end.y}`);
             originalEdges.add(`${end.x},${end.y}-${start.x},${start.y}`);
         }
-        const allIntersectionPoints = [];
+        let intersectionPoints = [];
         // Check each convex polygon for intersections
         for (const convexPoly of convexPolygons) {
             const vertices = convexPoly.vertices;
@@ -3060,30 +3092,28 @@ function rayIntersectsPolygon(ray, polygon) {
                 const line = { start, end };
                 const intersection = rayIntersectsLine(ray, line);
                 if (intersection.intersects && intersection.intersectionPoint) {
-                    // Only add unique intersection points
-                    if (!allIntersectionPoints.some(p => vec_1.vec2.eq(p, intersection.intersectionPoint))) {
-                        allIntersectionPoints.push(intersection.intersectionPoint);
-                    }
+                    intersectionPoints.push(intersection.intersectionPoint);
                 }
             }
         }
-        // Sort intersection points by distance from ray origin
-        if (allIntersectionPoints.length > 1) {
+        // Remove duplicate intersection points and sort by distance to ray origin
+        intersectionPoints = removeDuplicateVertices(intersectionPoints);
+        if (intersectionPoints.length > 1) {
             const rayDir = vec_1.vec2.nor(ray.direction);
-            allIntersectionPoints.sort((a, b) => {
+            intersectionPoints.sort((a, b) => {
                 const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, ray.origin), rayDir);
                 const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, ray.origin), rayDir);
                 return distA - distB;
             });
         }
         return {
-            intersects: allIntersectionPoints.length > 0,
-            intersectionPoints: allIntersectionPoints.length > 0 ? allIntersectionPoints : undefined,
+            intersects: intersectionPoints.length > 0,
+            intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
         };
     }
     // For convex polygons, check each edge
     const vertices = polygon.vertices;
-    const intersectionPoints = [];
+    let intersectionPoints = [];
     for (let i = 0; i < vertices.length; i++) {
         const line = {
             start: vertices[i],
@@ -3091,13 +3121,11 @@ function rayIntersectsPolygon(ray, polygon) {
         };
         const intersection = rayIntersectsLine(ray, line);
         if (intersection.intersects && intersection.intersectionPoint) {
-            // Only add unique intersection points
-            if (!intersectionPoints.some(p => vec_1.vec2.eq(p, intersection.intersectionPoint))) {
-                intersectionPoints.push(intersection.intersectionPoint);
-            }
+            intersectionPoints.push(intersection.intersectionPoint);
         }
     }
-    // Sort intersection points by distance from ray origin
+    // Remove duplicate intersection points and sort by distance to ray origin
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
     if (intersectionPoints.length > 1) {
         const rayDir = vec_1.vec2.nor(ray.direction);
         intersectionPoints.sort((a, b) => {
@@ -3126,6 +3154,12 @@ function lineIntersectsLine(lineA, lineB) {
     // Get the vectors representing the directions of each line
     const dirA = vec_1.vec2.sub(lineA.end, lineA.start);
     const dirB = vec_1.vec2.sub(lineB.end, lineB.start);
+    // If either line has zero direction, they cannot intersect
+    if (vec_1.vec2.eq(dirA, (0, vec_1.vec2)()) || vec_1.vec2.eq(dirB, (0, vec_1.vec2)())) {
+        return {
+            intersects: false,
+        };
+    }
     // Calculate the cross product determinant
     const det = vec_1.vec2.cross(dirA, dirB);
     // Get the vector between starting points
@@ -3170,7 +3204,77 @@ exports.lineIntersectsLine = lineIntersectsLine;
  * Check if a line segment intersects a circle
  */
 function lineIntersectsCircle(line, circle) {
-    throw new Error('not implemented yet'); // TODO
+    // 1. Parameterized line equation: P(t) = start + t * (end - start)
+    const lineDir = vec_1.vec2.sub(line.end, line.start);
+    const lineLengthSquared = vec_1.vec2.dot(lineDir, lineDir);
+    // If the line segment has zero length, it cannot intersect
+    if (lineLengthSquared < constants.EPSILON) {
+        return { intersects: false };
+    }
+    // If both endpoints of the line are inside the circle, then we have an
+    // intersection (but no intersection points)
+    if (pointInCircle(line.start, circle).intersects &&
+        pointInCircle(line.end, circle).intersects) {
+        return { intersects: true };
+    }
+    // Calculate vector from circle center to line start
+    const toCenter = vec_1.vec2.sub(circle.position, line.start);
+    // 2. Substitute line equation into circle equation:
+    // (start.x + t*dir.x - circle.x)² + (start.y + t*dir.y - circle.y)² = r²
+    // Expand and collect terms to get quadratic equation: at² + bt + c = 0
+    // a = dot(dir, dir)
+    const a = lineLengthSquared;
+    // b = 2 * dot(dir, (start - center))
+    const b = 2 * vec_1.vec2.dot(lineDir, vec_1.vec2.mul(toCenter, -1));
+    // c = dot((start - center), (start - center)) - radius²
+    const c = vec_1.vec2.dot(toCenter, toCenter) - circle.radius * circle.radius;
+    // 3. Solve quadratic equation using discriminant
+    const discriminant = b * b - 4 * a * c;
+    // If discriminant is negative, no intersection
+    if (discriminant < -constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Handle case where line just touches circle (discriminant ≈ 0)
+    if (Math.abs(discriminant) < constants.EPSILON) {
+        const t = -b / (2 * a);
+        if (t >= 0 && t <= 1) {
+            const point = vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDir, t));
+            return {
+                intersects: true,
+                intersectionPoints: [point],
+            };
+        }
+        return { intersects: false };
+    }
+    // Calculate intersection points for discriminant > 0
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDiscriminant) / (2 * a);
+    const t2 = (-b + sqrtDiscriminant) / (2 * a);
+    let intersectionPoints = [];
+    // If both t values are outside [0, 1], no intersection
+    if (t2 < 0 || t1 > 1) {
+        return { intersects: false };
+    }
+    // Calculate intersection points for valid t values
+    if (t1 >= 0 && t1 <= 1) {
+        intersectionPoints.push(vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDir, t1)));
+    }
+    if (t2 >= 0 && t2 <= 1) {
+        intersectionPoints.push(vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDir, t2)));
+    }
+    // Remove duplicate intersection points and sort by distance to line start
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+        intersectionPoints.sort((a, b) => {
+            const distA = vec_1.vec2.len(vec_1.vec2.sub(a, line.start));
+            const distB = vec_1.vec2.len(vec_1.vec2.sub(b, line.start));
+            return distA - distB;
+        });
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
 }
 exports.lineIntersectsCircle = lineIntersectsCircle;
 /**
