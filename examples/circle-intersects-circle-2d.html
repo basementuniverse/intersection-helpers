@@ -1,0 +1,354 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+</div>
+
+<div>
+  <label>
+    <input type="checkbox" id="separation"> Perform separation
+  </label>
+</div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const snapCheckbox = document.getElementById('snapToGrid');
+const separationCheckbox = document.getElementById('separation');
+const context = visualization.getContext('2d');
+
+separationCheckbox.addEventListener('change', () => {
+  if (separationCheckbox.checked) {
+    updateSeparation(points[0]);
+    update();
+  }
+});
+
+// Import required functions
+const {
+  circleIntersectsCircle,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+
+// State
+const points = [
+  // Circle A
+  { x: 150, y: 200, color: 'blue', label: 'Circle A center' },
+  { x: 200, y: 200, color: 'lightblue', label: 'Circle A size' },
+  // Circle B
+  { x: 250, y: 200, color: 'red', label: 'Circle B center' },
+  { x: 300, y: 200, color: 'pink', label: 'Circle B size' }
+];
+let activePoint = null;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      return;
+    }
+  }
+}
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const newX = snapToGrid(event.clientX - rect.left);
+  const newY = snapToGrid(event.clientY - rect.top);
+
+  // Store original positions for circle B in case we need to adjust for separation
+  const originalBCenter = { x: points[2].x, y: points[2].y };
+  const originalBSize = { x: points[3].x, y: points[3].y };
+
+  // If moving a center point, move its radius point with it
+  if (activePoint === points[0]) { // Circle A center
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+    activePoint.x = newX;
+    activePoint.y = newY;
+    points[1].x = snapToGrid(points[1].x + deltaX);
+    points[1].y = snapToGrid(points[1].y + deltaY);
+  } else if (activePoint === points[2]) { // Circle B center
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+    activePoint.x = newX;
+    activePoint.y = newY;
+    points[3].x = snapToGrid(points[3].x + deltaX);
+    points[3].y = snapToGrid(points[3].y + deltaY);
+  } else {
+    // For radius points, just move them directly
+    activePoint.x = newX;
+    activePoint.y = newY;
+  }
+
+  // If separation is enabled, check for collisions and adjust the non-active circle
+  if (separationCheckbox.checked) {
+    updateSeparation(activePoint);
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function updateSeparation(activePoint) {
+  const circleA = {
+    position: points[0],
+    radius: distance(points[0], points[1])
+  };
+  const circleB = {
+    position: points[2],
+    radius: distance(points[2], points[3])
+  };
+
+  const result = circleIntersectsCircle(circleA, circleB);
+
+  if (result.intersects && result.minimumSeparation) {
+    // Determine which circle is being manipulated
+    const isCircleAActive = activePoint === points[0] || activePoint === points[1];
+    const isCircleBActive = activePoint === points[2] || activePoint === points[3];
+
+    if (isCircleAActive) {
+      // Move circle B by the separation vector
+      points[2].x += result.minimumSeparation.x;
+      points[2].y += result.minimumSeparation.y;
+
+      // Move B's size control point by the same amount
+      points[3].x += result.minimumSeparation.x;
+      points[3].y += result.minimumSeparation.y;
+    } else if (isCircleBActive) {
+      // Move circle A by the inverse of the separation vector
+      points[0].x -= result.minimumSeparation.x;
+      points[0].y -= result.minimumSeparation.y;
+
+      // Move A's size control point by the same amount
+      points[1].x -= result.minimumSeparation.x;
+      points[1].y -= result.minimumSeparation.y;
+    }
+  }
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+
+  // Draw vertical lines
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Draw grid if enabled
+  drawGrid();
+
+  // Get points for both circles
+  const centerA = points[0];
+  const radiusPointA = points[1];
+  let centerB = points[2];
+  const radiusPointB = points[3];
+
+  // Calculate radii
+  const radiusA = distance(centerA, radiusPointA);
+  const radiusB = distance(centerB, radiusPointB);
+
+  // Create circles
+  const circleA = {
+    position: centerA,
+    radius: radiusA
+  };
+  const circleB = {
+    position: centerB,
+    radius: radiusB
+  };
+
+  // Test circle intersection
+  const result = circleIntersectsCircle(circleA, circleB);
+
+  // Draw both circles
+  context.strokeStyle = '#666';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+
+  // Circle A
+  context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+  context.beginPath();
+  context.arc(centerA.x, centerA.y, radiusA, 0, Math.PI * 2);
+  context.stroke();
+
+  // Circle B
+  context.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+  context.beginPath();
+  context.arc(centerB.x, centerB.y, radiusB, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw radius lines
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+
+  // Circle A radius line
+  context.beginPath();
+  context.moveTo(centerA.x, centerA.y);
+  context.lineTo(radiusPointA.x, radiusPointA.y);
+  context.stroke();
+
+  // Circle B radius line
+  context.beginPath();
+  context.moveTo(centerB.x, centerB.y);
+  context.lineTo(radiusPointB.x, radiusPointB.y);
+  context.stroke();
+
+  // Draw intersection points if they exist
+  if (result.intersects && result.intersectionPoints) {
+    context.strokeStyle = 'green';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    for (const point of result.intersectionPoints) {
+      const size = 5;
+      context.beginPath();
+      context.moveTo(point.x - size, point.y - size);
+      context.lineTo(point.x + size, point.y + size);
+      context.moveTo(point.x + size, point.y - size);
+      context.lineTo(point.x - size, point.y + size);
+      context.stroke();
+    }
+  }
+
+  // Draw minimum separation vector if it exists
+  if (result.minimumSeparation) {
+    context.strokeStyle = 'purple';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+
+    // Draw the vector
+    context.beginPath();
+    context.moveTo(centerB.x, centerB.y);
+    context.lineTo(
+      centerB.x + result.minimumSeparation.x,
+      centerB.y + result.minimumSeparation.y
+    );
+    context.stroke();
+
+    // Draw arrowhead
+    const angle = Math.atan2(result.minimumSeparation.y, result.minimumSeparation.x);
+    const arrowSize = 10;
+    context.beginPath();
+    context.moveTo(
+      centerB.x + result.minimumSeparation.x,
+      centerB.y + result.minimumSeparation.y
+    );
+    context.lineTo(
+      centerB.x + result.minimumSeparation.x - arrowSize * Math.cos(angle - Math.PI / 6),
+      centerB.y + result.minimumSeparation.y - arrowSize * Math.sin(angle - Math.PI / 6)
+    );
+    context.moveTo(
+      centerB.x + result.minimumSeparation.x,
+      centerB.y + result.minimumSeparation.y
+    );
+    context.lineTo(
+      centerB.x + result.minimumSeparation.x - arrowSize * Math.cos(angle + Math.PI / 6),
+      centerB.y + result.minimumSeparation.y - arrowSize * Math.sin(angle + Math.PI / 6)
+    );
+    context.stroke();
+  }
+
+  // Draw points with labels
+  points.forEach(point => {
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  let outputText = `Intersects: ${result.intersects}`;
+  if (result.intersectionPoints) {
+    outputText += `, Intersection points: ${result.intersectionPoints.length}`;
+  }
+  if (result.minimumSeparation) {
+    const sepMagnitude = Math.sqrt(
+      result.minimumSeparation.x * result.minimumSeparation.x +
+      result.minimumSeparation.y * result.minimumSeparation.y
+    );
+    outputText += `, Separation: ${sepMagnitude.toFixed(2)}`;
+  }
+  outputText += `, Circle A radius: ${radiusA.toFixed(2)}, Circle B radius: ${radiusB.toFixed(2)}`;
+  output.textContent = outputText;
+}
+
+// Initial render
+update();
+
+</script>

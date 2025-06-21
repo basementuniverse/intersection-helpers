@@ -1,3 +1,5 @@
+## Polygon-polygon intersections
+
 Detecting whether two polygons intersect or one completely encloses the other can be approached using computational geometry algorithms. Here are some common methods:
 
 1. Separating Axis Theorem (SAT)
@@ -22,3 +24,27 @@ For concave polygons:
 Decompose them into convex polygons.
 Use SAT for intersection detection.
 Combine with point-in-polygon tests for containment checks.
+
+## Return types 2d
+
+{
+  intersects: boolean;
+  closestPoint: Point;
+  distance: number;
+}
+
+{
+  intersects: boolean;
+  intersectionPoint?: Point;
+}
+
+{
+  intersects: boolean;
+  intersectionPoints?: Point[];
+}
+
+{
+  intersects: boolean;
+  intersectionPoints?: Point[];
+  minimumSeparation?: vec2;
+}

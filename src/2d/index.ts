@@ -484,7 +484,7 @@ export function pointInCircle(
   circle: Circle
 ): {
   intersects: boolean;
-  closestPoint?: Point;
+  closestPoint: Point;
   distance: number;
 } {
   // Calculate vector from circle center to point
@@ -1529,9 +1529,88 @@ export function circleIntersectsCircle(
 ): {
   intersects: boolean;
   intersectionPoints?: Point[];
-  intersectionAmount?: number;
+  minimumSeparation?: vec2;
 } {
-  throw new Error('not implemented yet'); // TODO
+  // Calculate the vector from center A to center B
+  const centerToCenterVec = vec2.sub(circleB.position, circleA.position);
+  const centerToCenter = vec2.len(centerToCenterVec);
+  const sumRadii = circleA.radius + circleB.radius;
+
+  // If distance between centers is greater than sum of radii, the circles
+  // don't intersect
+  if (centerToCenter > sumRadii + constants.EPSILON) {
+    return { intersects: false };
+  }
+
+  // If circles are identical (same position and radius), they have infinitely
+  // many intersection points
+  if (
+    centerToCenter < constants.EPSILON &&
+    Math.abs(circleA.radius - circleB.radius) < constants.EPSILON
+  ) {
+    return {
+      intersects: true,
+      minimumSeparation: vec2.mul(vec2.ux(), 2 * circleA.radius),
+    };
+  }
+
+  // Check if one circle is inside the other (no intersection points but still
+  // intersecting)
+  const radiusDiff = Math.abs(circleA.radius - circleB.radius);
+  if (centerToCenter < radiusDiff - constants.EPSILON) {
+    return {
+      intersects: true,
+      minimumSeparation: vec2.mul(
+        vec2.nor(centerToCenterVec),
+        circleA.radius - centerToCenter + circleB.radius
+      ),
+    };
+  }
+
+  // Calculate intersection points for standard intersecting case
+  // http://mathworld.wolfram.com/Circle-CircleIntersection.html
+  const a =
+    (circleA.radius * circleA.radius -
+      circleB.radius * circleB.radius +
+      centerToCenter * centerToCenter) /
+    (2 * centerToCenter);
+  const h = Math.sqrt(Math.max(0, circleA.radius * circleA.radius - a * a));
+
+  // Calculate the point on the line between centers that is distance 'a' from
+  // circle A's center
+  const p = vec2.add(
+    circleA.position,
+    vec2.mul(vec2.nor(centerToCenterVec), a)
+  );
+
+  // If circles are tangent (touching at one point)
+  if (Math.abs(centerToCenter - sumRadii) < constants.EPSILON) {
+    return {
+      intersects: true,
+      intersectionPoints: [p],
+      minimumSeparation: vec2(),
+    };
+  }
+
+  // Calculate the perpendicular vector to get both intersection points
+  const perpVec = vec2.mul(
+    vec2({ x: -centerToCenterVec.y, y: centerToCenterVec.x }),
+    h / centerToCenter
+  );
+
+  const intersectionPoints = [vec2.add(p, perpVec), vec2.sub(p, perpVec)];
+
+  // Calculate the minimum separation vector (negative value indicates overlap)
+  const minimumSeparation = vec2.mul(
+    vec2.nor(centerToCenterVec),
+    sumRadii - centerToCenter
+  );
+
+  return {
+    intersects: true,
+    intersectionPoints,
+    minimumSeparation,
+  };
 }
 
 /**
@@ -1543,9 +1622,80 @@ export function circleIntersectsRectangle(
 ): {
   intersects: boolean;
   intersectionPoints?: Point[];
-  intersectionAmount?: number;
+  minimumSeparation?: vec2;
 } {
-  throw new Error('not implemented yet'); // TODO
+  // Get rectangle vertices so we can test against rotated rectangles
+  const vertices = rectangleVertices(rectangle);
+  const edges = [
+    { start: vertices[0], end: vertices[1] }, // top
+    { start: vertices[1], end: vertices[2] }, // right
+    { start: vertices[2], end: vertices[3] }, // bottom
+    { start: vertices[3], end: vertices[0] }, // left
+  ];
+
+  // Check if circle's center is inside rectangle
+  const pointInRectResult = pointInRectangle(circle.position, rectangle);
+  const circleCenterInsideRectangle = pointInRectResult.intersects;
+
+  // Check if rectangle's center is inside circle
+  const pointInCircleResult = pointInCircle(rectangle.position, circle);
+  const rectangleCenterInsideCircle = pointInCircleResult.intersects;
+
+  // Check circle intersection with rectangle edges
+  const intersectionPoints: Point[] = [];
+  for (const edge of edges) {
+    const result = lineIntersectsCircle(edge, circle);
+    if (result.intersects && result.intersectionPoints) {
+      intersectionPoints.push(...result.intersectionPoints);
+    }
+  }
+
+  // If either shape's center is inside the other and there are no intersection
+  // points, it means one of the shapes completely encloses the other
+  if (
+    (circleCenterInsideRectangle || rectangleCenterInsideCircle) &&
+    intersectionPoints.length === 0
+  ) {
+    let minimumSeparation: vec2;
+
+    // If any of the rectangle's vertices are inside the circle, then the
+    // circle encloses the rectangle
+    // We only need to check one of the vertices since they'll all be inside
+    // or all be outside
+    if (pointInCircle(vertices[0], circle).intersects) {
+      // Rectangle is inside the circle
+      minimumSeparation = vec2.sub(
+        pointInCircleResult.closestPoint!,
+        pointInRectResult.closestPoint
+      );
+    } else {
+      // Circle is inside the rectangle
+      minimumSeparation = vec2.mul(
+        vec2.nor(vec2.sub(pointInRectResult.closestPoint, circle.position)),
+        -pointInRectResult.distance + circle.radius
+      );
+    }
+
+    return {
+      intersects: true,
+      minimumSeparation,
+    };
+  }
+
+  // Remove duplicate intersection points
+  const uniquePoints = removeDuplicateVertices(intersectionPoints);
+  if (uniquePoints.length > 0) {
+    return {
+      intersects: true,
+      intersectionPoints: uniquePoints,
+      minimumSeparation: vec2.mul(
+        vec2.nor(vec2.sub(pointInRectResult.closestPoint, circle.position)),
+        -pointInRectResult.distance + circle.radius
+      ),
+    };
+  }
+
+  return { intersects: false };
 }
 
 /**
@@ -1572,14 +1722,8 @@ export function rectangleIntersectsRectangle(
 ): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} & (
-  | {
-      intersectionRectangle?: Rectangle;
-    }
-  | {
-      intersectionPolygon?: Polygon;
-    }
-) {
+  minimumSeparation?: vec2;
+} {
   throw new Error('not implemented yet'); // TODO
 }
 

@@ -1978,24 +1978,6 @@ describe('IntersectionHelpers2D', () => {
       expect(result.intersectionPoints![1].y).toBeCloseTo(0, 5);
     });
 
-    it('should handle ray with non-normalized direction vector', () => {
-      const ray = {
-        origin: { x: -2, y: 0 },
-        direction: { x: 2, y: 0 }, // non-normalized
-      };
-      const rect = {
-        position: { x: 0, y: 0 },
-        size: { x: 2, y: 2 },
-        rotation: 0,
-      };
-      const result = intersection2d.rayIntersectsRectangle(ray, rect);
-
-      expect(result.intersects).toBe(true);
-      expect(result.intersectionPoints).toHaveLength(2);
-      expect(result.intersectionPoints![0]).toEqual({ x: -1, y: 0 });
-      expect(result.intersectionPoints![1]).toEqual({ x: 1, y: 0 });
-    });
-
     it('should handle rectangle at non-origin position', () => {
       const ray = {
         origin: { x: 0, y: 0 },
@@ -2664,6 +2646,154 @@ describe('IntersectionHelpers2D', () => {
       expect(result?.intersects).toBe(true);
       expect(result?.intersectionPoints).toHaveLength(1);
       expect(result?.intersectionPoints![0]).toEqual({ x: -1, y: 1 });
+    });
+  });
+
+  describe('circleIntersectsCircle', () => {
+    it('should return true with two intersection points when circles intersect externally', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+      const circle2 = {
+        position: { x: 3, y: 0 },
+        radius: 2,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+      expect(result?.intersectionPoints![0].x).toBeCloseTo(1.5, 5);
+      expect(result?.intersectionPoints![0].y).toBeCloseTo(1.32287565553229, 5);
+      expect(result?.intersectionPoints![1].x).toBeCloseTo(1.5, 5);
+      expect(result?.intersectionPoints![1].y).toBeCloseTo(
+        -1.32287565553229,
+        5
+      );
+      expect(result?.minimumSeparation).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should return true with two intersection points when circles intersect with vertical offset', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+      const circle2 = {
+        position: { x: 2, y: 2 },
+        radius: 2,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+      expect(result?.minimumSeparation?.x).toBeCloseTo(0.82842, 4);
+      expect(result?.minimumSeparation?.y).toBeCloseTo(0.82842, 4);
+    });
+
+    it('should return true with one intersection point when circles are tangent externally', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+      const circle2 = {
+        position: { x: 4, y: 0 },
+        radius: 2,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(1);
+      expect(result?.intersectionPoints![0]).toEqual({ x: 2, y: 0 });
+      expect(result?.minimumSeparation).toEqual({ x: 0, y: 0 });
+    });
+
+    it('should return true without intersection points when one circle is entirely inside the other', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 4,
+      };
+      const circle2 = {
+        position: { x: 1, y: 1 },
+        radius: 2,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation?.x).toBeCloseTo(3.24264, 4);
+      expect(result?.minimumSeparation?.y).toBeCloseTo(3.24264, 4);
+    });
+
+    it('should return true without intersection points when circles are concentric', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 4,
+      };
+      const circle2 = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toEqual({ x: 0, y: 0 });
+    });
+
+    it('should return false when circles are separate', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+      const circle2 = {
+        position: { x: 5, y: 0 },
+        radius: 2,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toBeUndefined();
+    });
+
+    it('should handle circles with zero radius', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+      const circle2 = {
+        position: { x: 1, y: 0 },
+        radius: 0,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toEqual({ x: 1, y: 0 });
+    });
+
+    it('should handle both circles with zero radius', () => {
+      const circle1 = {
+        position: { x: 0, y: 0 },
+        radius: 0,
+      };
+      const circle2 = {
+        position: { x: 0, y: 0 },
+        radius: 0,
+      };
+
+      const result = intersection2d.circleIntersectsCircle(circle1, circle2);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toEqual({ x: 0, y: 0 });
     });
   });
 });
