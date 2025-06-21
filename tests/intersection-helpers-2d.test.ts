@@ -3011,6 +3011,6 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('circleIntersectsPolygon', () => {
-    // TODO
+    // TODO circleIntersectsPolygon tests
   });
 });

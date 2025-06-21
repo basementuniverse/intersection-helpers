@@ -3498,23 +3498,21 @@ function circleIntersectsRectangle(circle, rectangle) {
             intersectionPoints.push(...result.intersectionPoints);
         }
     }
+    // Calculate the minimum separation vector
+    let minimumSeparation;
+    if (Math.abs(pointInRectResult.distance) < constants.EPSILON) {
+        minimumSeparation = (0, vec_1.vec2)();
+    }
+    else if (pointInRectResult.distance < 0) {
+        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInRectResult.closestPoint, circle.position)), circle.radius + Math.abs(pointInRectResult.distance));
+    }
+    else {
+        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(circle.position, pointInRectResult.closestPoint)), circle.radius - pointInRectResult.distance);
+    }
     // If either shape's center is inside the other and there are no intersection
     // points, it means one of the shapes completely encloses the other
     if ((circleCenterInsideRectangle || rectangleCenterInsideCircle) &&
         intersectionPoints.length === 0) {
-        let minimumSeparation;
-        // If any of the rectangle's vertices are inside the circle, then the
-        // circle encloses the rectangle
-        // We only need to check one of the vertices since they'll all be inside
-        // or all be outside
-        if (pointInCircle(vertices[0], circle).intersects) {
-            // Rectangle is inside the circle
-            minimumSeparation = vec_1.vec2.sub(pointInCircleResult.closestPoint, pointInRectResult.closestPoint);
-        }
-        else {
-            // Circle is inside the rectangle
-            minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInRectResult.closestPoint, circle.position)), -pointInRectResult.distance + circle.radius);
-        }
         return {
             intersects: true,
             minimumSeparation,
@@ -3526,7 +3524,7 @@ function circleIntersectsRectangle(circle, rectangle) {
         return {
             intersects: true,
             intersectionPoints: uniquePoints,
-            minimumSeparation: vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInRectResult.closestPoint, circle.position)), -pointInRectResult.distance + circle.radius),
+            minimumSeparation,
         };
     }
     return { intersects: false };
@@ -3538,7 +3536,75 @@ exports.circleIntersectsRectangle = circleIntersectsRectangle;
  * Returns null if the polygon is invalid
  */
 function circleIntersectsPolygon(circle, polygon) {
-    throw new Error('not implemented yet'); // TODO
+    var _a;
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Check if circle's center is inside polygon
+    const pointInPolygonResult = pointInPolygon(circle.position, polygon);
+    const circleCenterInsidePolygon = (_a = pointInPolygonResult === null || pointInPolygonResult === void 0 ? void 0 : pointInPolygonResult.intersects) !== null && _a !== void 0 ? _a : false;
+    // Check if polygon's centroid is inside circle
+    const polygonCenter = polygonCentroid(polygon);
+    const polygonCenterInsideCircle = polygonCenter
+        ? pointInCircle(polygonCenter, circle).intersects
+        : false;
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // Find outer edges from the decomposed polygons
+        const outerEdges = findOuterEdges(convexPolygons);
+        const intersectionPoints = [];
+        // Check each outer edge for intersections with the circle
+        for (const [start, end] of outerEdges) {
+            const edge = { start, end };
+            const result = lineIntersectsCircle(edge, circle);
+            if (result.intersects && result.intersectionPoints) {
+                intersectionPoints.push(...result.intersectionPoints);
+            }
+        }
+        // If either shape's center is inside the other and there are no
+        // intersection points, one shape completely encloses the other
+        if ((circleCenterInsidePolygon || polygonCenterInsideCircle) &&
+            intersectionPoints.length === 0) {
+            return { intersects: true };
+        }
+        // Remove duplicate intersection points
+        const uniquePoints = removeDuplicateVertices(intersectionPoints);
+        return {
+            intersects: uniquePoints.length > 0,
+            intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+        };
+    }
+    // For convex polygons, check each edge directly
+    const vertices = polygon.vertices;
+    const intersectionPoints = [];
+    // Check each edge of the polygon for intersection with the circle
+    for (let i = 0; i < vertices.length; i++) {
+        const edge = {
+            start: vertices[i],
+            end: vertices[(i + 1) % vertices.length],
+        };
+        const result = lineIntersectsCircle(edge, circle);
+        if (result.intersects && result.intersectionPoints) {
+            intersectionPoints.push(...result.intersectionPoints);
+        }
+    }
+    // If either shape's center is inside the other and there are no
+    // intersection points, one shape completely encloses the other
+    if ((circleCenterInsidePolygon || polygonCenterInsideCircle) &&
+        intersectionPoints.length === 0) {
+        return { intersects: true };
+    }
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    return {
+        intersects: uniquePoints.length > 0,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+    };
 }
 exports.circleIntersectsPolygon = circleIntersectsPolygon;
 /**
@@ -3702,6 +3768,7 @@ exports.angleBetween = angleBetween;
 // pointOnPlane
 // pointInTriangle
 // pointInBox
+// rayTraverseGrid
 // rayIntersectsRay
 // rayIntersectsLine
 // rayIntersectsSphere

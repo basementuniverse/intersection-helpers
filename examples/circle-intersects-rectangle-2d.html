@@ -37,6 +37,13 @@ const snapCheckbox = document.getElementById('snapToGrid');
 const separationCheckbox = document.getElementById('separation');
 const context = visualization.getContext('2d');
 
+separationCheckbox.addEventListener('change', () => {
+  if (separationCheckbox.checked) {
+    updateSeparation(points[2]);
+    update();
+  }
+});
+
 // Import required functions
 const {
   circleIntersectsRectangle,
@@ -195,8 +202,8 @@ function updateSeparation(activePoint) {
 
     if (isCircleActive) {
       // Move rectangle by the separation vector
-      const deltaX = result.minimumSeparation.x;
-      const deltaY = result.minimumSeparation.y;
+      const deltaX = -result.minimumSeparation.x;
+      const deltaY = -result.minimumSeparation.y;
       points[2].x += deltaX;
       points[2].y += deltaY;
       points[3].x += deltaX;
@@ -205,8 +212,8 @@ function updateSeparation(activePoint) {
       points[4].y += deltaY;
     } else if (isRectangleActive) {
       // Move circle by the negative separation vector
-      const deltaX = -result.minimumSeparation.x;
-      const deltaY = -result.minimumSeparation.y;
+      const deltaX = result.minimumSeparation.x;
+      const deltaY = result.minimumSeparation.y;
       points[0].x += deltaX;
       points[0].y += deltaY;
       points[1].x += deltaX;
@@ -308,7 +315,7 @@ function update() {
     context.setLineDash([]);
 
     // Draw the vector from rectangle center
-    const start = rectangle.position;
+    const start = circle.position;
     const end = {
       x: start.x + result.minimumSeparation.x,
       y: start.y + result.minimumSeparation.y

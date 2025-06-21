@@ -1650,32 +1650,28 @@ export function circleIntersectsRectangle(
     }
   }
 
+  // Calculate the minimum separation vector
+  let minimumSeparation: vec2;
+  if (Math.abs(pointInRectResult.distance) < constants.EPSILON) {
+    minimumSeparation = vec2();
+  } else if (pointInRectResult.distance < 0) {
+    minimumSeparation = vec2.mul(
+      vec2.nor(vec2.sub(pointInRectResult.closestPoint, circle.position)),
+      circle.radius + Math.abs(pointInRectResult.distance)
+    );
+  } else {
+    minimumSeparation = vec2.mul(
+      vec2.nor(vec2.sub(circle.position, pointInRectResult.closestPoint)),
+      circle.radius - pointInRectResult.distance
+    );
+  }
+
   // If either shape's center is inside the other and there are no intersection
   // points, it means one of the shapes completely encloses the other
   if (
     (circleCenterInsideRectangle || rectangleCenterInsideCircle) &&
     intersectionPoints.length === 0
   ) {
-    let minimumSeparation: vec2;
-
-    // If any of the rectangle's vertices are inside the circle, then the
-    // circle encloses the rectangle
-    // We only need to check one of the vertices since they'll all be inside
-    // or all be outside
-    if (pointInCircle(vertices[0], circle).intersects) {
-      // Rectangle is inside the circle
-      minimumSeparation = vec2.sub(
-        pointInCircleResult.closestPoint!,
-        pointInRectResult.closestPoint
-      );
-    } else {
-      // Circle is inside the rectangle
-      minimumSeparation = vec2.mul(
-        vec2.nor(vec2.sub(pointInRectResult.closestPoint, circle.position)),
-        -pointInRectResult.distance + circle.radius
-      );
-    }
-
     return {
       intersects: true,
       minimumSeparation,
@@ -1688,10 +1684,7 @@ export function circleIntersectsRectangle(
     return {
       intersects: true,
       intersectionPoints: uniquePoints,
-      minimumSeparation: vec2.mul(
-        vec2.nor(vec2.sub(pointInRectResult.closestPoint, circle.position)),
-        -pointInRectResult.distance + circle.radius
-      ),
+      minimumSeparation,
     };
   }
 
