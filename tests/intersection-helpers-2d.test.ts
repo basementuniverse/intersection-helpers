@@ -2796,4 +2796,221 @@ describe('IntersectionHelpers2D', () => {
       expect(result?.minimumSeparation).toEqual({ x: 0, y: 0 });
     });
   });
+
+  describe('circleIntersectsRectangle', () => {
+    it('should return true with no intersection points when circle encloses rectangle', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 4,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toBeDefined();
+    });
+
+    it('should return true with no intersection points when rectangle encloses circle', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 2,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 8, y: 8 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toBeDefined();
+    });
+
+    it('should return true with two intersection points when circle intersects rectangle edge', () => {
+      const circle = {
+        position: { x: 3, y: 0 },
+        radius: 2,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+      expect(result?.minimumSeparation).toBeDefined();
+    });
+
+    it('should return true with one intersection point when circle is tangent to rectangle', () => {
+      const circle = {
+        position: { x: 4, y: 0 },
+        radius: 1,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 6, y: 4 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(1);
+      expect(result?.minimumSeparation?.x).toBeCloseTo(0);
+      expect(result?.minimumSeparation?.y).toBeCloseTo(0);
+    });
+
+    it('should return true with four intersection points when circle intersects rectangle corner', () => {
+      const circle = {
+        position: { x: 2, y: 2 },
+        radius: 2,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.minimumSeparation).toBeDefined();
+    });
+
+    it('should return false when circle is separate from rectangle', () => {
+      const circle = {
+        position: { x: 6, y: 0 },
+        radius: 1,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toBeUndefined();
+    });
+
+    it('should handle circle with zero radius correctly', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 0,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle rotated rectangle correctly', () => {
+      const circle = {
+        position: { x: 1.5, y: 0 },
+        radius: 1,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.minimumSeparation).toBeDefined();
+    });
+
+    it('should handle rectangle with zero size correctly', () => {
+      const circle = {
+        position: { x: 2, y: 0 },
+        radius: 1,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+      expect(result?.minimumSeparation).toBeUndefined();
+    });
+
+    it('should return true with intersection points when circle center is on rectangle edge', () => {
+      const circle = {
+        position: { x: 2, y: 0 },
+        radius: 1,
+      };
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+
+      const result = intersection2d.circleIntersectsRectangle(
+        circle,
+        rectangle
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints).toHaveLength(2);
+      expect(result?.minimumSeparation).toBeDefined();
+    });
+  });
+
+  describe('circleIntersectsPolygon', () => {
+    // TODO
+  });
 });

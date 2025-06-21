@@ -31,6 +31,7 @@ export function angleBetween(a: vec3, b: vec3): number {
 // pointOnPlane
 // pointInTriangle
 // pointInBox
+// rayTraverseGrid
 // rayIntersectsRay
 // rayIntersectsLine
 // rayIntersectsSphere

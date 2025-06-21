@@ -1710,7 +1710,92 @@ export function circleIntersectsPolygon(
   intersects: boolean;
   intersectionPoints?: Point[];
 } | null {
-  throw new Error('not implemented yet'); // TODO
+  // First check if the polygon is valid
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+
+  // Check if circle's center is inside polygon
+  const pointInPolygonResult = pointInPolygon(circle.position, polygon);
+  const circleCenterInsidePolygon = pointInPolygonResult?.intersects ?? false;
+
+  // Check if polygon's centroid is inside circle
+  const polygonCenter = polygonCentroid(polygon);
+  const polygonCenterInsideCircle = polygonCenter
+    ? pointInCircle(polygonCenter, circle).intersects
+    : false;
+
+  // If polygon is not convex, decompose it into convex polygons
+  if (!polygonIsConvex(polygon)) {
+    const convexPolygons = decomposePolygon(polygon);
+    if (!convexPolygons) {
+      return null;
+    }
+
+    // Find outer edges from the decomposed polygons
+    const outerEdges = findOuterEdges(convexPolygons);
+    const intersectionPoints: Point[] = [];
+
+    // Check each outer edge for intersections with the circle
+    for (const [start, end] of outerEdges) {
+      const edge = { start, end };
+      const result = lineIntersectsCircle(edge, circle);
+      if (result.intersects && result.intersectionPoints) {
+        intersectionPoints.push(...result.intersectionPoints);
+      }
+    }
+
+    // If either shape's center is inside the other and there are no
+    // intersection points, one shape completely encloses the other
+    if (
+      (circleCenterInsidePolygon || polygonCenterInsideCircle) &&
+      intersectionPoints.length === 0
+    ) {
+      return { intersects: true };
+    }
+
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+
+    return {
+      intersects: uniquePoints.length > 0,
+      intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+    };
+  }
+
+  // For convex polygons, check each edge directly
+  const vertices = polygon.vertices;
+  const intersectionPoints: Point[] = [];
+
+  // Check each edge of the polygon for intersection with the circle
+  for (let i = 0; i < vertices.length; i++) {
+    const edge = {
+      start: vertices[i],
+      end: vertices[(i + 1) % vertices.length],
+    };
+
+    const result = lineIntersectsCircle(edge, circle);
+    if (result.intersects && result.intersectionPoints) {
+      intersectionPoints.push(...result.intersectionPoints);
+    }
+  }
+
+  // If either shape's center is inside the other and there are no
+  // intersection points, one shape completely encloses the other
+  if (
+    (circleCenterInsidePolygon || polygonCenterInsideCircle) &&
+    intersectionPoints.length === 0
+  ) {
+    return { intersects: true };
+  }
+
+  // Remove duplicate intersection points
+  const uniquePoints = removeDuplicateVertices(intersectionPoints);
+
+  return {
+    intersects: uniquePoints.length > 0,
+    intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+  };
 }
 
 /**
