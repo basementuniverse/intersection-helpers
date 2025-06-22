@@ -2333,6 +2333,81 @@ function rectangleVertices(rectangle) {
 }
 exports.rectangleVertices = rectangleVertices;
 /**
+ * Convert a list of vertices to a list of edges
+ */
+function edgesFromVertices(vertices) {
+    const edges = [];
+    const n = vertices.length;
+    for (let i = 0; i < n; i++) {
+        const start = vertices[i];
+        const end = (0, utils_1.at)(vertices, i + 1);
+        edges.push({ start, end });
+    }
+    return edges;
+}
+/**
+ * Find outer edges in a list of polygons by counting occurrences
+ *
+ * We assume that the polygons were the result of decomposing a concave polygon
+ * into a set of convex polygons, and as such they are all convex and share
+ * one or more edges
+ *
+ * This means we can identify outer edges because they'll only appear once
+ * in the list of edges, while inner edges will appear twice (once for each
+ * polygon that shares them)
+ */
+function findOuterEdges(polygons) {
+    // Map to track edge occurrences using a unique key that considers
+    // collinearity and shared endpoints
+    const edgeCounts = new Map();
+    // Helper to get a normalized key for an edge that handles collinear segments
+    const getEdgeKey = (edge) => {
+        // Sort points to ensure consistent order
+        const [p1, p2] = [edge.start, edge.end].sort((x, y) => x.x === y.x ? x.y - y.y : x.x - y.x);
+        return `${p1.x},${p1.y}-${p2.x},${p2.y}`;
+    };
+    // Helper to check if two edges are effectively the same (collinear and
+    // sharing endpoint)
+    const edgesAreCollinear = (edge1, edge2) => {
+        // Check if any endpoints are the same
+        const { start: a1, end: b1 } = edge1;
+        const { start: a2, end: b2 } = edge2;
+        const sharesEndpoint = vec_1.vec2.eq(a1, a2) || vec_1.vec2.eq(a1, b2) || vec_1.vec2.eq(b1, a2) || vec_1.vec2.eq(b1, b2);
+        if (!sharesEndpoint) {
+            return false;
+        }
+        // Check if edges are collinear
+        return pointsAreCollinear(a1, b1, a2) && pointsAreCollinear(a1, b1, b2);
+    };
+    // First pass: count edges
+    for (const polygon of polygons) {
+        const edges = edgesFromVertices(polygon.vertices);
+        for (const edge of edges) {
+            const key = getEdgeKey(edge);
+            // Check if we already have a collinear edge that shares an endpoint
+            let foundCollinear = false;
+            for (const data of edgeCounts.values()) {
+                if (edgesAreCollinear(edge, data.edge)) {
+                    data.count++;
+                    foundCollinear = true;
+                    break;
+                }
+            }
+            if (!foundCollinear) {
+                edgeCounts.set(key, { count: 1, edge });
+            }
+        }
+    }
+    // Second pass: collect edges that appear only once
+    const outerEdges = [];
+    for (const { count, edge } of edgeCounts.values()) {
+        if (count === 1) {
+            outerEdges.push(edge);
+        }
+    }
+    return outerEdges;
+}
+/**
  * Check if a polygon is convex
  *
  * Returns null if the polygon is invalid
@@ -2682,7 +2757,7 @@ function pointInRectangle(point, rectangle) {
     // Convert rectangle to polygon
     const vertices = rectangleVertices(rectangle);
     const polygonResult = pointInPolygon(point, { vertices });
-    // We should always have a polygonResult, but just in case...
+    // We should always have a valid polygon, but just in case...
     if (!polygonResult) {
         throw new Error('Invalid rectangle vertices');
     }
@@ -3026,12 +3101,9 @@ function rayIntersectsRectangle(ray, rectangle) {
     const vertices = rectangleVertices(rectangle);
     let intersectionPoints = [];
     // Check each edge of the rectangle for intersection
-    for (let i = 0; i < 4; i++) {
-        const line = {
-            start: vertices[i],
-            end: vertices[(i + 1) % 4],
-        };
-        const intersection = rayIntersectsLine(ray, line);
+    const edges = edgesFromVertices(vertices);
+    for (const edge of edges) {
+        const intersection = rayIntersectsLine(ray, edge);
         if (intersection.intersects && intersection.intersectionPoint) {
             intersectionPoints.push(intersection.intersectionPoint);
         }
@@ -3053,56 +3125,14 @@ function rayIntersectsRectangle(ray, rectangle) {
 }
 exports.rayIntersectsRectangle = rayIntersectsRectangle;
 /**
- * Check if a ray intersects a polygon
+ * Check if a ray intersects the edges of a convex polygon
  *
- * Returns null if the polygon is invalid
+ * We assume the polygon has already been checked for validity and convexity
  */
-function rayIntersectsPolygon(ray, polygon) {
-    // First check if the polygon is valid
-    if (!polygonIsValid(polygon)) {
-        return null;
-    }
-    // If polygon is not convex, decompose it into convex polygons
-    if (!polygonIsConvex(polygon)) {
-        const convexPolygons = decomposePolygon(polygon);
-        if (!convexPolygons) {
-            return null;
-        }
-        // Find outer edges from the decomposed polygons
-        const outerEdges = findOuterEdges(convexPolygons);
-        let intersectionPoints = [];
-        // Check each outer edge for intersections
-        for (const [start, end] of outerEdges) {
-            const edge = { start, end };
-            const intersection = rayIntersectsLine(ray, edge);
-            if (intersection.intersects && intersection.intersectionPoint) {
-                intersectionPoints.push(intersection.intersectionPoint);
-            }
-        }
-        // Remove duplicate intersection points and sort by distance to ray origin
-        intersectionPoints = removeDuplicateVertices(intersectionPoints);
-        if (intersectionPoints.length > 1) {
-            const rayDir = vec_1.vec2.nor(ray.direction);
-            intersectionPoints.sort((a, b) => {
-                const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, ray.origin), rayDir);
-                const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, ray.origin), rayDir);
-                return distA - distB;
-            });
-        }
-        return {
-            intersects: intersectionPoints.length > 0,
-            intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
-        };
-    }
-    // For convex polygons, check each edge
-    const vertices = polygon.vertices;
+function rayIntersectsValidConvexPolygonEdges(ray, edges) {
     let intersectionPoints = [];
-    // Check each edge of the polygon
-    for (let i = 0; i < vertices.length; i++) {
-        const edge = {
-            start: vertices[i],
-            end: vertices[(i + 1) % vertices.length],
-        };
+    // Check each outer edge for intersections
+    for (const edge of edges) {
         const intersection = rayIntersectsLine(ray, edge);
         if (intersection.intersects && intersection.intersectionPoint) {
             intersectionPoints.push(intersection.intersectionPoint);
@@ -3122,6 +3152,28 @@ function rayIntersectsPolygon(ray, polygon) {
         intersects: intersectionPoints.length > 0,
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
+}
+/**
+ * Check if a ray intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function rayIntersectsPolygon(ray, polygon) {
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // Check the ray against the outer edges of each convex polygons
+        return rayIntersectsValidConvexPolygonEdges(ray, findOuterEdges(convexPolygons));
+    }
+    // For convex polygons, check each edge
+    return rayIntersectsValidConvexPolygonEdges(ray, edgesFromVertices(polygon.vertices));
 }
 exports.rayIntersectsPolygon = rayIntersectsPolygon;
 /**
@@ -3283,12 +3335,9 @@ function lineIntersectsRectangle(line, rectangle) {
     }
     let intersectionPoints = [];
     // Check each edge of the rectangle for intersection
-    for (let i = 0; i < 4; i++) {
-        const rectEdge = {
-            start: vertices[i],
-            end: vertices[(i + 1) % 4],
-        };
-        const intersection = lineIntersectsLine(line, rectEdge);
+    const edges = edgesFromVertices(vertices);
+    for (const edge of edges) {
+        const intersection = lineIntersectsLine(line, edge);
         if (intersection.intersects && intersection.intersectionPoint) {
             intersectionPoints.push(intersection.intersectionPoint);
         }
@@ -3310,65 +3359,11 @@ function lineIntersectsRectangle(line, rectangle) {
 }
 exports.lineIntersectsRectangle = lineIntersectsRectangle;
 /**
- * Check if a line segment intersects a polygon
+ * Check if a line segment intersects the edges of a convex polygon
  *
- * Returns null if the polygon is invalid
+ * We assume the polygon has already been checked for validity and convexity
  */
-function lineIntersectsPolygon(line, polygon) {
-    // First check if the polygon is valid
-    if (!polygonIsValid(polygon)) {
-        return null;
-    }
-    // If polygon is not convex, decompose it into convex polygons
-    if (!polygonIsConvex(polygon)) {
-        const convexPolygons = decomposePolygon(polygon);
-        if (!convexPolygons) {
-            return null;
-        }
-        // Special case: line segment is entirely inside polygon
-        const midpoint = {
-            x: (line.start.x + line.end.x) / 2,
-            y: (line.start.y + line.end.y) / 2,
-        };
-        const pointInside = pointInPolygon(midpoint, polygon);
-        const startInside = pointInPolygon(line.start, polygon);
-        const endInside = pointInPolygon(line.end, polygon);
-        if ((pointInside === null || pointInside === void 0 ? void 0 : pointInside.intersects) &&
-            (startInside === null || startInside === void 0 ? void 0 : startInside.intersects) &&
-            (endInside === null || endInside === void 0 ? void 0 : endInside.intersects)) {
-            return {
-                intersects: true,
-            };
-        }
-        // Find outer edges from the decomposed polygons
-        const outerEdges = findOuterEdges(convexPolygons);
-        let intersectionPoints = [];
-        // Check each outer edge for intersections
-        for (const [start, end] of outerEdges) {
-            const edge = { start, end };
-            const intersection = lineIntersectsLine(line, edge);
-            if (intersection.intersects && intersection.intersectionPoint) {
-                intersectionPoints.push(intersection.intersectionPoint);
-            }
-        }
-        // Remove duplicate intersection points and sort by distance to line start
-        intersectionPoints = removeDuplicateVertices(intersectionPoints);
-        if (intersectionPoints.length > 1) {
-            const lineDir = vec_1.vec2.nor(vec_1.vec2.sub(line.end, line.start));
-            intersectionPoints.sort((a, b) => {
-                const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, line.start), lineDir);
-                const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, line.start), lineDir);
-                return distA - distB;
-            });
-        }
-        return {
-            intersects: intersectionPoints.length > 0,
-            intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
-        };
-    }
-    // For convex polygons, check each edge
-    const vertices = polygon.vertices;
-    let intersectionPoints = [];
+function lineIntersectsValidConvexPolygonEdges(line, polygon, edges) {
     // Special case: line segment is entirely inside polygon
     const midpoint = {
         x: (line.start.x + line.end.x) / 2,
@@ -3384,12 +3379,9 @@ function lineIntersectsPolygon(line, polygon) {
             intersects: true,
         };
     }
-    // Check each edge of the polygon
-    for (let i = 0; i < vertices.length; i++) {
-        const edge = {
-            start: vertices[i],
-            end: vertices[(i + 1) % vertices.length],
-        };
+    let intersectionPoints = [];
+    // Check each outer edge for intersections
+    for (const edge of edges) {
         const intersection = lineIntersectsLine(line, edge);
         if (intersection.intersects && intersection.intersectionPoint) {
             intersectionPoints.push(intersection.intersectionPoint);
@@ -3409,6 +3401,28 @@ function lineIntersectsPolygon(line, polygon) {
         intersects: intersectionPoints.length > 0,
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
+}
+/**
+ * Check if a line segment intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function lineIntersectsPolygon(line, polygon) {
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // Check the line against the outer edges of each convex polygon
+        return lineIntersectsValidConvexPolygonEdges(line, polygon, findOuterEdges(convexPolygons));
+    }
+    // For convex polygons, check each edge
+    return lineIntersectsValidConvexPolygonEdges(line, polygon, edgesFromVertices(polygon.vertices));
 }
 exports.lineIntersectsPolygon = lineIntersectsPolygon;
 /**
@@ -3478,12 +3492,7 @@ exports.circleIntersectsCircle = circleIntersectsCircle;
 function circleIntersectsRectangle(circle, rectangle) {
     // Get rectangle vertices so we can test against rotated rectangles
     const vertices = rectangleVertices(rectangle);
-    const edges = [
-        { start: vertices[0], end: vertices[1] },
-        { start: vertices[1], end: vertices[2] },
-        { start: vertices[2], end: vertices[3] },
-        { start: vertices[3], end: vertices[0] }, // left
-    ];
+    const edges = edgesFromVertices(vertices);
     // Check if circle's center is inside rectangle
     const pointInRectResult = pointInRectangle(circle.position, rectangle);
     const circleCenterInsideRectangle = pointInRectResult.intersects;
@@ -3531,63 +3540,14 @@ function circleIntersectsRectangle(circle, rectangle) {
 }
 exports.circleIntersectsRectangle = circleIntersectsRectangle;
 /**
- * Check if a circle intersects a polygon
+ * Check if a circle intersects the edges of a convex polygon
  *
- * Returns null if the polygon is invalid
+ * We assume the polygon has already been checked for validity and convexity
  */
-function circleIntersectsPolygon(circle, polygon) {
-    var _a;
-    // First check if the polygon is valid
-    if (!polygonIsValid(polygon)) {
-        return null;
-    }
-    // Check if circle's center is inside polygon
-    const pointInPolygonResult = pointInPolygon(circle.position, polygon);
-    const circleCenterInsidePolygon = (_a = pointInPolygonResult === null || pointInPolygonResult === void 0 ? void 0 : pointInPolygonResult.intersects) !== null && _a !== void 0 ? _a : false;
-    // Check if polygon's centroid is inside circle
-    const polygonCenter = polygonCentroid(polygon);
-    const polygonCenterInsideCircle = polygonCenter
-        ? pointInCircle(polygonCenter, circle).intersects
-        : false;
-    // If polygon is not convex, decompose it into convex polygons
-    if (!polygonIsConvex(polygon)) {
-        const convexPolygons = decomposePolygon(polygon);
-        if (!convexPolygons) {
-            return null;
-        }
-        // Find outer edges from the decomposed polygons
-        const outerEdges = findOuterEdges(convexPolygons);
-        const intersectionPoints = [];
-        // Check each outer edge for intersections with the circle
-        for (const [start, end] of outerEdges) {
-            const edge = { start, end };
-            const result = lineIntersectsCircle(edge, circle);
-            if (result.intersects && result.intersectionPoints) {
-                intersectionPoints.push(...result.intersectionPoints);
-            }
-        }
-        // If either shape's center is inside the other and there are no
-        // intersection points, one shape completely encloses the other
-        if ((circleCenterInsidePolygon || polygonCenterInsideCircle) &&
-            intersectionPoints.length === 0) {
-            return { intersects: true };
-        }
-        // Remove duplicate intersection points
-        const uniquePoints = removeDuplicateVertices(intersectionPoints);
-        return {
-            intersects: uniquePoints.length > 0,
-            intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
-        };
-    }
-    // For convex polygons, check each edge directly
-    const vertices = polygon.vertices;
-    const intersectionPoints = [];
-    // Check each edge of the polygon for intersection with the circle
-    for (let i = 0; i < vertices.length; i++) {
-        const edge = {
-            start: vertices[i],
-            end: vertices[(i + 1) % vertices.length],
-        };
+function circleIntersectsValidConvexPolygonEdges(circle, edges, circleCenterInsidePolygon, polygonCenterInsideCircle) {
+    let intersectionPoints = [];
+    // Check each outer edge for intersections with the circle
+    for (const edge of edges) {
         const result = lineIntersectsCircle(edge, circle);
         if (result.intersects && result.intersectionPoints) {
             intersectionPoints.push(...result.intersectionPoints);
@@ -3600,11 +3560,137 @@ function circleIntersectsPolygon(circle, polygon) {
         return { intersects: true };
     }
     // Remove duplicate intersection points
-    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
     return {
-        intersects: uniquePoints.length > 0,
-        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
+}
+/**
+ * Check if a circle intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function circleIntersectsPolygon(circle, polygon, options) {
+    var _a, _b, _c, _d, _e, _f;
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const MAX_ITERATIONS = 10;
+    const findMinimumSeparation = (_a = options === null || options === void 0 ? void 0 : options.findMinimumSeparation) !== null && _a !== void 0 ? _a : false;
+    // Check if circle's center is inside polygon
+    const pointInPolygonResult = pointInPolygon(circle.position, polygon);
+    const circleCenterInsidePolygon = (_b = pointInPolygonResult === null || pointInPolygonResult === void 0 ? void 0 : pointInPolygonResult.intersects) !== null && _b !== void 0 ? _b : false;
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // For a concave polygon, the centroid might be outside of the polygon, so
+        // in order to check if the polygon is entirely inside the circle, we need
+        // to check if all sub-polygon centroids are inside the circle
+        const polygonCenterInsideCircle = convexPolygons.every(convexPolygon => {
+            var _a;
+            const centroid = polygonCentroid(convexPolygon);
+            if (!centroid) {
+                return false; // Invalid centroid
+            }
+            return (_a = pointInCircle(centroid, circle).intersects) !== null && _a !== void 0 ? _a : false;
+        });
+        // Find outer edges from the decomposed polygons
+        const outerEdges = findOuterEdges(convexPolygons);
+        const result = circleIntersectsValidConvexPolygonEdges(circle, outerEdges, circleCenterInsidePolygon, polygonCenterInsideCircle);
+        if (result.intersects && findMinimumSeparation) {
+            let iteration = 0;
+            let previousSeparation = null;
+            let currentSeparation = (0, vec_1.vec2)();
+            let currentSeparationIntersects = true;
+            while (
+            // Continue if we still haven't found a separation that doesn't
+            // intersect
+            currentSeparationIntersects &&
+                // Continue if we're still converging (i.e. if we didn't make any
+                // progress in the last iteration then we can stop)
+                (previousSeparation === null ||
+                    vec_1.vec2.len(vec_1.vec2.sub(previousSeparation, currentSeparation)) >
+                        constants.EPSILON) &&
+                // Continue until we reach the maximum number of iterations
+                ++iteration < MAX_ITERATIONS) {
+                let minimumSeparations = [];
+                let circlePosition = vec_1.vec2.add(circle.position, currentSeparation);
+                // Find minimum separation vectors for each convex sub-polygon
+                for (const convexPolygon of convexPolygons) {
+                    const pointInConvexPolygonResult = pointInPolygon(circlePosition, convexPolygon);
+                    if (!pointInConvexPolygonResult) {
+                        continue;
+                    }
+                    let minimumSeparation;
+                    if (Math.abs(pointInConvexPolygonResult.distance) < constants.EPSILON) {
+                        minimumSeparation = (0, vec_1.vec2)();
+                    }
+                    else if (pointInConvexPolygonResult.distance < 0) {
+                        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInConvexPolygonResult.closestPoint, circlePosition)), circle.radius + Math.abs(pointInConvexPolygonResult.distance));
+                    }
+                    else {
+                        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(circlePosition, pointInConvexPolygonResult.closestPoint)), circle.radius - pointInConvexPolygonResult.distance);
+                    }
+                    minimumSeparations.push({
+                        separation: minimumSeparation,
+                        distance: Math.abs(pointInConvexPolygonResult.distance),
+                    });
+                }
+                // Sort minimum separations by penetration distance
+                minimumSeparations = minimumSeparations.sort((a, b) => a.distance - b.distance);
+                previousSeparation = vec_1.vec2.cpy(currentSeparation);
+                currentSeparation = vec_1.vec2.add(currentSeparation, ((_c = minimumSeparations[0]) === null || _c === void 0 ? void 0 : _c.separation) || (0, vec_1.vec2)());
+                // Check if the current separation still intersects
+                currentSeparationIntersects =
+                    (_e = (_d = circleIntersectsPolygon({
+                        ...circle,
+                        position: vec_1.vec2.add(circle.position, 
+                        // Add a small buffer to avoid numerical/precision issues
+                        vec_1.vec2.mul(currentSeparation, 1.01)),
+                    }, polygon, {
+                        ...options,
+                        // Don't recurse to avoid infinite loops
+                        findMinimumSeparation: false,
+                    })) === null || _d === void 0 ? void 0 : _d.intersects) !== null && _e !== void 0 ? _e : false;
+            }
+            return {
+                ...result,
+                minimumSeparation: currentSeparation,
+            };
+        }
+        return result;
+    }
+    // Check if polygon's centroid is inside circle
+    // For a convex polygon, the centroid is always inside the polygon
+    const polygonCenter = polygonCentroid(polygon);
+    const pointInCircleResult = pointInCircle(polygonCenter, circle);
+    const polygonCenterInsideCircle = (_f = pointInCircleResult.intersects) !== null && _f !== void 0 ? _f : false;
+    // For convex polygons, check each edge directly
+    const edges = edgesFromVertices(polygon.vertices);
+    const result = circleIntersectsValidConvexPolygonEdges(circle, edges, circleCenterInsidePolygon, polygonCenterInsideCircle);
+    if (result.intersects && findMinimumSeparation) {
+        // Calculate the minimum separation vector
+        let minimumSeparation;
+        if (Math.abs(pointInPolygonResult.distance) < constants.EPSILON) {
+            minimumSeparation = (0, vec_1.vec2)();
+        }
+        else if (pointInPolygonResult.distance < 0) {
+            minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInPolygonResult.closestPoint, circle.position)), circle.radius + Math.abs(pointInPolygonResult.distance));
+        }
+        else {
+            minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(circle.position, pointInPolygonResult.closestPoint)), circle.radius - pointInPolygonResult.distance);
+        }
+        return {
+            ...result,
+            minimumSeparation,
+        };
+    }
+    return result;
 }
 exports.circleIntersectsPolygon = circleIntersectsPolygon;
 /**
@@ -3632,71 +3718,6 @@ function polygonIntersectsPolygon(polygonA, polygonB) {
     throw new Error('not implemented yet'); // TODO
 }
 exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
-/**
- * Find outer edges in a list of polygons by counting occurrences
- *
- * We assume that the polygons were the result of decomposing a concave polygon
- * into a set of convex polygons, and as such they are all convex and share
- * one or more edges
- *
- * This means we can identify outer edges because they'll only appear once
- * in the list of edges, while inner edges will appear twice (once for each
- * polygon that shares them)
- */
-function findOuterEdges(polygons) {
-    // Map to track edge occurrences using a unique key that considers
-    // collinearity and shared endpoints
-    const edgeCounts = new Map();
-    // Helper to get a normalized key for an edge that handles collinear segments
-    const getEdgeKey = (a, b) => {
-        // Sort points to ensure consistent order
-        const [p1, p2] = [a, b].sort((x, y) => x.x === y.x ? x.y - y.y : x.x - y.x);
-        return `${p1.x},${p1.y}-${p2.x},${p2.y}`;
-    };
-    // Helper to check if two edges are effectively the same (collinear and
-    // sharing endpoint)
-    const edgesAreCollinear = (edge1, edge2) => {
-        // Check if any endpoints are the same
-        const [a1, b1] = edge1;
-        const [a2, b2] = edge2;
-        const sharesEndpoint = vec_1.vec2.eq(a1, a2) || vec_1.vec2.eq(a1, b2) || vec_1.vec2.eq(b1, a2) || vec_1.vec2.eq(b1, b2);
-        if (!sharesEndpoint) {
-            return false;
-        }
-        // Check if edges are collinear
-        return pointsAreCollinear(a1, b1, a2) && pointsAreCollinear(a1, b1, b2);
-    };
-    // First pass: count edges
-    for (const polygon of polygons) {
-        const vertices = polygon.vertices;
-        for (let i = 0; i < vertices.length; i++) {
-            const start = vertices[i];
-            const end = vertices[(i + 1) % vertices.length];
-            const edge = [start, end];
-            const key = getEdgeKey(start, end);
-            // Check if we already have a collinear edge that shares an endpoint
-            let foundCollinear = false;
-            for (const data of edgeCounts.values()) {
-                if (edgesAreCollinear(edge, data.edge)) {
-                    data.count++;
-                    foundCollinear = true;
-                    break;
-                }
-            }
-            if (!foundCollinear) {
-                edgeCounts.set(key, { count: 1, edge });
-            }
-        }
-    }
-    // Second pass: collect edges that appear only once
-    const outerEdges = [];
-    for (const { count, edge } of edgeCounts.values()) {
-        if (count === 1) {
-            outerEdges.push(edge);
-        }
-    }
-    return outerEdges;
-}
 
 
 /***/ }),

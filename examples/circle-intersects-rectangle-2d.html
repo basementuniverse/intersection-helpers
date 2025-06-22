@@ -22,7 +22,10 @@ label {
     <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
   </label>
   <label>
-    <input type="checkbox" id="separation"> Perform separation
+    <input type="checkbox" id="showSeparation"> Show separation
+  </label>
+  <label>
+    <input type="checkbox" id="performSeparation"> Perform separation
   </label>
 </div>
 
@@ -34,11 +37,16 @@ label {
 const visualization = document.getElementById('visualization');
 const output = document.getElementById('output');
 const snapCheckbox = document.getElementById('snapToGrid');
-const separationCheckbox = document.getElementById('separation');
+const showSeparationCheckbox = document.getElementById('showSeparation');
+const performSeparationCheckbox = document.getElementById('performSeparation');
 const context = visualization.getContext('2d');
 
-separationCheckbox.addEventListener('change', () => {
-  if (separationCheckbox.checked) {
+showSeparationCheckbox.addEventListener('change', () => {
+  update();
+});
+
+performSeparationCheckbox.addEventListener('change', () => {
+  if (performSeparationCheckbox.checked) {
     updateSeparation(points[2]);
     update();
   }
@@ -151,7 +159,7 @@ function handleMouseMove(event) {
   }
 
   // If separation is enabled, check for collisions and adjust
-  if (separationCheckbox.checked) {
+  if (performSeparationCheckbox.checked) {
     updateSeparation(activePoint);
   }
 
@@ -309,7 +317,7 @@ function update() {
   }
 
   // Draw minimum separation vector if it exists
-  if (result.minimumSeparation) {
+  if (result.minimumSeparation && showSeparationCheckbox.checked && !performSeparationCheckbox.checked) {
     context.strokeStyle = 'purple';
     context.lineWidth = 2;
     context.setLineDash([]);
@@ -342,6 +350,20 @@ function update() {
       end.y - arrowSize * Math.sin(angle + Math.PI / 6)
     );
     context.stroke();
+
+    // Draw dashed circle at the separated position
+    context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+    context.setLineDash([4, 4]);
+    context.beginPath();
+    context.arc(
+      circle.position.x + result.minimumSeparation.x,
+      circle.position.y + result.minimumSeparation.y,
+      circle.radius,
+      0,
+      Math.PI * 2
+    );
+    context.stroke();
+    context.setLineDash([]); // Reset to solid lines
   }
 
   // Draw points with labels
