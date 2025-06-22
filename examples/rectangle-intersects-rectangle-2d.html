@@ -1,0 +1,401 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+  <label>
+    <input type="checkbox" id="showSeparation"> Show separation
+  </label>
+  <label>
+    <input type="checkbox" id="performSeparation"> Perform separation
+  </label>
+</div>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const snapCheckbox = document.getElementById('snapToGrid');
+const showSeparationCheckbox = document.getElementById('showSeparation');
+const performSeparationCheckbox = document.getElementById('performSeparation');
+const context = visualization.getContext('2d');
+
+showSeparationCheckbox.addEventListener('change', () => {
+  update();
+});
+
+performSeparationCheckbox.addEventListener('change', () => {
+  if (performSeparationCheckbox.checked) {
+    updateSeparation(points[0]);
+    update();
+  }
+});
+
+// Import required functions
+const {
+  rectangleIntersectsRectangle,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+const ROTATION_OFFSET = 30;
+
+// State - We need 6 points total: 3 for each rectangle (center, size, rotation)
+const points = [
+  // Rectangle A
+  { x: 150, y: 200, color: 'blue', label: 'Rectangle A center' },
+  { x: 200, y: 150, color: 'lightblue', label: 'Rectangle A size' },
+  { x: 180, y: 200, color: 'cyan', label: 'Rectangle A rotation' },
+  // Rectangle B
+  { x: 250, y: 200, color: 'red', label: 'Rectangle B center' },
+  { x: 300, y: 150, color: 'pink', label: 'Rectangle B size' },
+  { x: 280, y: 200, color: 'orange', label: 'Rectangle B rotation' }
+];
+let activePoint = null;
+let initialAngle = 0;
+let initialRotation = 0;
+let initialSizeAngle = 0;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      if (p === points[2] || p === points[5]) { // Rotation points
+        const center = p === points[2] ? points[0] : points[3];
+        initialAngle = Math.atan2(point.y - center.y, point.x - center.x);
+        initialRotation = Math.atan2(p.y - center.y, p.x - center.x);
+
+        // Store initial size point angle too for rotating size point
+        const sizePoint = p === points[2] ? points[1] : points[4];
+        initialSizeAngle = Math.atan2(sizePoint.y - center.y, sizePoint.x - center.x);
+      }
+      break;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const newX = snapToGrid(event.clientX - rect.left);
+  const newY = snapToGrid(event.clientY - rect.top);
+
+  // Store original positions for rectangles in case we need to adjust for separation
+  const originalRectACenter = { x: points[0].x, y: points[0].y };
+  const originalRectASize = { x: points[1].x, y: points[1].y };
+  const originalRectARotation = { x: points[2].x, y: points[2].y };
+  const originalRectBCenter = { x: points[3].x, y: points[3].y };
+  const originalRectBSize = { x: points[4].x, y: points[4].y };
+  const originalRectBRotation = { x: points[5].x, y: points[5].y };
+
+  if (activePoint === points[0] || activePoint === points[3]) { // Rectangle centers
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+    activePoint.x = newX;
+    activePoint.y = newY;
+
+    const sizePoint = activePoint === points[0] ? points[1] : points[4];
+    const rotationPoint = activePoint === points[0] ? points[2] : points[5];
+
+    sizePoint.x += deltaX;
+    sizePoint.y += deltaY;
+    rotationPoint.x += deltaX;
+    rotationPoint.y += deltaY;
+  } else if (activePoint === points[2] || activePoint === points[5]) { // Rectangle rotations
+    const center = activePoint === points[2] ? points[0] : points[3];
+    const sizePoint = activePoint === points[2] ? points[1] : points[4];
+
+    const currentAngle = Math.atan2(newY - center.y, newX - center.x);
+    const angleDiff = currentAngle - initialAngle;
+    const newRotation = initialRotation + angleDiff;
+
+    activePoint.x = center.x + Math.cos(currentAngle) * ROTATION_OFFSET;
+    activePoint.y = center.y + Math.sin(currentAngle) * ROTATION_OFFSET;
+
+    const sizeRadius = distance(center, sizePoint);
+    sizePoint.x = center.x + Math.cos(initialSizeAngle + angleDiff) * sizeRadius;
+    sizePoint.y = center.y + Math.sin(initialSizeAngle + angleDiff) * sizeRadius;
+  } else {
+    activePoint.x = newX;
+    activePoint.y = newY;
+  }
+
+  // If separation is enabled, check for collisions and adjust
+  if (performSeparationCheckbox.checked) {
+    updateSeparation(activePoint);
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function getRectangle(centerPoint, sizePoint, rotationPoint) {
+  const center = centerPoint;
+  const rotation = Math.atan2(rotationPoint.y - center.y, rotationPoint.x - center.x);
+
+  const relativeX = sizePoint.x - center.x;
+  const relativeY = sizePoint.y - center.y;
+  const cosRotation = Math.cos(-rotation);
+  const sinRotation = Math.sin(-rotation);
+  const width = 2 * (relativeX * cosRotation - relativeY * sinRotation);
+  const height = 2 * (relativeX * sinRotation + relativeY * cosRotation);
+
+  return {
+    position: center,
+    size: { x: Math.abs(width), y: Math.abs(height) },
+    rotation
+  };
+}
+
+function updateSeparation(activePoint) {
+  const rectA = getRectangle(points[0], points[1], points[2]);
+  const rectB = getRectangle(points[3], points[4], points[5]);
+
+  const result = rectangleIntersectsRectangle(rectA, rectB);
+
+  if (result.intersects && result.minimumSeparation) {
+    // Determine which rectangle is being manipulated
+    const isRectAActive = activePoint === points[0] || activePoint === points[1] || activePoint === points[2];
+    const isRectBActive = activePoint === points[3] || activePoint === points[4] || activePoint === points[5];
+
+    if (isRectBActive) {
+      // Move rectangle A by separation vector
+      const deltaX = -result.minimumSeparation.x;
+      const deltaY = -result.minimumSeparation.y;
+      points[0].x += deltaX;
+      points[0].y += deltaY;
+      points[1].x += deltaX;
+      points[1].y += deltaY;
+      points[2].x += deltaX;
+      points[2].y += deltaY;
+    } else if (isRectAActive) {
+      // Move rectangle B by separation vector in opposite direction
+      const deltaX = result.minimumSeparation.x;
+      const deltaY = result.minimumSeparation.y;
+      points[3].x += deltaX;
+      points[3].y += deltaY;
+      points[4].x += deltaX;
+      points[4].y += deltaY;
+      points[5].x += deltaX;
+      points[5].y += deltaY;
+    }
+  }
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+  drawGrid();
+
+  // Get rectangles
+  const rectA = getRectangle(points[0], points[1], points[2]);
+  const rectB = getRectangle(points[3], points[4], points[5]);
+
+  // Test intersection
+  const result = rectangleIntersectsRectangle(rectA, rectB);
+
+  // Draw rectangle A
+  context.save();
+  context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+  context.translate(rectA.position.x, rectA.position.y);
+  context.rotate(rectA.rotation);
+  context.strokeRect(
+    -rectA.size.x / 2,
+    -rectA.size.y / 2,
+    rectA.size.x,
+    rectA.size.y
+  );
+  context.restore();
+
+  // Draw rectangle B
+  context.save();
+  context.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+  context.translate(rectB.position.x, rectB.position.y);
+  context.rotate(rectB.rotation);
+  context.strokeRect(
+    -rectB.size.x / 2,
+    -rectB.size.y / 2,
+    rectB.size.x,
+    rectB.size.y
+  );
+  context.restore();
+
+  // Draw control lines
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+
+  // Rectangle A control lines
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[1].x, points[1].y);
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[2].x, points[2].y);
+  context.stroke();
+
+  // Rectangle B control lines
+  context.beginPath();
+  context.moveTo(points[3].x, points[3].y);
+  context.lineTo(points[4].x, points[4].y);
+  context.moveTo(points[3].x, points[3].y);
+  context.lineTo(points[5].x, points[5].y);
+  context.stroke();
+
+  // Draw intersection points
+  if (result.intersects && result.intersectionPoints) {
+    context.strokeStyle = 'green';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    for (const point of result.intersectionPoints) {
+      context.beginPath();
+      context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+      context.stroke();
+    }
+  }
+
+  // Draw minimum separation vector if it exists
+  if (result.minimumSeparation && showSeparationCheckbox.checked && !performSeparationCheckbox.checked) {
+    context.strokeStyle = 'purple';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+
+    // Draw the vector from rectangle B's center
+    const start = rectB.position;
+    const end = {
+      x: start.x + result.minimumSeparation.x,
+      y: start.y + result.minimumSeparation.y
+    };
+
+    // Draw the vector line
+    context.beginPath();
+    context.moveTo(start.x, start.y);
+    context.lineTo(end.x, end.y);
+    context.stroke();
+
+    // Draw arrowhead
+    const angle = Math.atan2(result.minimumSeparation.y, result.minimumSeparation.x);
+    const arrowSize = 10;
+    context.beginPath();
+    context.moveTo(end.x, end.y);
+    context.lineTo(
+      end.x - arrowSize * Math.cos(angle - Math.PI / 6),
+      end.y - arrowSize * Math.sin(angle - Math.PI / 6)
+    );
+    context.moveTo(end.x, end.y);
+    context.lineTo(
+      end.x - arrowSize * Math.cos(angle + Math.PI / 6),
+      end.y - arrowSize * Math.sin(angle + Math.PI / 6)
+    );
+    context.stroke();
+
+    // Draw dashed rectangle at the separated position
+    context.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+    context.setLineDash([4, 4]);
+    context.save();
+    context.translate(end.x, end.y);
+    context.rotate(rectB.rotation);
+    context.strokeRect(
+      -rectB.size.x / 2,
+      -rectB.size.y / 2,
+      rectB.size.x,
+      rectB.size.y
+    );
+    context.restore();
+    context.setLineDash([]); // Reset to solid lines
+  }
+
+  // Draw points with labels
+  context.setLineDash([]);
+  context.fillStyle = 'black';
+  points.forEach(point => {
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = 'black';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  let outputText = `Intersects: ${result.intersects}`;
+  if (result.intersectionPoints) {
+    outputText += `, Intersection points: ${result.intersectionPoints.length}`;
+  }
+  if (result.minimumSeparation) {
+    outputText += `, Minimum separation: (${result.minimumSeparation.x.toFixed(2)}, ${result.minimumSeparation.y.toFixed(2)})`;
+  }
+  output.textContent = outputText;
+}
+
+// Initial render
+update();
+
+</script>

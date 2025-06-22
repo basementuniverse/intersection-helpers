@@ -1,8 +1,22 @@
 import { at, clamp } from '@basementuniverse/utils';
 import { vec2 } from '@basementuniverse/vec';
 import * as decomp from 'poly-decomp';
+import { overlapInterval } from '../utilities';
 import * as constants from '../utilities/constants';
-import { Circle, Line, Point, Polygon, Ray, Rectangle } from './types';
+import { Interval } from '../utilities/types';
+import {
+  AABB,
+  Circle,
+  isCircle,
+  isLine,
+  isPolygon,
+  isRectangle,
+  Line,
+  Point,
+  Polygon,
+  Ray,
+  Rectangle,
+} from './types';
 
 export * from './types';
 
@@ -1546,10 +1560,9 @@ export function lineIntersectsRectangle(
   // Remove duplicate intersection points and sort by distance to line start
   intersectionPoints = removeDuplicateVertices(intersectionPoints);
   if (intersectionPoints.length > 1) {
-    const lineDir = vec2.nor(vec2.sub(line.end, line.start));
     intersectionPoints.sort((a, b) => {
-      const distA = vec2.dot(vec2.sub(a, line.start), lineDir);
-      const distB = vec2.dot(vec2.sub(b, line.start), lineDir);
+      const distA = vec2.len(vec2.sub(a, line.start));
+      const distB = vec2.len(vec2.sub(b, line.start));
       return distA - distB;
     });
   }
@@ -1605,10 +1618,9 @@ function lineIntersectsValidConvexPolygonEdges(
   // Remove duplicate intersection points and sort by distance to line start
   intersectionPoints = removeDuplicateVertices(intersectionPoints);
   if (intersectionPoints.length > 1) {
-    const lineDir = vec2.nor(vec2.sub(line.end, line.start));
     intersectionPoints.sort((a, b) => {
-      const distA = vec2.dot(vec2.sub(a, line.start), lineDir);
-      const distB = vec2.dot(vec2.sub(b, line.start), lineDir);
+      const distA = vec2.len(vec2.sub(a, line.start));
+      const distB = vec2.len(vec2.sub(b, line.start));
       return distA - distB;
     });
   }
@@ -2073,6 +2085,22 @@ export function circleIntersectsPolygon(
 }
 
 /**
+ * Project vertices onto an axis and return the min/max values
+ */
+function projectVerticesToAxis(vertices: Point[], axis: vec2): Interval {
+  let min = Infinity;
+  let max = -Infinity;
+
+  for (const vertex of vertices) {
+    const projection = vec2.dot(vertex, axis);
+    min = Math.min(min, projection);
+    max = Math.max(max, projection);
+  }
+
+  return { min, max };
+}
+
+/**
  * Check if two rectangles intersect
  */
 export function rectangleIntersectsRectangle(
@@ -2083,7 +2111,104 @@ export function rectangleIntersectsRectangle(
   intersectionPoints?: Point[];
   minimumSeparation?: vec2;
 } {
-  throw new Error('not implemented yet'); // TODO
+  // Edge case: if either rectangle has a side with zero length
+  if (
+    rectangleA.size.x < constants.EPSILON ||
+    rectangleA.size.y < constants.EPSILON ||
+    rectangleB.size.x < constants.EPSILON ||
+    rectangleB.size.y < constants.EPSILON
+  ) {
+    return { intersects: false };
+  }
+
+  // Get vertices of both rectangles
+  const verticesA = rectangleVertices(rectangleA);
+  const verticesB = rectangleVertices(rectangleB);
+
+  // Get edges of both rectangles
+  const edgesA = edgesFromVertices(verticesA);
+  const edgesB = edgesFromVertices(verticesB);
+
+  // Get separating axes by calculating the normals of each edge
+  const axes: vec2[] = [];
+  for (const edge of [...edgesA, ...edgesB]) {
+    const edgeVec = vec2.sub(edge.end, edge.start);
+    const normal = vec2.nor(vec2.rotf(edgeVec, -1));
+
+    // Only add unique axes
+    if (
+      !axes.some(
+        axis => Math.abs(vec2.dot(axis, normal)) > 1 - constants.EPSILON
+      )
+    ) {
+      axes.push(normal);
+    }
+  }
+
+  // Track minimum penetration for separation vector
+  let minPenetration = Infinity;
+  let minAxis: vec2 = vec2();
+
+  // Test each axis
+  for (const axis of axes) {
+    // Project both rectangles onto the axis
+    const projectionA = projectVerticesToAxis(verticesA, axis);
+    const projectionB = projectVerticesToAxis(verticesB, axis);
+
+    // If we find a separating axis, the rectangles don't intersect
+    if (
+      projectionA.max < projectionB.min ||
+      projectionB.max < projectionA.min
+    ) {
+      return { intersects: false };
+    }
+
+    // Calculate penetration depth
+    const overlap = Math.min(
+      projectionA.max - projectionB.min,
+      projectionB.max - projectionA.min
+    );
+
+    // Track minimum penetration and its axis
+    if (overlap < minPenetration) {
+      minPenetration = overlap;
+      minAxis = axis;
+    }
+  }
+
+  // Find intersection points by checking each edge of rectangle A against each
+  // edge of rectangle B
+  const intersectionPoints: Point[] = [];
+  for (const edgeA of edgesA) {
+    for (const edgeB of edgesB) {
+      const intersection = lineIntersectsLine(edgeA, edgeB);
+      if (intersection.intersects && intersection.intersectionPoint) {
+        intersectionPoints.push(intersection.intersectionPoint);
+      }
+    }
+  }
+
+  // Remove duplicate intersection points
+  const uniquePoints = removeDuplicateVertices(intersectionPoints);
+
+  // Calculate the minimum separation vector
+  const centerA = rectangleA.position;
+  const centerB = rectangleB.position;
+  const centerToCenter = vec2.sub(centerB, centerA);
+
+  // If the dot product is negative, we need to flip the axis
+  if (vec2.dot(minAxis, centerToCenter) < 0) {
+    minAxis = vec2.mul(minAxis, -1);
+  }
+
+  // The minimum separation vector is the axis scaled by the penetration depth
+  const minimumSeparation = vec2.mul(minAxis, minPenetration);
+
+  return {
+    intersects: true,
+    intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+    minimumSeparation,
+  };
 }
 
 /**

@@ -2226,11 +2226,13 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.polygonIntersectsPolygon = exports.rectangleIntersectsPolygon = exports.rectangleIntersectsRectangle = exports.circleIntersectsPolygon = exports.circleIntersectsRectangle = exports.circleIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsRectangle = exports.lineIntersectsCircle = exports.lineIntersectsLine = exports.lineIntersectsRay = exports.rayIntersectsPolygon = exports.rayIntersectsRectangle = exports.rayIntersectsCircle = exports.rayIntersectsLine = exports.rayIntersectsRay = exports.rayTraverseGrid = exports.pointInPolygon = exports.pointInRectangle = exports.pointInCircle = exports.pointOnLine = exports.pointOnRay = exports.decomposePolygon = exports.optimisePolygon = exports.polygonCentroid = exports.polygonArea = exports.polygonWindingOrder = exports.polygonIsValid = exports.polygonSelfIntersects = exports.polygonIsConvex = exports.rectangleVertices = exports.rectangleIsRotated = exports.rayToLine = exports.lineToRay = exports.pointsAreCollinear = exports.angleBetween = exports.distance = void 0;
+exports.polygonIntersectsPolygon = exports.rectangleIntersectsPolygon = exports.rectangleIntersectsRectangle = exports.circleIntersectsPolygon = exports.circleIntersectsRectangle = exports.circleIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsRectangle = exports.lineIntersectsCircle = exports.lineIntersectsLine = exports.lineIntersectsRay = exports.rayIntersectsPolygon = exports.rayIntersectsRectangle = exports.rayIntersectsCircle = exports.rayIntersectsLine = exports.rayIntersectsRay = exports.rayTraverseGrid = exports.pointInPolygon = exports.pointInRectangle = exports.pointInCircle = exports.pointOnLine = exports.pointOnRay = exports.decomposePolygon = exports.optimisePolygon = exports.polygonCentroid = exports.polygonArea = exports.polygonWindingOrder = exports.polygonIsValid = exports.polygonSelfIntersects = exports.polygonIsConvex = exports.rectangleVertices = exports.rectangleIsRotated = exports.aabbsOverlap = exports.aabbToRectangle = exports.aabb = exports.rayToLine = exports.lineToRay = exports.pointsAreCollinear = exports.angleBetween = exports.distance = void 0;
 const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const decomp = __importStar(__webpack_require__(/*! poly-decomp */ "./node_modules/poly-decomp/src/index.js"));
+const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
 const constants = __importStar(__webpack_require__(/*! ../utilities/constants */ "./src/utilities/constants.ts"));
+const types_1 = __webpack_require__(/*! ./types */ "./src/2d/types.ts");
 __exportStar(__webpack_require__(/*! ./types */ "./src/2d/types.ts"), exports);
 /**
  * Calculate the distance between two points
@@ -2294,6 +2296,70 @@ function rayToLine(ray, length = 1) {
     };
 }
 exports.rayToLine = rayToLine;
+/**
+ * Get the bounding box (AABB) of a geometric object
+ */
+function aabb(o) {
+    if ((0, types_1.isLine)(o)) {
+        return {
+            position: (0, vec_1.vec2)(Math.min(o.start.x, o.end.x), Math.min(o.start.y, o.end.y)),
+            size: (0, vec_1.vec2)(Math.abs(o.end.x - o.start.x), Math.abs(o.end.y - o.start.y)),
+        };
+    }
+    if ((0, types_1.isRectangle)(o)) {
+        const vertices = rectangleVertices(o);
+        const position = (0, vec_1.vec2)(Math.min(...vertices.map(v => v.x)), Math.min(...vertices.map(v => v.y)));
+        return {
+            position,
+            size: (0, vec_1.vec2)(Math.max(...vertices.map(v => v.x)) - position.x, Math.max(...vertices.map(v => v.y)) - position.y),
+        };
+    }
+    if ((0, types_1.isCircle)(o)) {
+        return {
+            position: vec_1.vec2.sub(o.position, (0, vec_1.vec2)(o.radius, o.radius)),
+            size: (0, vec_1.vec2)(o.radius * 2),
+        };
+    }
+    if ((0, types_1.isPolygon)(o)) {
+        const position = (0, vec_1.vec2)(Math.min(...o.vertices.map(v => v.x)), Math.min(...o.vertices.map(v => v.y)));
+        return {
+            position,
+            size: (0, vec_1.vec2)(Math.max(...o.vertices.map(v => v.x)) - position.x, Math.max(...o.vertices.map(v => v.y)) - position.y),
+        };
+    }
+    return null;
+}
+exports.aabb = aabb;
+/**
+ * Convert an AABB to a rectangle
+ */
+function aabbToRectangle(aabb) {
+    return {
+        position: vec_1.vec2.add(aabb.position, vec_1.vec2.div(aabb.size, 2)),
+        size: aabb.size,
+        rotation: 0,
+    };
+}
+exports.aabbToRectangle = aabbToRectangle;
+/**
+ * Check if two AABBs overlap and return the overlapping area if so
+ */
+function aabbsOverlap(a, b) {
+    const overlapX = (0, utilities_1.overlapInterval)({ min: a.position.x, max: a.position.x + a.size.x }, { min: b.position.x, max: b.position.x + b.size.x });
+    const overlapY = (0, utilities_1.overlapInterval)({ min: a.position.y, max: a.position.y + a.size.y }, { min: b.position.y, max: b.position.y + b.size.y });
+    // If the AABBs don't overlap on one or more axes, they don't overlap at all
+    if (!overlapX || !overlapY) {
+        return { intersects: false };
+    }
+    return {
+        intersects: true,
+        overlap: {
+            position: (0, vec_1.vec2)(overlapX.min, overlapY.min),
+            size: (0, vec_1.vec2)(overlapX.max - overlapX.min, overlapY.max - overlapY.min),
+        },
+    };
+}
+exports.aabbsOverlap = aabbsOverlap;
 /**
  * Check if a rectangle is rotated
  */
@@ -3345,10 +3411,9 @@ function lineIntersectsRectangle(line, rectangle) {
     // Remove duplicate intersection points and sort by distance to line start
     intersectionPoints = removeDuplicateVertices(intersectionPoints);
     if (intersectionPoints.length > 1) {
-        const lineDir = vec_1.vec2.nor(vec_1.vec2.sub(line.end, line.start));
         intersectionPoints.sort((a, b) => {
-            const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, line.start), lineDir);
-            const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, line.start), lineDir);
+            const distA = vec_1.vec2.len(vec_1.vec2.sub(a, line.start));
+            const distB = vec_1.vec2.len(vec_1.vec2.sub(b, line.start));
             return distA - distB;
         });
     }
@@ -3390,10 +3455,9 @@ function lineIntersectsValidConvexPolygonEdges(line, polygon, edges) {
     // Remove duplicate intersection points and sort by distance to line start
     intersectionPoints = removeDuplicateVertices(intersectionPoints);
     if (intersectionPoints.length > 1) {
-        const lineDir = vec_1.vec2.nor(vec_1.vec2.sub(line.end, line.start));
         intersectionPoints.sort((a, b) => {
-            const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, line.start), lineDir);
-            const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, line.start), lineDir);
+            const distA = vec_1.vec2.len(vec_1.vec2.sub(a, line.start));
+            const distB = vec_1.vec2.len(vec_1.vec2.sub(b, line.start));
             return distA - distB;
         });
     }
@@ -3694,10 +3758,94 @@ function circleIntersectsPolygon(circle, polygon, options) {
 }
 exports.circleIntersectsPolygon = circleIntersectsPolygon;
 /**
+ * Project vertices onto an axis and return the min/max values
+ */
+function projectVerticesToAxis(vertices, axis) {
+    let min = Infinity;
+    let max = -Infinity;
+    for (const vertex of vertices) {
+        const projection = vec_1.vec2.dot(vertex, axis);
+        min = Math.min(min, projection);
+        max = Math.max(max, projection);
+    }
+    return { min, max };
+}
+/**
  * Check if two rectangles intersect
  */
 function rectangleIntersectsRectangle(rectangleA, rectangleB) {
-    throw new Error('not implemented yet'); // TODO
+    // Edge case: if either rectangle has a side with zero length
+    if (rectangleA.size.x < constants.EPSILON ||
+        rectangleA.size.y < constants.EPSILON ||
+        rectangleB.size.x < constants.EPSILON ||
+        rectangleB.size.y < constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Get vertices of both rectangles
+    const verticesA = rectangleVertices(rectangleA);
+    const verticesB = rectangleVertices(rectangleB);
+    // Get edges of both rectangles
+    const edgesA = edgesFromVertices(verticesA);
+    const edgesB = edgesFromVertices(verticesB);
+    // Get separating axes by calculating the normals of each edge
+    const axes = [];
+    for (const edge of [...edgesA, ...edgesB]) {
+        const edgeVec = vec_1.vec2.sub(edge.end, edge.start);
+        const normal = vec_1.vec2.nor(vec_1.vec2.rotf(edgeVec, -1));
+        // Only add unique axes
+        if (!axes.some(axis => Math.abs(vec_1.vec2.dot(axis, normal)) > 1 - constants.EPSILON)) {
+            axes.push(normal);
+        }
+    }
+    // Track minimum penetration for separation vector
+    let minPenetration = Infinity;
+    let minAxis = (0, vec_1.vec2)();
+    // Test each axis
+    for (const axis of axes) {
+        // Project both rectangles onto the axis
+        const projectionA = projectVerticesToAxis(verticesA, axis);
+        const projectionB = projectVerticesToAxis(verticesB, axis);
+        // If we find a separating axis, the rectangles don't intersect
+        if (projectionA.max < projectionB.min ||
+            projectionB.max < projectionA.min) {
+            return { intersects: false };
+        }
+        // Calculate penetration depth
+        const overlap = Math.min(projectionA.max - projectionB.min, projectionB.max - projectionA.min);
+        // Track minimum penetration and its axis
+        if (overlap < minPenetration) {
+            minPenetration = overlap;
+            minAxis = axis;
+        }
+    }
+    // Find intersection points by checking each edge of rectangle A against each
+    // edge of rectangle B
+    const intersectionPoints = [];
+    for (const edgeA of edgesA) {
+        for (const edgeB of edgesB) {
+            const intersection = lineIntersectsLine(edgeA, edgeB);
+            if (intersection.intersects && intersection.intersectionPoint) {
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+        }
+    }
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    // Calculate the minimum separation vector
+    const centerA = rectangleA.position;
+    const centerB = rectangleB.position;
+    const centerToCenter = vec_1.vec2.sub(centerB, centerA);
+    // If the dot product is negative, we need to flip the axis
+    if (vec_1.vec2.dot(minAxis, centerToCenter) < 0) {
+        minAxis = vec_1.vec2.mul(minAxis, -1);
+    }
+    // The minimum separation vector is the axis scaled by the penetration depth
+    const minimumSeparation = vec_1.vec2.mul(minAxis, minPenetration);
+    return {
+        intersects: true,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+        minimumSeparation,
+    };
 }
 exports.rectangleIntersectsRectangle = rectangleIntersectsRectangle;
 /**
@@ -3731,6 +3879,97 @@ exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isPolygon = exports.isAABB = exports.isRectangle = exports.isCircle = exports.isLine = exports.isRay = exports.isPoint = void 0;
+/**
+ * Check if a value is a vec2
+ */
+function isVec2(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'x' in value &&
+        typeof value.x === 'number' &&
+        'y' in value &&
+        typeof value.y === 'number');
+}
+/**
+ * Type guard to check if a value is a Point
+ */
+function isPoint(value) {
+    return isVec2(value);
+}
+exports.isPoint = isPoint;
+/**
+ * Check if a value is a Ray
+ */
+function isRay(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'origin' in value &&
+        isPoint(value.origin) &&
+        'direction' in value &&
+        isVec2(value.direction));
+}
+exports.isRay = isRay;
+/**
+ * Check if a value is a Line
+ */
+function isLine(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'start' in value &&
+        isPoint(value.start) &&
+        'end' in value &&
+        isPoint(value.end));
+}
+exports.isLine = isLine;
+/**
+ * Check if a value is a Circle
+ */
+function isCircle(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'radius' in value &&
+        typeof value.radius === 'number');
+}
+exports.isCircle = isCircle;
+/**
+ * Check if a value is a Rectangle
+ */
+function isRectangle(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        isVec2(value.size) &&
+        ('rotation' in value ? typeof value.rotation === 'number' : true));
+}
+exports.isRectangle = isRectangle;
+/**
+ * Check if a value is an AABB
+ */
+function isAABB(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        isVec2(value.size));
+}
+exports.isAABB = isAABB;
+/**
+ * Check if a value is a Polygon
+ */
+function isPolygon(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'vertices' in value &&
+        Array.isArray(value.vertices) &&
+        value.vertices.every(isPoint));
+}
+exports.isPolygon = isPolygon;
 
 
 /***/ }),
@@ -3895,15 +4134,17 @@ exports.overlapInterval = exports.intervalsOverlap = exports.valueInInterval = v
 /**
  * Check if a value is within a specified interval
  */
-function valueInInterval(value, min, max) {
-    return value >= min && value <= max;
+function valueInInterval(value, interval) {
+    const { min, minInclusive = true, max, maxInclusive = true } = interval;
+    return ((minInclusive ? value >= min : value > min) &&
+        (maxInclusive ? value <= max : value < max));
 }
 exports.valueInInterval = valueInInterval;
 /**
  * Check if two intervals (a1, a2) and (b1, b2) overlap
  */
-function intervalsOverlap(a1, a2, b1, b2) {
-    return Math.max(a1, b1) <= Math.min(a2, b2);
+function intervalsOverlap(a, b) {
+    return Math.max(a.min, b.min) <= Math.min(a.max, b.max);
 }
 exports.intervalsOverlap = intervalsOverlap;
 /**
@@ -3911,11 +4152,11 @@ exports.intervalsOverlap = intervalsOverlap;
  *
  * If the intervals do not overlap, return null
  */
-function overlapInterval(a1, a2, b1, b2) {
-    if (!intervalsOverlap(a1, a2, b1, b2)) {
+function overlapInterval(a, b) {
+    if (!intervalsOverlap(a, b)) {
         return null;
     }
-    return [Math.max(a1, b1), Math.min(a2, b2)];
+    return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
 }
 exports.overlapInterval = overlapInterval;
 

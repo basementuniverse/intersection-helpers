@@ -106,6 +106,18 @@ describe('IntersectionHelpers2D', () => {
     });
   });
 
+  describe('aabb', () => {
+    // TODO convert object to AABB tests
+  });
+
+  describe('aabbToRectangle', () => {
+    // TODO convert AABB to rectangle tests
+  });
+
+  describe('aabbsOverlap', () => {
+    // TODO test AABBs overlap
+  });
+
   describe('rectangleIsRotated', () => {
     it('should return true for a rotated rectangle', () => {
       const rect = {
@@ -3162,5 +3174,9 @@ describe('IntersectionHelpers2D', () => {
       expect(result?.intersects).toBe(true);
       expect(result?.intersectionPoints).toBeDefined();
     });
+  });
+
+  describe('rectangleIntersectsRectangle', () => {
+    // TODO
   });
 });
