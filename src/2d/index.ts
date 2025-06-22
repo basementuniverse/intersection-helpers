@@ -76,6 +76,103 @@ export function rayToLine(ray: Ray, length: number = 1): Line {
 }
 
 /**
+ * Get the bounding box (AABB) of a geometric object
+ */
+export function aabb(o: Line | Rectangle | Circle | Polygon): AABB | null {
+  if (isLine(o)) {
+    return {
+      position: vec2(
+        Math.min(o.start.x, o.end.x),
+        Math.min(o.start.y, o.end.y)
+      ),
+      size: vec2(Math.abs(o.end.x - o.start.x), Math.abs(o.end.y - o.start.y)),
+    };
+  }
+
+  if (isRectangle(o)) {
+    const vertices = rectangleVertices(o);
+    const position = vec2(
+      Math.min(...vertices.map(v => v.x)),
+      Math.min(...vertices.map(v => v.y))
+    );
+    return {
+      position,
+      size: vec2(
+        Math.max(...vertices.map(v => v.x)) - position.x,
+        Math.max(...vertices.map(v => v.y)) - position.y
+      ),
+    };
+  }
+
+  if (isCircle(o)) {
+    return {
+      position: vec2.sub(o.position, vec2(o.radius, o.radius)),
+      size: vec2(o.radius * 2),
+    };
+  }
+
+  if (isPolygon(o)) {
+    const position = vec2(
+      Math.min(...o.vertices.map(v => v.x)),
+      Math.min(...o.vertices.map(v => v.y))
+    );
+    return {
+      position,
+      size: vec2(
+        Math.max(...o.vertices.map(v => v.x)) - position.x,
+        Math.max(...o.vertices.map(v => v.y)) - position.y
+      ),
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Convert an AABB to a rectangle
+ */
+export function aabbToRectangle(aabb: AABB): Rectangle {
+  return {
+    position: vec2.add(aabb.position, vec2.div(aabb.size, 2)),
+    size: aabb.size,
+    rotation: 0,
+  };
+}
+
+/**
+ * Check if two AABBs overlap and return the overlapping area if so
+ */
+export function aabbsOverlap(
+  a: AABB,
+  b: AABB
+): {
+  intersects: boolean;
+  overlap?: AABB;
+} {
+  const overlapX = overlapInterval(
+    { min: a.position.x, max: a.position.x + a.size.x },
+    { min: b.position.x, max: b.position.x + b.size.x }
+  );
+  const overlapY = overlapInterval(
+    { min: a.position.y, max: a.position.y + a.size.y },
+    { min: b.position.y, max: b.position.y + b.size.y }
+  );
+
+  // If the AABBs don't overlap on one or more axes, they don't overlap at all
+  if (!overlapX || !overlapY) {
+    return { intersects: false };
+  }
+
+  return {
+    intersects: true,
+    overlap: {
+      position: vec2(overlapX.min, overlapY.min),
+      size: vec2(overlapX.max - overlapX.min, overlapY.max - overlapY.min),
+    },
+  };
+}
+
+/**
  * Check if a rectangle is rotated
  */
 export function rectangleIsRotated(rectangle: Rectangle): boolean {
