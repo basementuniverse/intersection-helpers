@@ -1,1 +1,282 @@
-<!-- TODO circleIntersectsPolygon demo -->
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+label {
+  margin: 1em;
+  user-select: none;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<div>
+  <label>
+    <input type="checkbox" id="snapToGrid"> Snap to grid (10px)
+  </label>
+</div>
+<button id="clear">Clear polygon</button><br>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const clearButton = document.getElementById('clear');
+const snapCheckbox = document.getElementById('snapToGrid');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  circleIntersectsPolygon,
+  distance
+} = intersection2d;
+
+// Constants
+const GRID_SIZE = 10;
+const POINT_RADIUS = 4;
+
+// State
+const vertices = [];
+const circlePoints = [
+  { x: 200, y: 200, color: 'blue', label: 'Circle center' },
+  { x: 250, y: 200, color: 'lightblue', label: 'Circle size' }
+];
+let activePoint = null;
+let hoveredVertex = null;
+
+// Event listeners
+clearButton.addEventListener('click', () => {
+  vertices.length = 0;
+  update();
+});
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+snapCheckbox.addEventListener('change', update);
+
+function snapToGrid(value) {
+  if (!snapCheckbox.checked) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: snapToGrid(event.clientX - rect.left),
+    y: snapToGrid(event.clientY - rect.top)
+  };
+
+  // Check if click is near circle points
+  for (const p of circlePoints) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      return;
+    }
+  }
+
+  // Check if click is near any existing vertex
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      activePoint = vertex;
+      return;
+    }
+  }
+
+  // If not dragging, add new vertex
+  vertices.push({ x: point.x, y: point.y });
+  update();
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) {
+    // Update hover state
+    const rect = visualization.getBoundingClientRect();
+    const point = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+
+    hoveredVertex = null;
+    for (const vertex of vertices) {
+      if (distance(point, vertex) < 10) {
+        hoveredVertex = vertex;
+        break;
+      }
+    }
+    for (const p of circlePoints) {
+      if (distance(point, p) < 10) {
+        hoveredVertex = p;
+        break;
+      }
+    }
+    visualization.style.cursor = hoveredVertex ? 'pointer' : 'default';
+    return;
+  }
+
+  const rect = visualization.getBoundingClientRect();
+
+  // If moving circle center, move radius point with it
+  if (activePoint === circlePoints[0]) {
+    const deltaX = snapToGrid(event.clientX - rect.left) - activePoint.x;
+    const deltaY = snapToGrid(event.clientY - rect.top) - activePoint.y;
+    activePoint.x += deltaX;
+    activePoint.y += deltaY;
+    circlePoints[1].x += deltaX;
+    circlePoints[1].y += deltaY;
+  } else {
+    activePoint.x = snapToGrid(event.clientX - rect.left);
+    activePoint.y = snapToGrid(event.clientY - rect.top);
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function drawGrid() {
+  if (!snapCheckbox.checked) return;
+  context.strokeStyle = '#eee';
+  context.lineWidth = 1;
+  for (let x = 0; x < visualization.width; x += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(x, 0);
+    context.lineTo(x, visualization.height);
+    context.stroke();
+  }
+  for (let y = 0; y < visualization.height; y += GRID_SIZE) {
+    context.beginPath();
+    context.moveTo(0, y);
+    context.lineTo(visualization.width, y);
+    context.stroke();
+  }
+}
+
+function getCircle() {
+  return {
+    position: circlePoints[0],
+    radius: distance(circlePoints[0], circlePoints[1])
+  };
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+  drawGrid();
+
+  // Create circle and polygon
+  const circle = getCircle();
+  const polygon = vertices.length >= 3 ? { vertices } : null;
+
+  // Test intersection
+  const result = polygon ? circleIntersectsPolygon(circle, polygon) : null;
+
+  // Draw polygon
+  if (vertices.length > 0) {
+    context.strokeStyle = '#666';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    context.beginPath();
+    context.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      context.lineTo(vertices[i].x, vertices[i].y);
+    }
+    if (vertices.length >= 3) {
+      context.closePath();
+    }
+    context.stroke();
+  }
+
+  // Draw circle
+  const center = circle.position;
+  const radius = circle.radius;
+  context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+  context.lineWidth = 2;
+  context.setLineDash([]);
+  context.beginPath();
+  context.arc(center.x, center.y, radius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw radius line
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+  context.beginPath();
+  context.moveTo(center.x, center.y);
+  context.lineTo(circlePoints[1].x, circlePoints[1].y);
+  context.stroke();
+
+  // Draw intersection points
+  if (result?.intersects && result.intersectionPoints) {
+    context.strokeStyle = 'red';
+    context.lineWidth = 2;
+    context.setLineDash([]);
+    for (const point of result.intersectionPoints) {
+      const size = 5;
+      context.beginPath();
+      context.moveTo(point.x - size, point.y - size);
+      context.lineTo(point.x + size, point.y + size);
+      context.moveTo(point.x + size, point.y - size);
+      context.lineTo(point.x - size, point.y + size);
+      context.stroke();
+    }
+  }
+
+  // Draw polygon vertices and their numbers
+  context.setLineDash([]);
+  vertices.forEach((vertex, i) => {
+    context.fillStyle = 'blue';
+    context.beginPath();
+    context.arc(vertex.x, vertex.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(`${i + 1}`, vertex.x + 8, vertex.y - 4);
+  });
+
+  // Draw circle points with labels
+  circlePoints.forEach(point => {
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+
+  // Update output text
+  if (vertices.length < 3) {
+    output.textContent = `Add at least 3 vertices to create a polygon. Current vertices: ${vertices.length}`;
+  } else if (result) {
+    output.textContent = `Intersects: ${result.intersects}${
+      result.intersectionPoints
+        ? `, Points: ${result.intersectionPoints.length}`
+        : ''
+    }. Circle radius: ${radius.toFixed(2)}`;
+  }
+}
+
+// Initial render
+update();
+
+</script>

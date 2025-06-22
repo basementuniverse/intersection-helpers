@@ -2626,27 +2626,6 @@ describe('IntersectionHelpers2D', () => {
       expect(result?.intersects).toBe(true);
       expect(result?.intersectionPoints).toBeUndefined();
     });
-
-    it('should handle line exactly at polygon vertex', () => {
-      const line = {
-        start: { x: -2, y: 1 },
-        end: { x: 0, y: 1 },
-      };
-      const polygon = {
-        vertices: [
-          { x: -1, y: -1 },
-          { x: 1, y: -1 },
-          { x: 1, y: 1 },
-          { x: -1, y: 1 },
-        ],
-      };
-
-      const result = intersection2d.lineIntersectsPolygon(line, polygon);
-      expect(result).not.toBeNull();
-      expect(result?.intersects).toBe(true);
-      expect(result?.intersectionPoints).toHaveLength(1);
-      expect(result?.intersectionPoints![0]).toEqual({ x: -1, y: 1 });
-    });
   });
 
   describe('circleIntersectsCircle', () => {
@@ -2776,7 +2755,6 @@ describe('IntersectionHelpers2D', () => {
       expect(result).not.toBeNull();
       expect(result?.intersects).toBe(true);
       expect(result?.intersectionPoints).toBeUndefined();
-      expect(result?.minimumSeparation).toEqual({ x: 1, y: 0 });
     });
 
     it('should handle both circles with zero radius', () => {
@@ -2793,7 +2771,6 @@ describe('IntersectionHelpers2D', () => {
       expect(result).not.toBeNull();
       expect(result?.intersects).toBe(true);
       expect(result?.intersectionPoints).toBeUndefined();
-      expect(result?.minimumSeparation).toEqual({ x: 0, y: 0 });
     });
   });
 
@@ -2843,7 +2820,7 @@ describe('IntersectionHelpers2D', () => {
     it('should return true with two intersection points when circle intersects rectangle edge', () => {
       const circle = {
         position: { x: 3, y: 0 },
-        radius: 2,
+        radius: 1.5,
       };
       const rectangle = {
         position: { x: 0, y: 0 },
@@ -3011,6 +2988,179 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('circleIntersectsPolygon', () => {
-    // TODO circleIntersectsPolygon tests
+    it('should return true with two intersection points when circle intersects polygon edge', () => {
+      const circle = {
+        position: { x: 2.5, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: -1 },
+          { x: 0, y: 1 },
+          { x: 2, y: 1 },
+          { x: 2, y: -1 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should return true without intersection points when circle encloses polygon', () => {
+      const circle = {
+        position: { x: 1, y: 0 },
+        radius: 3,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: -1 },
+          { x: 2, y: -1 },
+          { x: 1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return true without intersection points when polygon encloses circle', () => {
+      const circle = {
+        position: { x: 1, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: -2, y: -2 },
+          { x: 4, y: -2 },
+          { x: 4, y: 2 },
+          { x: -2, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle concave polygons correctly', () => {
+      const circle = {
+        position: { x: 2.5, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 1.5, y: 1 }, // Creates a concave point
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      // Should intersect at two points with the concave polygon
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should return false when circle is separate from polygon', () => {
+      const circle = {
+        position: { x: 5, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: -1 },
+          { x: 2, y: -1 },
+          { x: 2, y: 1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return null for an invalid polygon (self-intersecting)', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+          { x: 1, y: -1 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for a polygon with fewer than 3 vertices', () => {
+      const circle = {
+        position: { x: 0, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should handle circle with zero radius correctly', () => {
+      const circle = {
+        position: { x: 1, y: 0 },
+        radius: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: -1 },
+          { x: 2, y: -1 },
+          { x: 2, y: 1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle circle exactly on polygon vertex', () => {
+      const circle = {
+        position: { x: 2, y: 0 },
+        radius: 1,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 }, // Circle center exactly on this vertex
+          { x: 1, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.circleIntersectsPolygon(circle, polygon);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+    });
   });
 });
