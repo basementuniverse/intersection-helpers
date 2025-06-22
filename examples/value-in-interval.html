@@ -76,7 +76,7 @@ function updateOutput() {
   const value = parseFloat(valueInput.value);
   const min = parseFloat(minInput.value);
   const max = parseFloat(maxInput.value);
-  output.textContent = `Value: ${value}, Min: ${min}, Max: ${max}, In Interval: ${valueInInterval(value, min, max)}`;
+  output.textContent = `Value: ${value}, Min: ${min}, Max: ${max}, In Interval: ${valueInInterval(value, { min, max })}`;
 }
 
 function updateVisualization() {

@@ -3,155 +3,355 @@ import { intersectionUtilities } from '../src';
 describe('IntersectionUtilities', () => {
   describe('valueInInterval', () => {
     it('should return true when value is within interval', () => {
-      expect(intersectionUtilities.valueInInterval(5, 0, 10)).toBe(true);
-      expect(intersectionUtilities.valueInInterval(0, 0, 10)).toBe(true);
-      expect(intersectionUtilities.valueInInterval(10, 0, 10)).toBe(true);
+      expect(
+        intersectionUtilities.valueInInterval(5, { min: 0, max: 10 })
+      ).toBe(true);
+      expect(
+        intersectionUtilities.valueInInterval(0, { min: 0, max: 10 })
+      ).toBe(true);
+      expect(
+        intersectionUtilities.valueInInterval(10, { min: 0, max: 10 })
+      ).toBe(true);
     });
 
     it('should return false when value is outside interval', () => {
-      expect(intersectionUtilities.valueInInterval(-1, 0, 10)).toBe(false);
-      expect(intersectionUtilities.valueInInterval(11, 0, 10)).toBe(false);
+      expect(
+        intersectionUtilities.valueInInterval(-1, { min: 0, max: 10 })
+      ).toBe(false);
+      expect(
+        intersectionUtilities.valueInInterval(11, { min: 0, max: 10 })
+      ).toBe(false);
     });
 
     it('should handle decimal values correctly', () => {
-      expect(intersectionUtilities.valueInInterval(1.5, 1, 2)).toBe(true);
-      expect(intersectionUtilities.valueInInterval(0.999, 1, 2)).toBe(false);
+      expect(
+        intersectionUtilities.valueInInterval(1.5, { min: 1, max: 2 })
+      ).toBe(true);
+      expect(
+        intersectionUtilities.valueInInterval(0.999, { min: 1, max: 2 })
+      ).toBe(false);
     });
 
     it('should handle negative intervals correctly', () => {
-      expect(intersectionUtilities.valueInInterval(-5, -10, -1)).toBe(true);
-      expect(intersectionUtilities.valueInInterval(0, -10, -1)).toBe(false);
+      expect(
+        intersectionUtilities.valueInInterval(-5, { min: -10, max: -1 })
+      ).toBe(true);
+      expect(
+        intersectionUtilities.valueInInterval(0, { min: -10, max: -1 })
+      ).toBe(false);
     });
   });
 
   describe('intervalsOverlap', () => {
     it('should return true when intervals overlap', () => {
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 5, 15)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(5, 15, 0, 10)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 0, 10)).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 5, max: 15 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 5, max: 15 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(true);
     });
 
     it('should handle when one interval is completely within another', () => {
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 2, 8)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(2, 8, 0, 10)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 0, 5)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(0, 5, 0, 10)).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 2, max: 8 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 2, max: 8 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 0, max: 5 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 5 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(true);
     });
 
     it('should return true when intervals touch at endpoints', () => {
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 10, 20)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(10, 20, 0, 10)).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 10, max: 20 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 10, max: 20 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(true);
     });
 
     it('should return false when intervals do not overlap', () => {
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 11, 20)).toBe(false);
-      expect(intersectionUtilities.intervalsOverlap(11, 20, 0, 10)).toBe(false);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 11, max: 20 }
+        )
+      ).toBe(false);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 11, max: 20 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(false);
     });
 
     it('should handle decimal values correctly', () => {
-      expect(intersectionUtilities.intervalsOverlap(0, 1.5, 1, 2)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(0, 0.9, 1, 2)).toBe(false);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 1.5 },
+          { min: 1, max: 2 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 0.9 },
+          { min: 1, max: 2 }
+        )
+      ).toBe(false);
     });
 
     it('should handle negative intervals correctly', () => {
-      expect(intersectionUtilities.intervalsOverlap(-10, -5, -7, -3)).toBe(
-        true
-      );
-      expect(intersectionUtilities.intervalsOverlap(-10, -5, -4, -1)).toBe(
-        false
-      );
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: -10, max: -5 },
+          { min: -7, max: -3 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: -10, max: -5 },
+          { min: -4, max: -1 }
+        )
+      ).toBe(false);
     });
 
     it('should handle zero-length intervals correctly', () => {
-      expect(intersectionUtilities.intervalsOverlap(5, 5, 0, 10)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(0, 10, 5, 5)).toBe(true);
-      expect(intersectionUtilities.intervalsOverlap(5, 5, 6, 6)).toBe(false);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 5, max: 5 },
+          { min: 0, max: 10 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 0, max: 10 },
+          { min: 5, max: 5 }
+        )
+      ).toBe(true);
+      expect(
+        intersectionUtilities.intervalsOverlap(
+          { min: 5, max: 5 },
+          { min: 6, max: 6 }
+        )
+      ).toBe(false);
     });
   });
 
   describe('overlap', () => {
     it('should return overlapping part of two intervals', () => {
-      expect(intersectionUtilities.overlapInterval(0, 10, 5, 15)).toEqual([
-        5, 10,
-      ]);
-      expect(intersectionUtilities.overlapInterval(5, 15, 0, 10)).toEqual([
-        5, 10,
-      ]);
-      expect(intersectionUtilities.overlapInterval(0, 10, 0, 10)).toEqual([
-        0, 10,
-      ]);
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 5, max: 15 }
+        )
+      ).toEqual({ min: 5, max: 10 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 5, max: 15 },
+          { min: 0, max: 10 }
+        )
+      ).toEqual({ min: 5, max: 10 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 0, max: 10 }
+        )
+      ).toEqual({ min: 0, max: 10 });
     });
 
     it('should return null when intervals do not overlap', () => {
-      expect(intersectionUtilities.overlapInterval(0, 10, 11, 20)).toBeNull();
-      expect(intersectionUtilities.overlapInterval(11, 20, 0, 10)).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 11, max: 20 }
+        )
+      ).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 11, max: 20 },
+          { min: 0, max: 10 }
+        )
+      ).toBeNull();
     });
 
     it('should handle when one interval is completely within another', () => {
-      expect(intersectionUtilities.overlapInterval(0, 10, 2, 8)).toEqual([
-        2, 8,
-      ]);
-      expect(intersectionUtilities.overlapInterval(2, 8, 0, 10)).toEqual([
-        2, 8,
-      ]);
-      expect(intersectionUtilities.overlapInterval(0, 10, 0, 5)).toEqual([
-        0, 5,
-      ]);
-      expect(intersectionUtilities.overlapInterval(0, 5, 0, 10)).toEqual([
-        0, 5,
-      ]);
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 2, max: 8 }
+        )
+      ).toEqual({ min: 2, max: 8 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 2, max: 8 },
+          { min: 0, max: 10 }
+        )
+      ).toEqual({ min: 2, max: 8 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 0, max: 5 }
+        )
+      ).toEqual({ min: 0, max: 5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 5 },
+          { min: 0, max: 10 }
+        )
+      ).toEqual({ min: 0, max: 5 });
     });
 
     it('should handle touching intervals at endpoints', () => {
-      expect(intersectionUtilities.overlapInterval(0, 10, 10, 20)).toEqual([
-        10, 10,
-      ]);
-      expect(intersectionUtilities.overlapInterval(10, 20, 0, 10)).toEqual([
-        10, 10,
-      ]);
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 10, max: 20 }
+        )
+      ).toEqual({ min: 10, max: 10 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 10, max: 20 },
+          { min: 0, max: 10 }
+        )
+      ).toEqual({ min: 10, max: 10 });
     });
 
     it('should handle decimal values correctly', () => {
-      expect(intersectionUtilities.overlapInterval(0.5, 1.5, 1.0, 2.0)).toEqual(
-        [1.0, 1.5]
-      );
       expect(
-        intersectionUtilities.overlapInterval(0.1, 0.9, 1.0, 2.0)
+        intersectionUtilities.overlapInterval(
+          { min: 0.5, max: 1.5 },
+          { min: 1.0, max: 2.0 }
+        )
+      ).toEqual({ min: 1.0, max: 1.5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0.1, max: 0.9 },
+          { min: 1.0, max: 2.0 }
+        )
       ).toBeNull();
     });
 
     it('should handle negative intervals correctly', () => {
-      expect(intersectionUtilities.overlapInterval(-10, -5, -7, -3)).toEqual([
-        -7, -5,
-      ]);
-      expect(intersectionUtilities.overlapInterval(-7, -3, -10, -5)).toEqual([
-        -7, -5,
-      ]);
-      expect(intersectionUtilities.overlapInterval(-10, -5, -4, -1)).toBeNull();
-      expect(intersectionUtilities.overlapInterval(-4, -1, -10, -5)).toBeNull();
-      expect(intersectionUtilities.overlapInterval(-5, -5, -10, -1)).toEqual([
-        -5, -5,
-      ]);
-      expect(intersectionUtilities.overlapInterval(-10, -1, -5, -5)).toEqual([
-        -5, -5,
-      ]);
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: -10, max: -5 },
+          { min: -7, max: -3 }
+        )
+      ).toEqual({ min: -7, max: -5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: -7, max: -3 },
+          { min: -10, max: -5 }
+        )
+      ).toEqual({ min: -7, max: -5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: -10, max: -5 },
+          { min: -4, max: -1 }
+        )
+      ).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: -4, max: -1 },
+          { min: -10, max: -5 }
+        )
+      ).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: -5, max: -5 },
+          { min: -10, max: -1 }
+        )
+      ).toEqual({ min: -5, max: -5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: -10, max: -1 },
+          { min: -5, max: -5 }
+        )
+      ).toEqual({ min: -5, max: -5 });
     });
 
     it('should handle zero-length intervals correctly', () => {
-      expect(intersectionUtilities.overlapInterval(5, 5, 0, 10)).toEqual([
-        5, 5,
-      ]);
-      expect(intersectionUtilities.overlapInterval(0, 10, 5, 5)).toEqual([
-        5, 5,
-      ]);
-      expect(intersectionUtilities.overlapInterval(5, 5, 6, 6)).toBeNull();
-      expect(intersectionUtilities.overlapInterval(6, 6, 5, 5)).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 5, max: 5 },
+          { min: 0, max: 10 }
+        )
+      ).toEqual({ min: 5, max: 5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 10 },
+          { min: 5, max: 5 }
+        )
+      ).toEqual({ min: 5, max: 5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 5, max: 5 },
+          { min: 6, max: 6 }
+        )
+      ).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 6, max: 6 },
+          { min: 5, max: 5 }
+        )
+      ).toBeNull();
     });
 
     it('should handle intervals with the same start and end', () => {
-      expect(intersectionUtilities.overlapInterval(5, 5, 5, 5)).toEqual([5, 5]);
-      expect(intersectionUtilities.overlapInterval(0, 0, 0, 0)).toEqual([0, 0]);
-      expect(intersectionUtilities.overlapInterval(1, 1, 2, 2)).toBeNull();
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 5, max: 5 },
+          { min: 5, max: 5 }
+        )
+      ).toEqual({ min: 5, max: 5 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 0, max: 0 },
+          { min: 0, max: 0 }
+        )
+      ).toEqual({ min: 0, max: 0 });
+      expect(
+        intersectionUtilities.overlapInterval(
+          { min: 1, max: 1 },
+          { min: 2, max: 2 }
+        )
+      ).toBeNull();
     });
   });
 });

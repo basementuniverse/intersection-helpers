@@ -1,24 +1,21 @@
+import { Interval } from './types';
+
 /**
  * Check if a value is within a specified interval
  */
-export function valueInInterval(
-  value: number,
-  min: number,
-  max: number
-): boolean {
-  return value >= min && value <= max;
+export function valueInInterval(value: number, interval: Interval): boolean {
+  const { min, minInclusive = true, max, maxInclusive = true } = interval;
+  return (
+    (minInclusive ? value >= min : value > min) &&
+    (maxInclusive ? value <= max : value < max)
+  );
 }
 
 /**
  * Check if two intervals (a1, a2) and (b1, b2) overlap
  */
-export function intervalsOverlap(
-  a1: number,
-  a2: number,
-  b1: number,
-  b2: number
-): boolean {
-  return Math.max(a1, b1) <= Math.min(a2, b2);
+export function intervalsOverlap(a: Interval, b: Interval): boolean {
+  return Math.max(a.min, b.min) <= Math.min(a.max, b.max);
 }
 
 /**
@@ -26,14 +23,9 @@ export function intervalsOverlap(
  *
  * If the intervals do not overlap, return null
  */
-export function overlapInterval(
-  a1: number,
-  a2: number,
-  b1: number,
-  b2: number
-): [number, number] | null {
-  if (!intervalsOverlap(a1, a2, b1, b2)) {
+export function overlapInterval(a: Interval, b: Interval): Interval | null {
+  if (!intervalsOverlap(a, b)) {
     return null;
   }
-  return [Math.max(a1, b1), Math.min(a2, b2)];
+  return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
 }

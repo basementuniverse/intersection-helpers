@@ -57,8 +57,6 @@ visualization.width = 400;
 visualization.height = 200;
 const context = visualization.getContext('2d');
 
-const intervalsOverlap = intersectionUtilities.intervalsOverlap;
-
 interval1MinInput.addEventListener('input', update);
 interval1MaxInput.addEventListener('input', update);
 interval2MinInput.addEventListener('input', update);
@@ -86,9 +84,9 @@ function updateOutput() {
   const outputText = [];
   outputText.push(`Interval 1: [${interval1Min}, ${interval1Max}]`);
   outputText.push(`Interval 2: [${interval2Min}, ${interval2Max}]`);
-  outputText.push(`Overlapping: ${intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)}`);
-  if (intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)) {
-    const overlapInterval = intersectionUtilities.overlapInterval(interval1Min, interval1Max, interval2Min, interval2Max);
+  outputText.push(`Overlapping: ${intersectionUtilities.intervalsOverlap({ min: interval1Min, max: interval1Max }, { min: interval2Min, max: interval2Max })}`);
+  if (intersectionUtilities.intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)) {
+    const overlapInterval = intersectionUtilities.overlapInterval({ min: interval1Min, max: interval1Max }, { min: interval2Min, max: interval2Max });
     outputText.push(`Overlap interval: [${overlapInterval[0]}, ${overlapInterval[1]}]`);
   } else {
     outputText.push('Overlap interval: None');
@@ -151,12 +149,10 @@ function updateVisualization() {
   );
 
   // If intervals overlap, highlight the overlapping region
-  if (intervalsOverlap(interval1Min, interval1Max, interval2Min, interval2Max)) {
-    const [overlapStart, overlapEnd] = intersectionUtilities.overlapInterval(
-      interval1Min,
-      interval1Max,
-      interval2Min,
-      interval2Max
+  if (intersectionUtilities.intervalsOverlap({ min: interval1Min, max: interval1Max }, { min: interval2Min, max: interval2Max })) {
+    const { min: overlapStart, max: overlapEnd } = intersectionUtilities.overlapInterval(
+      { min: interval1Min, max: interval1Max },
+      { min: interval2Min, max: interval2Max }
     );
 
     context.fillStyle = 'rgba(128, 0, 128, 0.3)';
