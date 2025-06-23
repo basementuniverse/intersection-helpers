@@ -1,18 +1,5 @@
 import { vec2 } from '@basementuniverse/vec';
-
-/**
- * Check if a value is a vec2
- */
-function isVec2(value: any): value is vec2 {
-  return (
-    value &&
-    typeof value === 'object' &&
-    'x' in value &&
-    typeof value.x === 'number' &&
-    'y' in value &&
-    typeof value.y === 'number'
-  );
-}
+import { isVec2 } from '../utilities/types';
 
 /**
  * A point in 2D space

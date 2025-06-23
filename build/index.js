@@ -2250,9 +2250,7 @@ exports.distance = distance;
  * Returns 0 if either vector is zero-length or if they are equal
  */
 function angleBetween(a, b) {
-    if (vec_1.vec2.len(a) < constants.EPSILON ||
-        vec_1.vec2.len(b) < constants.EPSILON ||
-        vec_1.vec2.len(vec_1.vec2.sub(a, b)) < constants.EPSILON) {
+    if ((0, utilities_1.vectorAlmostZero)(a) || (0, utilities_1.vectorAlmostZero)(b) || (0, utilities_1.vectorsAlmostEqual)(a, b)) {
         return 0;
     }
     // Normalize vectors
@@ -2401,7 +2399,7 @@ exports.rectangleVertices = rectangleVertices;
 /**
  * Convert a list of vertices to a list of edges
  */
-function edgesFromVertices(vertices) {
+function verticesToEdges(vertices) {
     const edges = [];
     const n = vertices.length;
     for (let i = 0; i < n; i++) {
@@ -2411,6 +2409,15 @@ function edgesFromVertices(vertices) {
     }
     return edges;
 }
+/**
+ * Convert a list of edges to a list of vertices
+ *
+ * This function assumes that each edge is connected to the next one
+ */
+// function edgesToVertices(edges: Line[]): Point[] {
+//   const vertices: Point[] = edges.flatMap(edge => [edge.start, edge.end]);
+//   return removeDuplicateAdjacentVertices(vertices);
+// }
 /**
  * Find outer edges in a list of polygons by counting occurrences
  *
@@ -2423,55 +2430,36 @@ function edgesFromVertices(vertices) {
  * polygon that shares them)
  */
 function findOuterEdges(polygons) {
-    // Map to track edge occurrences using a unique key that considers
-    // collinearity and shared endpoints
-    const edgeCounts = new Map();
-    // Helper to get a normalized key for an edge that handles collinear segments
-    const getEdgeKey = (edge) => {
-        // Sort points to ensure consistent order
-        const [p1, p2] = [edge.start, edge.end].sort((x, y) => x.x === y.x ? x.y - y.y : x.x - y.x);
-        return `${p1.x},${p1.y}-${p2.x},${p2.y}`;
-    };
-    // Helper to check if two edges are effectively the same (collinear and
-    // sharing endpoint)
-    const edgesAreCollinear = (edge1, edge2) => {
-        // Check if any endpoints are the same
-        const { start: a1, end: b1 } = edge1;
-        const { start: a2, end: b2 } = edge2;
-        const sharesEndpoint = vec_1.vec2.eq(a1, a2) || vec_1.vec2.eq(a1, b2) || vec_1.vec2.eq(b1, a2) || vec_1.vec2.eq(b1, b2);
-        if (!sharesEndpoint) {
-            return false;
+    const allEdges = polygons.flatMap(polygon => verticesToEdges(polygon.vertices));
+    // Edges are the duplicates if they overlap but have no intersection point
+    // (this implies that they have infinitely many intersection points)
+    const edgesOverlap = (a, b) => {
+        const result = lineIntersectsLine(a, b);
+        if (result.intersects && !result.intersectionPoint) {
+            // Edge case: if the edges intersect and have no intersect point, but
+            // share only one endpoint, then they aren't considered overlapping
+            if (((0, utilities_1.vectorsAlmostEqual)(a.end, b.start) &&
+                !(0, utilities_1.vectorsAlmostEqual)(a.start, b.end)) ||
+                ((0, utilities_1.vectorsAlmostEqual)(a.start, b.end) &&
+                    !(0, utilities_1.vectorsAlmostEqual)(a.end, b.start))) {
+                return false;
+            }
+            return true;
         }
-        // Check if edges are collinear
-        return pointsAreCollinear(a1, b1, a2) && pointsAreCollinear(a1, b1, b2);
+        return false;
     };
-    // First pass: count edges
-    for (const polygon of polygons) {
-        const edges = edgesFromVertices(polygon.vertices);
-        for (const edge of edges) {
-            const key = getEdgeKey(edge);
-            // Check if we already have a collinear edge that shares an endpoint
-            let foundCollinear = false;
-            for (const data of edgeCounts.values()) {
-                if (edgesAreCollinear(edge, data.edge)) {
-                    data.count++;
-                    foundCollinear = true;
-                    break;
-                }
-            }
-            if (!foundCollinear) {
-                edgeCounts.set(key, { count: 1, edge });
-            }
+    // Filter out the edges that appear more than once
+    const result = [];
+    for (const edge of allEdges) {
+        if (!result.some(e => edgesOverlap(e, edge)) &&
+            !allEdges.some(e => e !== edge && edgesOverlap(e, edge))) {
+            result.push(edge); // This edge is an outer edge
         }
     }
-    // Second pass: collect edges that appear only once
-    const outerEdges = [];
-    for (const { count, edge } of edgeCounts.values()) {
-        if (count === 1) {
-            outerEdges.push(edge);
-        }
-    }
-    return outerEdges;
+    // return verticesToEdges(
+    //   optimisePolygon({ vertices: edgesToVertices(result) })?.vertices ?? []
+    // );
+    return result;
 }
 /**
  * Check if a polygon is convex
@@ -2606,7 +2594,7 @@ function removeDuplicateVertices(vertices) {
     const n = vertices.length;
     for (let i = 0; i < n; i++) {
         const current = vertices[i];
-        if (!result.some(v => vec_1.vec2.len(vec_1.vec2.sub(current, v)) < constants.EPSILON)) {
+        if (!result.some(v => (0, utilities_1.vectorsAlmostEqual)(current, v))) {
             result.push(current);
         }
     }
@@ -2621,7 +2609,7 @@ function removeDuplicateAdjacentVertices(vertices) {
     for (let i = 0; i < n; i++) {
         const current = vertices[i];
         const next = (0, utils_1.at)(vertices, i + 1);
-        if (vec_1.vec2.len(vec_1.vec2.sub(current, next)) >= constants.EPSILON) {
+        if (!(0, utilities_1.vectorsAlmostEqual)(current, next)) {
             result.push(current);
         }
     }
@@ -2807,8 +2795,7 @@ exports.pointInCircle = pointInCircle;
  */
 function pointInRectangle(point, rectangle) {
     // Edge case: zero-size rectangle
-    if (rectangle.size.x < constants.EPSILON ||
-        rectangle.size.y < constants.EPSILON) {
+    if ((0, utilities_1.vectorAlmostZero)(rectangle.size)) {
         // If the rectangle has no size, check if the point is at the rectangle's
         // position
         const isAtPosition = vec_1.vec2.eq(point, rectangle.position);
@@ -2902,8 +2889,7 @@ function rayTraverseGrid(ray, cellSize, gridTopLeft, gridBottomRight, maxCells =
     const cells = [];
     // Normalize ray direction and handle zero components
     const rayDir = vec_1.vec2.nor(ray.direction);
-    if (Math.abs(rayDir.x) < constants.EPSILON &&
-        Math.abs(rayDir.y) < constants.EPSILON) {
+    if ((0, utilities_1.vectorAlmostZero)(rayDir)) {
         return { cells };
     }
     // Calculate initial cell coordinates
@@ -3167,7 +3153,7 @@ function rayIntersectsRectangle(ray, rectangle) {
     const vertices = rectangleVertices(rectangle);
     let intersectionPoints = [];
     // Check each edge of the rectangle for intersection
-    const edges = edgesFromVertices(vertices);
+    const edges = verticesToEdges(vertices);
     for (const edge of edges) {
         const intersection = rayIntersectsLine(ray, edge);
         if (intersection.intersects && intersection.intersectionPoint) {
@@ -3239,7 +3225,7 @@ function rayIntersectsPolygon(ray, polygon) {
         return rayIntersectsValidConvexPolygonEdges(ray, findOuterEdges(convexPolygons));
     }
     // For convex polygons, check each edge
-    return rayIntersectsValidConvexPolygonEdges(ray, edgesFromVertices(polygon.vertices));
+    return rayIntersectsValidConvexPolygonEdges(ray, verticesToEdges(polygon.vertices));
 }
 exports.rayIntersectsPolygon = rayIntersectsPolygon;
 /**
@@ -3384,8 +3370,7 @@ exports.lineIntersectsCircle = lineIntersectsCircle;
  */
 function lineIntersectsRectangle(line, rectangle) {
     // Edge case: zero-size rectangle
-    if (rectangle.size.x < constants.EPSILON ||
-        rectangle.size.y < constants.EPSILON) {
+    if ((0, utilities_1.vectorAlmostZero)(rectangle.size)) {
         return {
             intersects: false,
         };
@@ -3401,7 +3386,7 @@ function lineIntersectsRectangle(line, rectangle) {
     }
     let intersectionPoints = [];
     // Check each edge of the rectangle for intersection
-    const edges = edgesFromVertices(vertices);
+    const edges = verticesToEdges(vertices);
     for (const edge of edges) {
         const intersection = lineIntersectsLine(line, edge);
         if (intersection.intersects && intersection.intersectionPoint) {
@@ -3486,7 +3471,7 @@ function lineIntersectsPolygon(line, polygon) {
         return lineIntersectsValidConvexPolygonEdges(line, polygon, findOuterEdges(convexPolygons));
     }
     // For convex polygons, check each edge
-    return lineIntersectsValidConvexPolygonEdges(line, polygon, edgesFromVertices(polygon.vertices));
+    return lineIntersectsValidConvexPolygonEdges(line, polygon, verticesToEdges(polygon.vertices));
 }
 exports.lineIntersectsPolygon = lineIntersectsPolygon;
 /**
@@ -3556,7 +3541,7 @@ exports.circleIntersectsCircle = circleIntersectsCircle;
 function circleIntersectsRectangle(circle, rectangle) {
     // Get rectangle vertices so we can test against rotated rectangles
     const vertices = rectangleVertices(rectangle);
-    const edges = edgesFromVertices(vertices);
+    const edges = verticesToEdges(vertices);
     // Check if circle's center is inside rectangle
     const pointInRectResult = pointInRectangle(circle.position, rectangle);
     const circleCenterInsideRectangle = pointInRectResult.intersects;
@@ -3678,8 +3663,7 @@ function circleIntersectsPolygon(circle, polygon, options) {
                 // Continue if we're still converging (i.e. if we didn't make any
                 // progress in the last iteration then we can stop)
                 (previousSeparation === null ||
-                    vec_1.vec2.len(vec_1.vec2.sub(previousSeparation, currentSeparation)) >
-                        constants.EPSILON) &&
+                    !(0, utilities_1.vectorsAlmostEqual)(previousSeparation, currentSeparation)) &&
                 // Continue until we reach the maximum number of iterations
                 ++iteration < MAX_ITERATIONS) {
                 let minimumSeparations = [];
@@ -3735,7 +3719,7 @@ function circleIntersectsPolygon(circle, polygon, options) {
     const pointInCircleResult = pointInCircle(polygonCenter, circle);
     const polygonCenterInsideCircle = (_f = pointInCircleResult.intersects) !== null && _f !== void 0 ? _f : false;
     // For convex polygons, check each edge directly
-    const edges = edgesFromVertices(polygon.vertices);
+    const edges = verticesToEdges(polygon.vertices);
     const result = circleIntersectsValidConvexPolygonEdges(circle, edges, circleCenterInsidePolygon, polygonCenterInsideCircle);
     if (result.intersects && findMinimumSeparation) {
         // Calculate the minimum separation vector
@@ -3774,19 +3758,16 @@ function projectVerticesToAxis(vertices, axis) {
  * Check if two rectangles intersect
  */
 function rectangleIntersectsRectangle(rectangleA, rectangleB) {
-    // Edge case: if either rectangle has a side with zero length
-    if (rectangleA.size.x < constants.EPSILON ||
-        rectangleA.size.y < constants.EPSILON ||
-        rectangleB.size.x < constants.EPSILON ||
-        rectangleB.size.y < constants.EPSILON) {
+    // Edge case: if either rectangle has zero size, they cannot intersect
+    if ((0, utilities_1.vectorAlmostZero)(rectangleA.size) || (0, utilities_1.vectorAlmostZero)(rectangleB.size)) {
         return { intersects: false };
     }
     // Get vertices of both rectangles
     const verticesA = rectangleVertices(rectangleA);
     const verticesB = rectangleVertices(rectangleB);
     // Get edges of both rectangles
-    const edgesA = edgesFromVertices(verticesA);
-    const edgesB = edgesFromVertices(verticesB);
+    const edgesA = verticesToEdges(verticesA);
+    const edgesB = verticesToEdges(verticesB);
     // Get separating axes by calculating the normals of each edge
     const axes = [];
     for (const edge of [...edgesA, ...edgesB]) {
@@ -3854,7 +3835,17 @@ exports.rectangleIntersectsRectangle = rectangleIntersectsRectangle;
  * Returns null if the polygon is invalid
  */
 function rectangleIntersectsPolygon(rectangle, polygon) {
-    throw new Error('not implemented yet'); // TODO
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Convert rectangle to polygon
+    const rectVertices = rectangleVertices(rectangle);
+    const rectPolygon = {
+        vertices: rectVertices,
+    };
+    // Use polygon intersection algorithm
+    return polygonIntersectsPolygon(rectPolygon, polygon);
 }
 exports.rectangleIntersectsPolygon = rectangleIntersectsPolygon;
 /**
@@ -3863,7 +3854,70 @@ exports.rectangleIntersectsPolygon = rectangleIntersectsPolygon;
  * Returns null if either polygon is invalid
  */
 function polygonIntersectsPolygon(polygonA, polygonB) {
-    throw new Error('not implemented yet'); // TODO
+    // First check if both polygons are valid
+    if (!polygonIsValid(polygonA) || !polygonIsValid(polygonB)) {
+        return null;
+    }
+    // Decompose polygon A if it's concave
+    let convexPolygonsA = [];
+    if (!polygonIsConvex(polygonA)) {
+        const decomposedA = decomposePolygon(polygonA);
+        if (!decomposedA) {
+            return null;
+        }
+        convexPolygonsA = decomposedA;
+    }
+    else {
+        convexPolygonsA = [polygonA];
+    }
+    // Decompose polygon B if it's concave
+    let convexPolygonsB = [];
+    if (!polygonIsConvex(polygonB)) {
+        const decomposedB = decomposePolygon(polygonB);
+        if (!decomposedB) {
+            return null;
+        }
+        convexPolygonsB = decomposedB;
+    }
+    else {
+        convexPolygonsB = [polygonB];
+    }
+    // Get the outer edges of the decomposed polygons
+    const outerEdgesA = findOuterEdges(convexPolygonsA);
+    const outerEdgesB = findOuterEdges(convexPolygonsB);
+    // Find intersection points between outer edges only
+    const intersectionPoints = [];
+    for (const edgeA of outerEdgesA) {
+        for (const edgeB of outerEdgesB) {
+            const intersection = lineIntersectsLine(edgeA, edgeB);
+            if (intersection.intersects && intersection.intersectionPoint) {
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+        }
+    }
+    // Check if one polygon is contained within the other
+    // A polygon is contained within another if the centroids of all its
+    // convex sub-polygons are inside the other polygon
+    if (intersectionPoints.length === 0) {
+        const polygonACentroids = convexPolygonsA.map(polygonCentroid);
+        if (polygonACentroids.every(centroid => { var _a; return (_a = pointInPolygon(centroid, polygonB)) === null || _a === void 0 ? void 0 : _a.intersects; })) {
+            return { intersects: true };
+        }
+        const polygonBCentroids = convexPolygonsB.map(polygonCentroid);
+        if (polygonBCentroids.every(centroid => { var _a; return (_a = pointInPolygon(centroid, polygonA)) === null || _a === void 0 ? void 0 : _a.intersects; })) {
+            return { intersects: true };
+        }
+    }
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    return {
+        intersects: uniquePoints.length > 0,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+        DEBUG: {
+            outerEdgesA,
+            outerEdgesB,
+        },
+    };
 }
 exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 
@@ -3874,28 +3928,18 @@ exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 /*!*************************!*\
   !*** ./src/2d/types.ts ***!
   \*************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isPolygon = exports.isAABB = exports.isRectangle = exports.isCircle = exports.isLine = exports.isRay = exports.isPoint = void 0;
-/**
- * Check if a value is a vec2
- */
-function isVec2(value) {
-    return (value &&
-        typeof value === 'object' &&
-        'x' in value &&
-        typeof value.x === 'number' &&
-        'y' in value &&
-        typeof value.y === 'number');
-}
+const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
 /**
  * Type guard to check if a value is a Point
  */
 function isPoint(value) {
-    return isVec2(value);
+    return (0, types_1.isVec2)(value);
 }
 exports.isPoint = isPoint;
 /**
@@ -3907,7 +3951,7 @@ function isRay(value) {
         'origin' in value &&
         isPoint(value.origin) &&
         'direction' in value &&
-        isVec2(value.direction));
+        (0, types_1.isVec2)(value.direction));
 }
 exports.isRay = isRay;
 /**
@@ -3943,7 +3987,7 @@ function isRectangle(value) {
         'position' in value &&
         isPoint(value.position) &&
         'size' in value &&
-        isVec2(value.size) &&
+        (0, types_1.isVec2)(value.size) &&
         ('rotation' in value ? typeof value.rotation === 'number' : true));
 }
 exports.isRectangle = isRectangle;
@@ -3956,7 +4000,7 @@ function isAABB(value) {
         'position' in value &&
         isPoint(value.position) &&
         'size' in value &&
-        isVec2(value.size));
+        (0, types_1.isVec2)(value.size));
 }
 exports.isAABB = isAABB;
 /**
@@ -4022,6 +4066,14 @@ function angleBetween(a, b) {
     return Math.acos(vec_1.vec3.dot(a, b) / (vec_1.vec3.len(a) * vec_1.vec3.len(b)));
 }
 exports.angleBetween = angleBetween;
+// pointsAreCollinear
+// lineToRay
+// rayToLine
+// aabb
+// aabbToBox
+// aabbsOverlap
+// boxIsRotated
+// boxVertices
 // pointOnRay
 // pointOnLine
 // pointInSphere
@@ -4125,12 +4177,62 @@ exports.EPSILON = 1e-6;
 /*!********************************!*\
   !*** ./src/utilities/index.ts ***!
   \********************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.overlapInterval = exports.intervalsOverlap = exports.valueInInterval = void 0;
+exports.overlapInterval = exports.intervalsOverlap = exports.valueInInterval = exports.vectorsAlmostEqual = exports.vectorAlmostZero = void 0;
+const constants = __importStar(__webpack_require__(/*! ./constants */ "./src/utilities/constants.ts"));
+const types_1 = __webpack_require__(/*! ./types */ "./src/utilities/types.ts");
+function vectorAlmostZero(v) {
+    if ((0, types_1.isVec3)(v)) {
+        return (Math.abs(v.x) < constants.EPSILON &&
+            Math.abs(v.y) < constants.EPSILON &&
+            Math.abs(v.z) < constants.EPSILON);
+    }
+    if ((0, types_1.isVec2)(v)) {
+        return (Math.abs(v.x) < constants.EPSILON && Math.abs(v.y) < constants.EPSILON);
+    }
+    return false;
+}
+exports.vectorAlmostZero = vectorAlmostZero;
+function vectorsAlmostEqual(a, b) {
+    if ((0, types_1.isVec3)(a) && (0, types_1.isVec3)(b)) {
+        return (Math.abs(a.x - b.x) < constants.EPSILON &&
+            Math.abs(a.y - b.y) < constants.EPSILON &&
+            Math.abs(a.z - b.z) < constants.EPSILON);
+    }
+    if ((0, types_1.isVec2)(a) && (0, types_1.isVec2)(b)) {
+        return (Math.abs(a.x - b.x) < constants.EPSILON &&
+            Math.abs(a.y - b.y) < constants.EPSILON);
+    }
+    return false;
+}
+exports.vectorsAlmostEqual = vectorsAlmostEqual;
 /**
  * Check if a value is within a specified interval
  */
@@ -4159,6 +4261,47 @@ function overlapInterval(a, b) {
     return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
 }
 exports.overlapInterval = overlapInterval;
+
+
+/***/ }),
+
+/***/ "./src/utilities/types.ts":
+/*!********************************!*\
+  !*** ./src/utilities/types.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isVec3 = exports.isVec2 = void 0;
+/**
+ * Check if a value is a vec2
+ */
+function isVec2(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'x' in value &&
+        typeof value.x === 'number' &&
+        'y' in value &&
+        typeof value.y === 'number' &&
+        !('z' in value));
+}
+exports.isVec2 = isVec2;
+/**
+ * Check if a value is a vec3
+ */
+function isVec3(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'x' in value &&
+        typeof value.x === 'number' &&
+        'y' in value &&
+        typeof value.y === 'number' &&
+        'z' in value &&
+        typeof value.z === 'number');
+}
+exports.isVec3 = isVec3;
 
 
 /***/ })
