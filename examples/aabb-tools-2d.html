@@ -1,0 +1,324 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  aabb,
+  aabbsOverlap,
+  distance,
+  vec2,
+} = intersection2d;
+
+// Constants
+const POINT_RADIUS = 4;
+const ROTATION_OFFSET = 30;
+
+// State
+const points = [
+  // Circle
+  { x: 100, y: 100, color: 'blue', label: 'Circle center' },
+  { x: 150, y: 100, color: 'lightblue', label: 'Circle size' },
+  // Rectangle
+  { x: 200, y: 200, color: 'red', label: 'Rectangle center' },
+  { x: 250, y: 150, color: 'pink', label: 'Rectangle size' },
+  { x: 230, y: 200, color: 'orange', label: 'Rectangle rotation' },
+  // Line
+  { x: 100, y: 300, color: 'green', label: 'Line start' },
+  { x: 150, y: 350, color: 'lightgreen', label: 'Line end' },
+  // Polygon (5 vertices)
+  { x: 300, y: 300, color: 'purple', label: 'Vertex 1' },
+  { x: 350, y: 300, color: 'purple', label: 'Vertex 2' },
+  { x: 350, y: 350, color: 'purple', label: 'Vertex 3' },
+  { x: 325, y: 375, color: 'purple', label: 'Vertex 4' },
+  { x: 300, y: 350, color: 'purple', label: 'Vertex 5' }
+];
+let activePoint = null;
+let initialAngle = 0;
+let initialRotation = 0;
+let initialSizeAngle = 0;
+
+// Event listeners
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing point
+  for (const p of points) {
+    if (distance(point, p) < 10) {
+      activePoint = p;
+      if (p === points[4]) { // Rectangle rotation point
+        const center = points[2];
+        initialAngle = Math.atan2(point.y - center.y, point.x - center.x);
+        initialRotation = getRectangle().rotation || 0;
+        initialSizeAngle = Math.atan2(points[3].y - center.y, points[3].x - center.x);
+      }
+      return;
+    }
+  }
+}
+
+function handleMouseMove(event) {
+  if (!activePoint) return;
+
+  const rect = visualization.getBoundingClientRect();
+  const newX = event.clientX - rect.left;
+  const newY = event.clientY - rect.top;
+
+  if (activePoint === points[0]) { // Circle center
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+    activePoint.x = newX;
+    activePoint.y = newY;
+    points[1].x += deltaX;
+    points[1].y += deltaY;
+  } else if (activePoint === points[2]) { // Rectangle center
+    const deltaX = newX - activePoint.x;
+    const deltaY = newY - activePoint.y;
+    activePoint.x = newX;
+    activePoint.y = newY;
+    points[3].x += deltaX;
+    points[3].y += deltaY;
+    points[4].x += deltaX;
+    points[4].y += deltaY;
+  } else if (activePoint === points[4]) { // Rectangle rotation
+    const center = points[2];
+    const currentAngle = Math.atan2(newY - center.y, newX - center.x);
+    const angleDiff = currentAngle - initialAngle;
+    const newRotation = initialRotation + angleDiff;
+
+    activePoint.x = center.x + Math.cos(currentAngle) * ROTATION_OFFSET;
+    activePoint.y = center.y + Math.sin(currentAngle) * ROTATION_OFFSET;
+
+    const size = points[3];
+    const sizeRadius = distance(center, size);
+    points[3].x = center.x + Math.cos(initialSizeAngle + angleDiff) * sizeRadius;
+    points[3].y = center.y + Math.sin(initialSizeAngle + angleDiff) * sizeRadius;
+  } else {
+    activePoint.x = newX;
+    activePoint.y = newY;
+  }
+
+  update();
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function getCircle() {
+  return {
+    position: points[0],
+    radius: distance(points[0], points[1])
+  };
+}
+
+function getRectangle() {
+  const center = points[2];
+  const sizePoint = points[3];
+  const rotationPoint = points[4];
+  const rotation = Math.atan2(rotationPoint.y - center.y, rotationPoint.x - center.x);
+
+  const relativeX = sizePoint.x - center.x;
+  const relativeY = sizePoint.y - center.y;
+  const cosRotation = Math.cos(-rotation);
+  const sinRotation = Math.sin(-rotation);
+  const width = 2 * (relativeX * cosRotation - relativeY * sinRotation);
+  const height = 2 * (relativeX * sinRotation + relativeY * cosRotation);
+
+  return {
+    position: center,
+    size: { x: Math.abs(width), y: Math.abs(height) },
+    rotation
+  };
+}
+
+function getLine() {
+  return {
+    start: points[5],
+    end: points[6]
+  };
+}
+
+function getPolygon() {
+  return {
+    vertices: points.slice(7)
+  };
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Get shapes
+  const circle = getCircle();
+  const rectangle = getRectangle();
+  const line = getLine();
+  const polygon = getPolygon();
+
+  // Get AABBs
+  const circleAABB = aabb(circle);
+  const rectangleAABB = aabb(rectangle);
+  const lineAABB = aabb(line);
+  const polygonAABB = aabb(polygon);
+
+  // Check overlap between rectangle and polygon AABBs
+  const overlap = aabbsOverlap(rectangleAABB, polygonAABB);
+
+  // Draw overlapping region if it exists
+  if (overlap.intersects && overlap.overlap) {
+    context.fillStyle = 'rgba(255, 255, 0, 0.2)';
+    context.fillRect(
+      overlap.overlap.position.x,
+      overlap.overlap.position.y,
+      overlap.overlap.size.x,
+      overlap.overlap.size.y
+    );
+  }
+
+  // Draw circle
+  context.strokeStyle = 'blue';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw circle AABB
+  context.strokeStyle = 'blue';
+  context.setLineDash([5, 5]);
+  context.strokeRect(
+    circleAABB.position.x,
+    circleAABB.position.y,
+    circleAABB.size.x,
+    circleAABB.size.y
+  );
+  context.setLineDash([]);
+
+  // Draw rectangle
+  context.strokeStyle = 'red';
+  context.lineWidth = 2;
+  context.save();
+  context.translate(rectangle.position.x, rectangle.position.y);
+  context.rotate(rectangle.rotation);
+  context.strokeRect(
+    -rectangle.size.x / 2,
+    -rectangle.size.y / 2,
+    rectangle.size.x,
+    rectangle.size.y
+  );
+  context.restore();
+
+  // Draw rectangle AABB
+  context.strokeStyle = 'red';
+  context.setLineDash([5, 5]);
+  context.strokeRect(
+    rectangleAABB.position.x,
+    rectangleAABB.position.y,
+    rectangleAABB.size.x,
+    rectangleAABB.size.y
+  );
+  context.setLineDash([]);
+
+  // Draw line
+  context.strokeStyle = 'green';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(line.start.x, line.start.y);
+  context.lineTo(line.end.x, line.end.y);
+  context.stroke();
+
+  // Draw line AABB
+  context.strokeStyle = 'green';
+  context.setLineDash([5, 5]);
+  context.strokeRect(
+    lineAABB.position.x,
+    lineAABB.position.y,
+    lineAABB.size.x,
+    lineAABB.size.y
+  );
+  context.setLineDash([]);
+
+  // Draw polygon
+  context.strokeStyle = 'purple';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(polygon.vertices[0].x, polygon.vertices[0].y);
+  for (let i = 1; i < polygon.vertices.length; i++) {
+    context.lineTo(polygon.vertices[i].x, polygon.vertices[i].y);
+  }
+  context.closePath();
+  context.stroke();
+
+  // Draw polygon AABB
+  context.strokeStyle = 'purple';
+  context.setLineDash([5, 5]);
+  context.strokeRect(
+    polygonAABB.position.x,
+    polygonAABB.position.y,
+    polygonAABB.size.x,
+    polygonAABB.size.y
+  );
+  context.setLineDash([]);
+
+  // Draw control lines
+  context.strokeStyle = '#999';
+  context.lineWidth = 1;
+  context.setLineDash([4, 4]);
+
+  // Circle radius line
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  context.lineTo(points[1].x, points[1].y);
+  context.stroke();
+
+  // Rectangle control lines
+  context.beginPath();
+  context.moveTo(points[2].x, points[2].y);
+  context.lineTo(points[3].x, points[3].y);
+  context.moveTo(points[2].x, points[2].y);
+  context.lineTo(points[4].x, points[4].y);
+  context.stroke();
+
+  // Draw points
+  context.setLineDash([]);
+  points.forEach(point => {
+    context.fillStyle = point.color;
+    context.beginPath();
+    context.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = 'black';
+    context.font = '12px sans-serif';
+    context.textAlign = 'left';
+    context.textBaseline = 'bottom';
+    context.fillText(point.label, point.x + 8, point.y - 4);
+  });
+}
+
+// Initial render
+update();
+
+</script>

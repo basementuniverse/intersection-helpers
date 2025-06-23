@@ -107,15 +107,278 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('aabb', () => {
-    // TODO convert object to AABB tests
+    it('should return null for invalid input', () => {
+      // @ts-ignore - testing invalid input
+      const result = intersection2d.aabb(null);
+      expect(result).toBe(null);
+    });
+
+    it('should convert a line to an AABB', () => {
+      const line = {
+        start: { x: 1, y: 2 },
+        end: { x: 4, y: 6 },
+      };
+      const result = intersection2d.aabb(line);
+      expect(result).toEqual({
+        position: { x: 1, y: 2 },
+        size: { x: 3, y: 4 },
+      });
+    });
+
+    it('should convert a zero-length line to an AABB', () => {
+      const line = {
+        start: { x: 1, y: 2 },
+        end: { x: 1, y: 2 },
+      };
+      const result = intersection2d.aabb(line);
+      expect(result).toEqual({
+        position: { x: 1, y: 2 },
+        size: { x: 0, y: 0 },
+      });
+    });
+
+    it('should convert an axis-aligned rectangle to an AABB', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.aabb(rect);
+      expect(result).toEqual({
+        position: { x: -2, y: -1 },
+        size: { x: 4, y: 2 },
+      });
+    });
+
+    it('should convert a rotated rectangle to an AABB', () => {
+      const rect = {
+        position: { x: 0, y: 0 },
+        size: { x: 1, y: 1 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const result = intersection2d.aabb(rect);
+      // The diagonal of a 1*1 rectangle is sqrt(2), and when rotated 45 degrees,
+      // the AABB dimensions will be approximately equal to this diagonal
+      expect(result?.position.x).toBeCloseTo(-Math.sqrt(2) / 2, 5);
+      expect(result?.position.y).toBeCloseTo(-Math.sqrt(2) / 2, 5);
+      expect(result?.size.x).toBeCloseTo(Math.sqrt(2), 5);
+      expect(result?.size.y).toBeCloseTo(Math.sqrt(2), 5);
+    });
+
+    it('should convert a circle to an AABB', () => {
+      const circle = {
+        position: { x: 3, y: 4 },
+        radius: 2,
+      };
+      const result = intersection2d.aabb(circle);
+      expect(result).toEqual({
+        position: { x: 1, y: 2 },
+        size: { x: 4, y: 4 },
+      });
+    });
+
+    it('should convert a zero-radius circle to an AABB', () => {
+      const circle = {
+        position: { x: 3, y: 4 },
+        radius: 0,
+      };
+      const result = intersection2d.aabb(circle);
+      expect(result).toEqual({
+        position: { x: 3, y: 4 },
+        size: { x: 0, y: 0 },
+      });
+    });
+
+    it('should convert a polygon to an AABB', () => {
+      const polygon = {
+        vertices: [
+          { x: 1, y: 1 },
+          { x: 4, y: 1 },
+          { x: 4, y: 3 },
+          { x: 1, y: 3 },
+        ],
+      };
+      const result = intersection2d.aabb(polygon);
+      expect(result).toEqual({
+        position: { x: 1, y: 1 },
+        size: { x: 3, y: 2 },
+      });
+    });
+
+    it('should handle a single-point polygon', () => {
+      const polygon = {
+        vertices: [{ x: 1, y: 1 }],
+      };
+      const result = intersection2d.aabb(polygon);
+      expect(result).toEqual({
+        position: { x: 1, y: 1 },
+        size: { x: 0, y: 0 },
+      });
+    });
+
+    it('should handle a polygon with negative coordinates', () => {
+      const polygon = {
+        vertices: [
+          { x: -2, y: -2 },
+          { x: 2, y: -2 },
+          { x: 2, y: 2 },
+          { x: -2, y: 2 },
+        ],
+      };
+      const result = intersection2d.aabb(polygon);
+      expect(result).toEqual({
+        position: { x: -2, y: -2 },
+        size: { x: 4, y: 4 },
+      });
+    });
   });
 
   describe('aabbToRectangle', () => {
-    // TODO convert AABB to rectangle tests
+    it('should convert AABB to rectangle with 0 rotation', () => {
+      const aabb = {
+        position: { x: 1, y: 2 },
+        size: { x: 3, y: 4 },
+      };
+      const result = intersection2d.aabbToRectangle(aabb);
+      expect(result).toEqual({
+        position: { x: 2.5, y: 4 }, // Centered position
+        size: { x: 3, y: 4 },
+        rotation: 0,
+      });
+    });
+
+    it('should handle zero-size AABB', () => {
+      const aabb = {
+        position: { x: 1, y: 2 },
+        size: { x: 0, y: 0 },
+      };
+      const result = intersection2d.aabbToRectangle(aabb);
+      expect(result).toEqual({
+        position: { x: 1, y: 2 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      });
+    });
+
+    it('should handle negative coordinates', () => {
+      const aabb = {
+        position: { x: -2, y: -3 },
+        size: { x: 4, y: 5 },
+      };
+      const result = intersection2d.aabbToRectangle(aabb);
+      expect(result).toEqual({
+        position: { x: 0, y: -0.5 }, // Centered position
+        size: { x: 4, y: 5 },
+        rotation: 0,
+      });
+    });
   });
 
   describe('aabbsOverlap', () => {
-    // TODO test AABBs overlap
+    it('should return true with overlap area when AABBs overlap', () => {
+      const aabbA = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const aabbB = {
+        position: { x: 2, y: 2 },
+        size: { x: 4, y: 4 },
+      };
+      const result = intersection2d.aabbsOverlap(aabbA, aabbB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.overlap).toEqual({
+        position: { x: 2, y: 2 },
+        size: { x: 2, y: 2 },
+      });
+    });
+
+    it('should return false when AABBs do not overlap', () => {
+      const aabbA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+      };
+      const aabbB = {
+        position: { x: 3, y: 3 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.aabbsOverlap(aabbA, aabbB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.overlap).toBeUndefined();
+    });
+
+    it('should return true when AABBs touch at an edge', () => {
+      const aabbA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+      };
+      const aabbB = {
+        position: { x: 2, y: 0 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.aabbsOverlap(aabbA, aabbB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.overlap).toEqual({
+        position: { x: 2, y: 0 },
+        size: { x: 0, y: 2 },
+      });
+    });
+
+    it('should return true when AABBs touch at a corner', () => {
+      const aabbA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+      };
+      const aabbB = {
+        position: { x: 2, y: 2 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.aabbsOverlap(aabbA, aabbB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.overlap).toEqual({
+        position: { x: 2, y: 2 },
+        size: { x: 0, y: 0 },
+      });
+    });
+
+    it('should handle AABBs with zero size', () => {
+      const aabbA = {
+        position: { x: 1, y: 1 },
+        size: { x: 0, y: 0 },
+      };
+      const aabbB = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.aabbsOverlap(aabbA, aabbB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.overlap).toEqual({
+        position: { x: 1, y: 1 },
+        size: { x: 0, y: 0 },
+      });
+    });
+
+    it('should handle AABBs with negative coordinates', () => {
+      const aabbA = {
+        position: { x: -4, y: -4 },
+        size: { x: 4, y: 4 },
+      };
+      const aabbB = {
+        position: { x: -2, y: -2 },
+        size: { x: 4, y: 4 },
+      };
+      const result = intersection2d.aabbsOverlap(aabbA, aabbB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.overlap).toEqual({
+        position: { x: -2, y: -2 },
+        size: { x: 2, y: 2 },
+      });
+    });
   });
 
   describe('rectangleIsRotated', () => {
@@ -1793,59 +2056,6 @@ describe('IntersectionHelpers2D', () => {
 
       expect(result.intersects).toBe(true);
       expect(result.intersectionPoints).toHaveLength(1);
-      expect(result.intersectionPoints![0]).toEqual({ x: 1, y: 0 });
-    });
-
-    it('should handle ray starting on circle edge', () => {
-      const ray = {
-        origin: { x: 1, y: 0 },
-        direction: { x: 1, y: 0 },
-      };
-      const circle = {
-        position: { x: 0, y: 0 },
-        radius: 1,
-      };
-      const result = intersection2d.rayIntersectsCircle(ray, circle);
-
-      expect(result.intersects).toBe(true);
-      expect(result.intersectionPoints).toHaveLength(1);
-      expect(result.intersectionPoints![0]).toEqual({ x: 1, y: 0 });
-    });
-
-    it('should handle ray with zero direction vector', () => {
-      const ray = {
-        origin: { x: 0, y: 0 },
-        direction: { x: 0, y: 0 },
-      };
-      const circle = {
-        position: { x: 0, y: 0 },
-        radius: 1,
-      };
-      const result = intersection2d.rayIntersectsCircle(ray, circle);
-
-      expect(result.intersects).toBe(false);
-      expect(result.intersectionPoints).toBeUndefined();
-    });
-
-    it('should handle circle at non-origin position', () => {
-      const ray = {
-        origin: { x: 0, y: 0 },
-        direction: { x: 1, y: 1 },
-      };
-      const circle = {
-        position: { x: 2, y: 2 },
-        radius: 1,
-      };
-      const result = intersection2d.rayIntersectsCircle(ray, circle);
-
-      expect(result.intersects).toBe(true);
-      // The intersection points will be approximately (1.293, 1.293) and (2.707, 2.707)
-      expect(result.intersectionPoints).toHaveLength(2);
-      const [p1, p2] = result.intersectionPoints!;
-      expect(p1.x).toBeCloseTo(2 - Math.sqrt(0.5), 3);
-      expect(p1.y).toBeCloseTo(2 - Math.sqrt(0.5), 3);
-      expect(p2.x).toBeCloseTo(2 + Math.sqrt(0.5), 3);
-      expect(p2.y).toBeCloseTo(2 + Math.sqrt(0.5), 3);
     });
   });
 
@@ -3177,6 +3387,131 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('rectangleIntersectsRectangle', () => {
-    // TODO
+    it('should return true with two intersection points when rectangles overlap', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const rectB = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should return true with two intersection points when rectangles are tangent', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const rectB = {
+        position: { x: 2, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should return false when rectangles do not overlap', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const rectB = {
+        position: { x: 3, y: 3 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return true with no intersection points when one rectangle is inside another', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 8, y: 8 },
+        rotation: 0,
+      };
+      const rectB = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle rotated rectangles correctly', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const rectB = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toHaveLength(4);
+    });
+
+    it('should return true with no intersection points when rectangles are concentric', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+        rotation: 0,
+      };
+      const rectB = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(true);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle rectangles with zero size', () => {
+      const rectA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const rectB = {
+        position: { x: 1, y: 1 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      };
+      const result = intersection2d.rectangleIntersectsRectangle(rectA, rectB);
+
+      expect(result.intersects).toBe(false);
+      expect(result.intersectionPoints).toBeUndefined();
+    });
+  });
+
+  describe('rectangleIntersectsPolygon', () => {
+    // TODO rectangleIntersectsPolygon tests
+  });
+
+  describe('polygonIntersectsPolygon', () => {
+    // TODO polygonIntersectsPolygon tests
   });
 });

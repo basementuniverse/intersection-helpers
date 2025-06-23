@@ -25,6 +25,14 @@ export function angleBetween(a: vec3, b: vec3): number {
   return Math.acos(vec3.dot(a, b) / (vec3.len(a) * vec3.len(b)));
 }
 
+// pointsAreCollinear
+// lineToRay
+// rayToLine
+// aabb
+// aabbToBox
+// aabbsOverlap
+// boxIsRotated
+// boxVertices
 // pointOnRay
 // pointOnLine
 // pointInSphere
