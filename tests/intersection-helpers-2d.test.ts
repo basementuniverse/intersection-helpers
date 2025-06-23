@@ -3508,10 +3508,486 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('rectangleIntersectsPolygon', () => {
-    // TODO rectangleIntersectsPolygon tests
+    it('should return true with intersection points when rectangle overlaps convex polygon', () => {
+      const rectangle = {
+        position: { x: 1, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: -1 },
+          { x: 2, y: -1 },
+          { x: 2, y: 1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints?.length).toBeGreaterThan(0);
+    });
+
+    it('should return true with intersection points when rectangle overlaps concave polygon', () => {
+      const rectangle = {
+        position: { x: 2, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 3, y: 0 },
+          { x: 3, y: 2 },
+          { x: 2, y: 1 }, // Concave point
+          { x: 1, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints?.length).toBeGreaterThan(0);
+    });
+
+    it('should return true without intersection points when rectangle is entirely inside polygon', () => {
+      const rectangle = {
+        position: { x: 1, y: 1 },
+        size: { x: 1, y: 1 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 3, y: 0 },
+          { x: 3, y: 3 },
+          { x: 0, y: 3 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return true without intersection points when polygon is entirely inside rectangle', () => {
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 6, y: 6 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 0, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return false when rectangle and polygon are separate', () => {
+      const rectangle = {
+        position: { x: 4, y: 4 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 1, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle rotated rectangle intersection correctly', () => {
+      const rectangle = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+        rotation: Math.PI / 4, // 45 degrees
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints?.length).toBeGreaterThan(0);
+    });
+
+    it('should return null for invalid polygon (less than 3 vertices)', () => {
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid polygon (self-intersecting)', () => {
+      const rectangle = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+          { x: 0, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).toBeNull();
+    });
+
+    it('should handle rectangle with zero size correctly', () => {
+      const rectangle = {
+        position: { x: 1, y: 1 },
+        size: { x: 0, y: 0 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 1, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle edge case where rectangle corner touches polygon vertex', () => {
+      const rectangle = {
+        position: { x: 4, y: 2 },
+        size: { x: 2, y: 2 },
+        rotation: 0,
+      };
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 3, y: 0 },
+          { x: 3, y: 1 },
+          { x: 1, y: 1 },
+        ],
+      };
+
+      const result = intersection2d.rectangleIntersectsPolygon(
+        rectangle,
+        polygon
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints?.length).toBe(1);
+    });
   });
 
   describe('polygonIntersectsPolygon', () => {
-    // TODO polygonIntersectsPolygon tests
+    it('should return true with intersection points when convex polygons overlap', () => {
+      const polygonA = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const polygonB = {
+        vertices: [
+          { x: 1, y: 1 },
+          { x: 3, y: 1 },
+          { x: 3, y: 3 },
+          { x: 1, y: 3 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        polygonA,
+        polygonB
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should return true with intersection points when concave polygons overlap', () => {
+      const polygonA = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 3, y: 0 },
+          { x: 3, y: 3 },
+          { x: 2, y: 1 }, // Concave point
+          { x: 0, y: 3 },
+        ],
+      };
+      const polygonB = {
+        vertices: [
+          { x: 1, y: 1 },
+          { x: 4, y: 1 },
+          { x: 4, y: 4 },
+          { x: 3, y: 2 }, // Concave point
+          { x: 1, y: 4 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        polygonA,
+        polygonB
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints?.length).toBeGreaterThan(0);
+    });
+
+    it('should return true without intersection points when one polygon is inside another', () => {
+      const outer = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 4 },
+          { x: 0, y: 4 },
+        ],
+      };
+      const inner = {
+        vertices: [
+          { x: 1, y: 1 },
+          { x: 2, y: 1 },
+          { x: 2, y: 2 },
+          { x: 1, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(outer, inner);
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should return false when polygons do not intersect', () => {
+      const polygonA = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const polygonB = {
+        vertices: [
+          { x: 3, y: 3 },
+          { x: 5, y: 3 },
+          { x: 5, y: 5 },
+          { x: 3, y: 5 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        polygonA,
+        polygonB
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(false);
+      expect(result?.intersectionPoints).toBeUndefined();
+    });
+
+    it('should handle polygons that share an edge', () => {
+      const polygonA = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const polygonB = {
+        vertices: [
+          { x: 2, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 2 },
+          { x: 2, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        polygonA,
+        polygonB
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints).toHaveLength(2);
+    });
+
+    it('should handle polygons that share a vertex', () => {
+      const polygonA = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const polygonB = {
+        vertices: [
+          { x: 2, y: 2 },
+          { x: 4, y: 2 },
+          { x: 4, y: 4 },
+          { x: 2, y: 4 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        polygonA,
+        polygonB
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints).toHaveLength(1);
+    });
+
+    it('should return null for invalid first polygon', () => {
+      const invalidPolygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 }, // Only 2 vertices
+        ],
+      };
+      const validPolygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        invalidPolygon,
+        validPolygon
+      );
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid second polygon', () => {
+      const validPolygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const selfIntersectingPolygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+          { x: 0, y: 2 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        validPolygon,
+        selfIntersectingPolygon
+      );
+      expect(result).toBeNull();
+    });
+
+    it('should handle complex concave polygon intersection', () => {
+      const polygonA = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 4 },
+          { x: 2, y: 2 }, // Concave point
+          { x: 0, y: 4 },
+        ],
+      };
+      const polygonB = {
+        vertices: [
+          { x: 1, y: 1 },
+          { x: 5, y: 1 },
+          { x: 5, y: 5 },
+          { x: 3, y: 3 }, // Concave point
+          { x: 1, y: 5 },
+        ],
+      };
+
+      const result = intersection2d.polygonIntersectsPolygon(
+        polygonA,
+        polygonB
+      );
+      expect(result).not.toBeNull();
+      expect(result?.intersects).toBe(true);
+      expect(result?.intersectionPoints).toBeDefined();
+      expect(result?.intersectionPoints?.length).toBeGreaterThanOrEqual(2);
+    });
   });
 });

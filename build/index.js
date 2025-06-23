@@ -2410,16 +2410,7 @@ function verticesToEdges(vertices) {
     return edges;
 }
 /**
- * Convert a list of edges to a list of vertices
- *
- * This function assumes that each edge is connected to the next one
- */
-// function edgesToVertices(edges: Line[]): Point[] {
-//   const vertices: Point[] = edges.flatMap(edge => [edge.start, edge.end]);
-//   return removeDuplicateAdjacentVertices(vertices);
-// }
-/**
- * Find outer edges in a list of polygons by counting occurrences
+ * Find outer edges in a list of polygons
  *
  * We assume that the polygons were the result of decomposing a concave polygon
  * into a set of convex polygons, and as such they are all convex and share
@@ -2456,9 +2447,6 @@ function findOuterEdges(polygons) {
             result.push(edge); // This edge is an outer edge
         }
     }
-    // return verticesToEdges(
-    //   optimisePolygon({ vertices: edgesToVertices(result) })?.vertices ?? []
-    // );
     return result;
 }
 /**
@@ -3839,6 +3827,10 @@ function rectangleIntersectsPolygon(rectangle, polygon) {
     if (!polygonIsValid(polygon)) {
         return null;
     }
+    // Edge case: if the rectangle has zero size, there is no intersection
+    if ((0, utilities_1.vectorAlmostZero)(rectangle.size)) {
+        return { intersects: false };
+    }
     // Convert rectangle to polygon
     const rectVertices = rectangleVertices(rectangle);
     const rectPolygon = {
@@ -3899,11 +3891,15 @@ function polygonIntersectsPolygon(polygonA, polygonB) {
     // A polygon is contained within another if the centroids of all its
     // convex sub-polygons are inside the other polygon
     if (intersectionPoints.length === 0) {
-        const polygonACentroids = convexPolygonsA.map(polygonCentroid);
+        const polygonACentroids = convexPolygonsA
+            .map(polygonCentroid)
+            .filter(centroid => !!centroid);
         if (polygonACentroids.every(centroid => { var _a; return (_a = pointInPolygon(centroid, polygonB)) === null || _a === void 0 ? void 0 : _a.intersects; })) {
             return { intersects: true };
         }
-        const polygonBCentroids = convexPolygonsB.map(polygonCentroid);
+        const polygonBCentroids = convexPolygonsB
+            .map(polygonCentroid)
+            .filter(centroid => !!centroid);
         if (polygonBCentroids.every(centroid => { var _a; return (_a = pointInPolygon(centroid, polygonA)) === null || _a === void 0 ? void 0 : _a.intersects; })) {
             return { intersects: true };
         }

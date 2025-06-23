@@ -2186,6 +2186,11 @@ export function rectangleIntersectsPolygon(
     return null;
   }
 
+  // Edge case: if the rectangle has zero size, there is no intersection
+  if (vectorAlmostZero(rectangle.size)) {
+    return { intersects: false };
+  }
+
   // Convert rectangle to polygon
   const rectVertices = rectangleVertices(rectangle);
   const rectPolygon: Polygon = {
@@ -2257,19 +2262,23 @@ export function polygonIntersectsPolygon(
   // A polygon is contained within another if the centroids of all its
   // convex sub-polygons are inside the other polygon
   if (intersectionPoints.length === 0) {
-    const polygonACentroids = convexPolygonsA.map(polygonCentroid);
+    const polygonACentroids = convexPolygonsA
+      .map(polygonCentroid)
+      .filter(centroid => !!centroid);
     if (
       polygonACentroids.every(
-        centroid => pointInPolygon(centroid!, polygonB)?.intersects
+        centroid => pointInPolygon(centroid as vec2, polygonB)?.intersects
       )
     ) {
       return { intersects: true };
     }
 
-    const polygonBCentroids = convexPolygonsB.map(polygonCentroid);
+    const polygonBCentroids = convexPolygonsB
+      .map(polygonCentroid)
+      .filter(centroid => !!centroid);
     if (
       polygonBCentroids.every(
-        centroid => pointInPolygon(centroid!, polygonA)?.intersects
+        centroid => pointInPolygon(centroid as vec2, polygonA)?.intersects
       )
     ) {
       return { intersects: true };
