@@ -1,5 +1,6 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const DtsBundleWebpack = require('dts-bundle-webpack');
 
 module.exports = {
   devtool: false,
@@ -38,5 +39,13 @@ module.exports = {
   externals: [],
   plugins: [
     new CleanWebpackPlugin(),
+    new DtsBundleWebpack({
+      name: '@basementuniverse/intersection-helpers',
+      main: 'build/src/index.d.ts',
+      baseDir: 'build',
+      out: 'index.d.ts',
+      removeSource: true,
+      indent: '  ',
+    }),
   ],
 };

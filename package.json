@@ -5,7 +5,8 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "build": "webpack && cp ./src/index.d.ts ./build/index.d.ts",
+    "clean": "rm -rf build/src",
+    "build": "webpack && npm run clean",
     "test": "jest",
     "test:only": "jest --t \"@only\""
   },
@@ -13,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/basementuniverse/canvas-helpers.git"
+    "url": "git+https://github.com/basementuniverse/intersection-helpers.git"
   },
   "jest": {
     "preset": "ts-jest",
@@ -21,13 +22,14 @@
   },
   "dependencies": {
     "@basementuniverse/utils": "^1.7.0",
-    "@basementuniverse/vec": "^2.3.3",
+    "@basementuniverse/vec": "^2.3.4",
     "poly-decomp": "^0.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^18.11.12",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "dts-bundle-webpack": "^1.0.2",
     "jest": "^30.0.0",
     "ts-jest": "^29.4.0",
     "ts-loader": "^8.0.7",

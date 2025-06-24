@@ -80,6 +80,29 @@ export function isCircle(value: any): value is Circle {
 }
 
 /**
+ * An axis-aligned bounding box (AABB) defined by the position of its top-left
+ * corner and its width and height
+ */
+export type AABB = {
+  position: Point;
+  size: vec2;
+};
+
+/**
+ * Check if a value is an AABB
+ */
+export function isAABB(value: any): value is AABB {
+  return (
+    value &&
+    typeof value === 'object' &&
+    'position' in value &&
+    isPoint(value.position) &&
+    'size' in value &&
+    isVec2(value.size)
+  );
+}
+
+/**
  * A rectangle defined by the position of its center, side lengths, and
  * optional rotation
  *
@@ -103,29 +126,6 @@ export function isRectangle(value: any): value is Rectangle {
     'size' in value &&
     isVec2(value.size) &&
     ('rotation' in value ? typeof value.rotation === 'number' : true)
-  );
-}
-
-/**
- * An axis-aligned bounding box (AABB) defined by the position of its top-left
- * corner and its width and height
- */
-export type AABB = {
-  position: Point;
-  size: vec2;
-};
-
-/**
- * Check if a value is an AABB
- */
-export function isAABB(value: any): value is AABB {
-  return (
-    value &&
-    typeof value === 'object' &&
-    'position' in value &&
-    isPoint(value.position) &&
-    'size' in value &&
-    isVec2(value.size)
   );
 }
 

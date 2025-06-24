@@ -3909,10 +3909,6 @@ function polygonIntersectsPolygon(polygonA, polygonB) {
     return {
         intersects: uniquePoints.length > 0,
         intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
-        DEBUG: {
-            outerEdgesA,
-            outerEdgesB,
-        },
     };
 }
 exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
@@ -3929,7 +3925,7 @@ exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isPolygon = exports.isAABB = exports.isRectangle = exports.isCircle = exports.isLine = exports.isRay = exports.isPoint = void 0;
+exports.isPolygon = exports.isRectangle = exports.isAABB = exports.isCircle = exports.isLine = exports.isRay = exports.isPoint = void 0;
 const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
 /**
  * Type guard to check if a value is a Point
@@ -3975,6 +3971,18 @@ function isCircle(value) {
 }
 exports.isCircle = isCircle;
 /**
+ * Check if a value is an AABB
+ */
+function isAABB(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec2)(value.size));
+}
+exports.isAABB = isAABB;
+/**
  * Check if a value is a Rectangle
  */
 function isRectangle(value) {
@@ -3987,18 +3995,6 @@ function isRectangle(value) {
         ('rotation' in value ? typeof value.rotation === 'number' : true));
 }
 exports.isRectangle = isRectangle;
-/**
- * Check if a value is an AABB
- */
-function isAABB(value) {
-    return (value &&
-        typeof value === 'object' &&
-        'position' in value &&
-        isPoint(value.position) &&
-        'size' in value &&
-        (0, types_1.isVec2)(value.size));
-}
-exports.isAABB = isAABB;
 /**
  * Check if a value is a Polygon
  */
@@ -4037,7 +4033,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.angleBetween = exports.distance = void 0;
+exports.rayToLine = exports.lineToRay = exports.angleBetween = exports.distance = void 0;
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
 /**
@@ -4062,41 +4058,26 @@ function angleBetween(a, b) {
     return Math.acos(vec_1.vec3.dot(a, b) / (vec_1.vec3.len(a) * vec_1.vec3.len(b)));
 }
 exports.angleBetween = angleBetween;
-// pointsAreCollinear
-// lineToRay
-// rayToLine
-// aabb
-// aabbToBox
-// aabbsOverlap
-// boxIsRotated
-// boxVertices
-// pointOnRay
-// pointOnLine
-// pointInSphere
-// pointOnPlane
-// pointInTriangle
-// pointInBox
-// rayTraverseGrid
-// rayIntersectsRay
-// rayIntersectsLine
-// rayIntersectsSphere
-// rayIntersectsTriangle
-// rayIntersectsPlane
-// rayIntersectsBox
-// lineIntersectsRay
-// lineIntersectsLine
-// lineIntersectsSphere
-// lineIntersectsTriangle
-// lineIntersectsPlane
-// lineIntersectsBox
-// sphereIntersectsSphere
-// sphereIntersectsTriangle
-// sphereIntersectsPlane
-// sphereIntersectsBox
-// triangleIntersectsTriangle
-// triangleOnPlane
-// planeIntersectsPlane
-// boxIntersectsBox
+/**
+ * Convert a line segment to a ray
+ */
+function lineToRay(line) {
+    return {
+        origin: line.start,
+        direction: vec_1.vec3.nor(vec_1.vec3.sub(line.end, line.start)),
+    };
+}
+exports.lineToRay = lineToRay;
+/**
+ * Convert a ray to a line segment
+ */
+function rayToLine(ray, length = 1) {
+    return {
+        start: ray.origin,
+        end: vec_1.vec3.add(ray.origin, vec_1.vec3.mul(ray.direction, length)),
+    };
+}
+exports.rayToLine = rayToLine;
 
 
 /***/ }),
@@ -4105,11 +4086,105 @@ exports.angleBetween = angleBetween;
 /*!*************************!*\
   !*** ./src/3d/types.ts ***!
   \*************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isPolygon = exports.isPlane = exports.isCuboid = exports.isAABB = exports.isSphere = exports.isLine = exports.isRay = exports.isPoint = void 0;
+const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
+/**
+ * Type guard to check if a value is a Point
+ */
+function isPoint(value) {
+    return (0, types_1.isVec3)(value);
+}
+exports.isPoint = isPoint;
+/**
+ * Check if a value is a Ray
+ */
+function isRay(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'origin' in value &&
+        isPoint(value.origin) &&
+        'direction' in value &&
+        (0, types_1.isVec3)(value.direction));
+}
+exports.isRay = isRay;
+/**
+ * Check if a value is a Line
+ */
+function isLine(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'start' in value &&
+        isPoint(value.start) &&
+        'end' in value &&
+        isPoint(value.end));
+}
+exports.isLine = isLine;
+/**
+ * Check if a value is a Sphere
+ */
+function isSphere(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'radius' in value &&
+        typeof value.radius === 'number');
+}
+exports.isSphere = isSphere;
+/**
+ * Check if a value is an AABB
+ */
+function isAABB(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec3)(value.size));
+}
+exports.isAABB = isAABB;
+/**
+ * Check if a value is a Cuboid
+ */
+function isCuboid(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec3)(value.size) &&
+        ('rotation' in value ? (0, types_1.isVec3)(value.rotation) : true));
+}
+exports.isCuboid = isCuboid;
+/**
+ * Check if a value is a Plane
+ */
+function isPlane(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'point' in value &&
+        isPoint(value.point) &&
+        'normal' in value &&
+        (0, types_1.isVec3)(value.normal));
+}
+exports.isPlane = isPlane;
+/**
+ * Check if a value is a Polygon
+ */
+function isPolygon(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'vertices' in value &&
+        Array.isArray(value.vertices) &&
+        value.vertices.length === 3 &&
+        value.vertices.every(isPoint));
+}
+exports.isPolygon = isPolygon;
 
 
 /***/ }),

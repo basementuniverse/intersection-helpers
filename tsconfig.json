@@ -4,7 +4,7 @@
     "target": "es2019",
     "module": "commonjs",
     "allowJs": false,
-    "declaration": false,
+    "declaration": true,
     "outDir": "./build",
     "rootDir": "./",
     "strict": true,

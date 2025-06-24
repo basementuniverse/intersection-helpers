@@ -190,7 +190,6 @@ export function aabbsOverlap(
  * Check if a rectangle is rotated
  */
 export function rectangleIsRotated(rectangle: Rectangle): boolean {
-  // A rectangle is considered rotated if its rotation is not zero
   return (
     rectangle.rotation !== undefined &&
     Math.abs(rectangle.rotation) > constants.EPSILON
@@ -2212,7 +2211,6 @@ export function polygonIntersectsPolygon(
 ): {
   intersects: boolean;
   intersectionPoints?: Point[];
-  [key: string]: any;
 } | null {
   // First check if both polygons are valid
   if (!polygonIsValid(polygonA) || !polygonIsValid(polygonB)) {
@@ -2291,9 +2289,5 @@ export function polygonIntersectsPolygon(
   return {
     intersects: uniquePoints.length > 0,
     intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
-    DEBUG: {
-      outerEdgesA,
-      outerEdgesB,
-    },
   };
 }
