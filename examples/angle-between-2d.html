@@ -7,9 +7,13 @@ canvas {
 }
 
 </style>
+
 <a href="index.html">Back to examples</a><br>
+
 <div id="output"></div>
+
 <canvas id="visualization" width="400" height="400"></canvas>
+
 <script src="../build/index.js"></script>
 <script>
 
@@ -18,11 +22,12 @@ const output = document.getElementById('output');
 const context = visualization.getContext('2d');
 
 const distance = intersection2d.distance;
-const angle = intersection2d.angle;
+const angleBetween = intersection2d.angleBetween;
 
 // Initial points
-let point1 = { x: 100, y: 200 };
-let point2 = { x: 300, y: 200 };
+let pointA = { x: 100, y: 100 };
+let pointB = { x: 200, y: 200 };
+let pointC = { x: 300, y: 200 };
 let activePoint = null;
 
 visualization.addEventListener('mousedown', handleMouseDown);
@@ -35,11 +40,13 @@ function handleMouseDown(event) {
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
-  // Check if click is near either point
-  if (distance({ x, y }, point1) < 10) {
-    activePoint = point1;
-  } else if (distance({ x, y }, point2) < 10) {
-    activePoint = point2;
+  // Check if click is near any point
+  if (distance({ x, y }, pointA) < 10) {
+    activePoint = pointA;
+  } else if (distance({ x, y }, pointB) < 10) {
+    activePoint = pointB;
+  } else if (distance({ x, y }, pointC) < 10) {
+    activePoint = pointC;
   }
 }
 
@@ -61,44 +68,48 @@ function update() {
   // Clear canvas
   context.clearRect(0, 0, visualization.width, visualization.height);
 
-  // Draw connecting line
+  // Create line segments
+  const lineBA = { start: pointB, end: pointA };
+  const lineBC = { start: pointB, end: pointC };
+
+  // Draw connecting lines
   context.strokeStyle = '#666';
-  context.setLineDash([5, 5]);
   context.beginPath();
-  context.moveTo(point1.x, point1.y);
-  context.lineTo(point2.x, point2.y);
+  context.moveTo(pointB.x, pointB.y);
+  context.lineTo(pointA.x, pointA.y);
+  context.moveTo(pointB.x, pointB.y);
+  context.lineTo(pointC.x, pointC.y);
   context.stroke();
-  context.setLineDash([]);
 
   // Draw angle arc
-  const vector1 = { x: 1, y: 0 }; // Reference vector (horizontal)
-  const vector2 = {
-    x: point2.x - point1.x,
-    y: point2.y - point1.y
-  };
-
-  const theta = angle(vector1, vector2);
+  const angle = angleBetween(lineBA, lineBC);
   const radius = 40;
 
   context.strokeStyle = 'rgba(0, 128, 255, 0.5)';
   context.beginPath();
-  context.arc(point1.x, point1.y, radius, 0, theta);
+  // Calculate start angle (BA line)
+  const startAngle = Math.atan2(pointA.y - pointB.y, pointA.x - pointB.x);
+  context.arc(pointB.x, pointB.y, radius, startAngle, startAngle + angle);
   context.stroke();
 
   // Draw points
-  context.fillStyle = 'blue';
+  context.fillStyle = 'blue';  // Point A
   context.beginPath();
-  context.arc(point1.x, point1.y, 6, 0, Math.PI * 2);
+  context.arc(pointA.x, pointA.y, 6, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = 'red';
+  context.fillStyle = 'green';  // Point B (center)
   context.beginPath();
-  context.arc(point2.x, point2.y, 6, 0, Math.PI * 2);
+  context.arc(pointB.x, pointB.y, 6, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = 'red';  // Point C
+  context.beginPath();
+  context.arc(pointC.x, pointC.y, 6, 0, Math.PI * 2);
   context.fill();
 
   // Update output text
-  const dist = distance(point1, point2);
-  output.textContent = `Distance: ${dist.toFixed(2)} pixels, Angle: ${theta.toFixed(2)} radians (${(theta * 180 / Math.PI).toFixed(1)}°)`;
+  output.textContent = `Angle between lines: ${angle.toFixed(2)} radians (${(angle * 180 / Math.PI).toFixed(1)}°)`;
 }
 
 update();

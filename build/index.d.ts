@@ -17,14 +17,19 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     */
   export function distance(a: Point, b: Point): number;
   /**
-    * Calculate the clockwise angle from vector a to vector b
+    * Calculate the clockwise angle from point a to point b
     *
     * The result is in radians and ranges from 0 to 2π (360 degrees)
-    * A positive angle indicates clockwise rotation from a to b
     *
-    * Returns 0 if either vector is zero-length or if they are equal
+    * Returns 0 if the vectors are equal
     */
-  export function angleBetween(a: vec2, b: vec2): number;
+  export function angle(a: Point, b: Point): number;
+  /**
+    * Calculate the clockwise angle between two lines
+    *
+    * Returns 0 if either line is zero-length
+    */
+  export function angleBetween(a: Line, b: Line): number;
   /**
     * Check if points are collinear
     */
@@ -60,7 +65,10 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Get the vertices of a rectangle
     *
     * Vertices will be returned in clockwise order starting at the top-left:
-    * top-left, top-right, bottom-right, bottom-left
+    * - Top-left
+    * - Top-right
+    * - Bottom-right
+    * - Bottom-left
     */
   export function rectangleVertices(rectangle: Rectangle): Point[];
   /**
@@ -101,6 +109,10 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * collinear)
     */
   export function polygonCentroid(polygon: Polygon): Point | null;
+  /**
+    * Calculate the convex hull of a polygon
+    */
+  export function polygonConvexHull(polygon: Polygon): Polygon | null;
   /**
     * Optimise a polygon by removing collinear vertices and duplicate adjacent
     * vertices
@@ -324,7 +336,7 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
 
 declare module '@basementuniverse/intersection-helpers/src/3d' {
   import { vec3 } from '@basementuniverse/vec';
-  import { Line, Point, Ray } from '@basementuniverse/intersection-helpers/src/3d/types';
+  import { AABB, Cuboid, Line, Mesh, Point, Polygon, Ray, Sphere } from '@basementuniverse/intersection-helpers/src/3d/types';
   export * from '@basementuniverse/intersection-helpers/src/3d/types';
   /**
     * Calculate the distance between two points in 3D space
@@ -341,7 +353,7 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * @param b Second vector
     * @returns Angle in radians
     */
-  export function angleBetween(a: vec3, b: vec3): number;
+  export function angle(a: vec3, b: vec3): number;
   /**
     * Convert a line segment to a ray
     */
@@ -350,6 +362,84 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * Convert a ray to a line segment
     */
   export function rayToLine(ray: Ray, length?: number): Line;
+  export function aabb(o: Line | Sphere | Cuboid | Polygon | Mesh): AABB | null;
+  /**
+    * Convert an AABB to a cuboid
+    */
+  export function aabbToCuboid(aabb: AABB): Cuboid;
+  /**
+    * Check if two AABBs overlap and return the overlapping area if they do
+    */
+  export function aabbsOverlap(a: AABB, b: AABB): {
+      intersects: boolean;
+      overlap?: AABB;
+  };
+  /**
+    * Check if a cuboid is rotated
+    */
+  export function cuboidIsRotated(cuboid: Cuboid): boolean;
+  /**
+    * Get the vertices of a cuboid
+    *
+    * Vertices will be returned in the following order:
+    * - Upper face (max z, clockwise starting at the top-left)
+    *   - Top-left
+    *   - Top-right
+    *   - Bottom-right
+    *   - Bottom-left
+    * - Lower face (min z, clockwise starting at the top-left)
+    *   - Top-left
+    *   - Top-right
+    *   - Bottom-right
+    *   - Bottom-left
+    */
+  export function cuboidVertices(cuboid: Cuboid): Point[];
+  /**
+    * Check if a polygon is valid
+    *
+    * A polygon is valid if it has exactly 3 vertices
+    */
+  export function polygonIsValid(polygon: Polygon): boolean;
+  /**
+    * Calculate the 2D area of a polygon in 3D space
+    *
+    * Returns null if the polygon is invalid
+    */
+  export function polygonArea(polygon: Polygon): number | null;
+  /**
+    * Calculate the centroid of a polygon
+    *
+    * Returns null if the polygon is invalid
+    */
+  export function polygonCentroid(polygon: Polygon): Point | null;
+  /**
+    * Convert a list of polygons to a mesh
+    *
+    * This optimises the number of vertices and edges by merging common vertices
+    */
+  export function polygonsToMesh(polygons: Polygon[]): Mesh;
+  /**
+    * Convert a mesh to a list of polygons
+    */
+  export function meshToPolygons(mesh: Mesh): Polygon[];
+  /**
+    * Convert a mesh to a list of edges
+    */
+  export function meshToEdges(mesh: Mesh): Line[];
+  /**
+    * Calculate the centroid of a mesh
+    */
+  export function meshCentroid(mesh: Mesh): Point;
+  /**
+    * Check if a point is on a ray
+    *
+    * Also returns the closest point on the ray and the distance to it
+    */
+  export function pointOnRay(point: Point, ray: Ray): {
+      intersects: boolean;
+      closestPoint?: Point;
+      distance: number;
+  };
 }
 
 declare module '@basementuniverse/intersection-helpers/src/utilities' {
@@ -557,6 +647,20 @@ declare module '@basementuniverse/intersection-helpers/src/3d/types' {
     * Check if a value is a Polygon
     */
   export function isPolygon(value: any): value is Polygon;
+  /**
+    * A mesh defined by its vertices and indices
+    *
+    * Vertices are points in 3D space, and indices define how these vertices
+    * are connected to form triangles
+    */
+  export type Mesh = {
+      vertices: Point[];
+      indices: number[];
+  };
+  /**
+    * Check if a value is a Mesh
+    */
+  export function isMesh(value: any): value is Mesh;
 }
 
 declare module '@basementuniverse/intersection-helpers/src/utilities/types' {

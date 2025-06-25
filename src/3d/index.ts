@@ -1,13 +1,18 @@
+// import { at } from '@basementuniverse/utils';
 import { vec3 } from '@basementuniverse/vec';
-import { vectorAlmostZero } from '../utilities';
+import { isPolygon } from '../2d';
+import { overlapInterval, vectorAlmostZero } from '../utilities';
+import * as constants from '../utilities/constants';
 import {
   AABB,
   Cuboid,
   isCuboid,
   isLine,
+  isMesh,
   isSphere,
   Line,
   Mesh,
+  Plane,
   Point,
   Polygon,
   Ray,
@@ -34,7 +39,7 @@ export function distance(a: Point, b: Point): number {
  * @param b Second vector
  * @returns Angle in radians
  */
-export function angleBetween(a: vec3, b: vec3): number {
+export function angle(a: vec3, b: vec3): number {
   return Math.acos(vec3.dot(a, b) / (vec3.len(a) * vec3.len(b)));
 }
 
@@ -82,10 +87,37 @@ export function aabb(o: Line | Sphere | Cuboid | Polygon | Mesh): AABB | null {
   }
 
   if (isCuboid(o)) {
-    // TODO
+    const vertices = cuboidVertices(o);
+    const position = vec3(
+      Math.min(...vertices.map(v => v.x)),
+      Math.min(...vertices.map(v => v.y)),
+      Math.min(...vertices.map(v => v.z))
+    );
+    return {
+      position,
+      size: vec3(
+        Math.max(...vertices.map(v => v.x)) - position.x,
+        Math.max(...vertices.map(v => v.y)) - position.y,
+        Math.max(...vertices.map(v => v.z)) - position.z
+      ),
+    };
   }
 
-  // TODO
+  if (isMesh(o) || isPolygon(o)) {
+    const position = vec3(
+      Math.min(...o.vertices.map(v => v.x)),
+      Math.min(...o.vertices.map(v => v.y)),
+      Math.min(...o.vertices.map(v => v.z))
+    );
+    return {
+      position,
+      size: vec3(
+        Math.max(...o.vertices.map(v => v.x)) - position.x,
+        Math.max(...o.vertices.map(v => v.y)) - position.y,
+        Math.max(...o.vertices.map(v => v.z)) - position.z
+      ),
+    };
+  }
 
   return null;
 }
@@ -111,7 +143,35 @@ export function aabbsOverlap(
   intersects: boolean;
   overlap?: AABB;
 } {
-  throw new Error('Not implemented yet'); // TODO
+  const overlapX = overlapInterval(
+    { min: a.position.x, max: a.position.x + a.size.x },
+    { min: b.position.x, max: b.position.x + b.size.x }
+  );
+  const overlapY = overlapInterval(
+    { min: a.position.y, max: a.position.y + a.size.y },
+    { min: b.position.y, max: b.position.y + b.size.y }
+  );
+  const overlapZ = overlapInterval(
+    { min: a.position.z, max: a.position.z + a.size.z },
+    { min: b.position.z, max: b.position.z + b.size.z }
+  );
+
+  // If the AABBs don't overlap on one or more axes, they don't overlap at all
+  if (!overlapX || !overlapY || !overlapZ) {
+    return { intersects: false };
+  }
+
+  return {
+    intersects: true,
+    overlap: {
+      position: vec3(overlapX.min, overlapY.min, overlapZ.min),
+      size: vec3(
+        overlapX.max - overlapX.min,
+        overlapY.max - overlapY.min,
+        overlapZ.max - overlapZ.min
+      ),
+    },
+  };
 }
 
 /**
@@ -119,4 +179,221 @@ export function aabbsOverlap(
  */
 export function cuboidIsRotated(cuboid: Cuboid): boolean {
   return cuboid.rotation !== undefined && !vectorAlmostZero(cuboid.rotation);
+}
+
+/**
+ * Get the vertices of a cuboid
+ *
+ * Vertices will be returned in the following order:
+ * - Upper face (max z, clockwise starting at the top-left)
+ *   - Top-left
+ *   - Top-right
+ *   - Bottom-right
+ *   - Bottom-left
+ * - Lower face (min z, clockwise starting at the top-left)
+ *   - Top-left
+ *   - Top-right
+ *   - Bottom-right
+ *   - Bottom-left
+ */
+export function cuboidVertices(cuboid: Cuboid): Point[] {
+  const { position, size, rotation = vec3() } = cuboid;
+  const halfSize = vec3.div(size, 2);
+
+  // Calculate the 8 corners of the cuboid
+  let upperTopLeftOffset = vec3.fromComponents(vec3.swiz(halfSize, 'XYz'));
+  let upperTopRightOffset = vec3.fromComponents(vec3.swiz(halfSize, 'xYz'));
+  let upperBottomRightOffset = vec3.fromComponents(vec3.swiz(halfSize, 'xyz'));
+  let upperBottomLeftOffset = vec3.fromComponents(vec3.swiz(halfSize, 'Xyz'));
+  let lowerTopLeftOffset = vec3.fromComponents(vec3.swiz(halfSize, 'XYZ'));
+  let lowerTopRightOffset = vec3.fromComponents(vec3.swiz(halfSize, 'xYZ'));
+  let lowerBottomRightOffset = vec3.fromComponents(vec3.swiz(halfSize, 'xyZ'));
+  let lowerBottomLeftOffset = vec3.fromComponents(vec3.swiz(halfSize, 'XyZ'));
+
+  // Rotate the offsets if the cuboid is rotated
+  if (cuboidIsRotated(cuboid)) {
+    upperTopLeftOffset = vec3.rota(upperTopLeftOffset, rotation);
+    upperTopRightOffset = vec3.rota(upperTopRightOffset, rotation);
+    upperBottomRightOffset = vec3.rota(upperBottomRightOffset, rotation);
+    upperBottomLeftOffset = vec3.rota(upperBottomLeftOffset, rotation);
+    lowerTopLeftOffset = vec3.rota(lowerTopLeftOffset, rotation);
+    lowerTopRightOffset = vec3.rota(lowerTopRightOffset, rotation);
+    lowerBottomRightOffset = vec3.rota(lowerBottomRightOffset, rotation);
+    lowerBottomLeftOffset = vec3.rota(lowerBottomLeftOffset, rotation);
+  }
+  return [
+    // Upper face vertices
+    vec3.add(position, upperTopLeftOffset),
+    vec3.add(position, upperTopRightOffset),
+    vec3.add(position, upperBottomRightOffset),
+    vec3.add(position, upperBottomLeftOffset),
+    // Lower face vertices
+    vec3.add(position, lowerTopLeftOffset),
+    vec3.add(position, lowerTopRightOffset),
+    vec3.add(position, lowerBottomRightOffset),
+    vec3.add(position, lowerBottomLeftOffset),
+  ];
+}
+
+/**
+ * Convert a list of vertices to a list of edges
+ */
+// function verticesToEdges(vertices: Point[]): Line[] {
+//   const edges: Line[] = [];
+//   for (let i = 0; i < vertices.length; i++) {
+//     const start = vertices[i];
+//     const end = at(vertices, i + 1);
+//     edges.push({ start, end });
+//   }
+//   return edges;
+// }
+
+/**
+ * Check if a polygon is valid
+ *
+ * A polygon is valid if it has exactly 3 vertices
+ */
+export function polygonIsValid(polygon: Polygon): boolean {
+  return polygon.vertices.length === 3;
+}
+
+/**
+ * Calculate the 2D area of a polygon in 3D space
+ *
+ * Returns null if the polygon is invalid
+ */
+export function polygonArea(polygon: Polygon): number | null {
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+  const [a, b, c] = polygon.vertices;
+
+  // Use the shoelace formula to calculate the area of the triangle
+  // https://en.wikipedia.org/wiki/Shoelace_formula
+  return (
+    Math.abs(
+      a.x * (b.y - b.x) * a.y +
+        b.x * (c.y - c.x) * b.y +
+        c.x * (a.y - a.x) * c.y
+    ) / 2
+  );
+}
+
+/**
+ * Calculate the centroid of a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+export function polygonCentroid(polygon: Polygon): Point | null {
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+  return vec3.div(
+    vec3.add(
+      polygon.vertices[0],
+      vec3.add(polygon.vertices[1], polygon.vertices[2])
+    ),
+    3
+  );
+}
+
+/**
+ * Convert a list of polygons to a mesh
+ *
+ * This optimises the number of vertices and edges by merging common vertices
+ */
+export function polygonsToMesh(polygons: Polygon[]): Mesh {
+  throw new Error('not implemented yet'); // TODO
+}
+
+/**
+ * Convert a mesh to a list of polygons
+ */
+export function meshToPolygons(mesh: Mesh): Polygon[] {
+  throw new Error('not implemented yet'); // TODO
+}
+
+/**
+ * Convert a mesh to a list of edges
+ */
+export function meshToEdges(mesh: Mesh): Line[] {
+  throw new Error('not implemented yet'); // TODO
+}
+
+/**
+ * Calculate the centroid of a mesh
+ */
+export function meshCentroid(mesh: Mesh): Point {
+  throw new Error('not implemented yet'); // TODO
+}
+
+/**
+ * Check if a point is on a ray
+ *
+ * Also returns the closest point on the ray and the distance to it
+ */
+export function pointOnRay(
+  point: Point,
+  ray: Ray
+): {
+  intersects: boolean;
+  closestPoint?: Point;
+  distance: number;
+} {
+  // Vector from ray origin to point
+  const toPoint = vec3.sub(point, ray.origin);
+
+  // Get normalized ray direction
+  const rayDirection = vec3.nor(ray.direction);
+
+  // Project toPoint onto the ray direction
+  const projection = vec3.dot(toPoint, rayDirection);
+
+  // Calculate closest point on ray
+  const closestPoint = vec3.add(
+    ray.origin,
+    vec3.mul(rayDirection, Math.max(0, projection))
+  );
+
+  // Calculate distance from point to closest point
+  const distance = vec3.len(vec3.sub(point, closestPoint));
+
+  return {
+    // Point is on ray if distance is zero and projection is non-negative
+    intersects: distance < constants.EPSILON && projection >= 0,
+    closestPoint,
+    distance,
+  };
+}
+
+export function rayIntersectsSphere(ray: Ray, sphere: Sphere): boolean {
+  const oc = vec3.sub(ray.origin, sphere.position);
+  const a = vec3.dot(ray.direction, ray.direction);
+  const b = 2.0 * vec3.dot(oc, ray.direction);
+  const c = vec3.dot(oc, oc) - sphere.radius * sphere.radius;
+  const discriminant = b * b - 4 * a * c;
+
+  // Only consider intersections in the positive direction along the ray
+  if (discriminant < 0) {
+    return false;
+  }
+  const sqrtDiscriminant = Math.sqrt(discriminant);
+  const t1 = (-b - sqrtDiscriminant) / (2 * a);
+  const t2 = (-b + sqrtDiscriminant) / (2 * a);
+  return t1 >= 0 || t2 >= 0;
+}
+
+export function rayIntersectsPlane(ray: Ray, plane: Plane): vec3 | null {
+  const denominator = vec3.dot(ray.direction, plane.normal);
+  if (Math.abs(denominator) < constants.EPSILON) {
+    // Ray is parallel to the plane
+    return null;
+  }
+  const t =
+    vec3.dot(vec3.sub(plane.point, ray.origin), plane.normal) / denominator;
+  if (t < 0) {
+    // Intersection is behind the ray's origin
+    return null;
+  }
+  return vec3.add(ray.origin, vec3.scale(ray.direction, t));
 }

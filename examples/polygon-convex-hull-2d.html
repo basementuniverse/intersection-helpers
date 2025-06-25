@@ -1,0 +1,171 @@
+<style>
+
+canvas {
+  border: 1px solid black;
+  margin: 1em;
+  cursor: pointer;
+}
+
+</style>
+
+<a href="index.html">Back to examples</a><br>
+
+<div id="output"></div>
+
+<button id="clear">Clear polygon</button><br>
+
+<canvas id="visualization" width="400" height="400"></canvas>
+
+<script src="../build/index.js"></script>
+<script>
+
+const visualization = document.getElementById('visualization');
+const output = document.getElementById('output');
+const clearButton = document.getElementById('clear');
+const context = visualization.getContext('2d');
+
+// Import required functions
+const {
+  polygonConvexHull,
+  distance
+} = intersection2d;
+
+// Constants
+const POINT_RADIUS = 4;
+
+// State
+const vertices = [];
+let activePoint = null;
+let hoveredVertex = null;
+
+// Event listeners
+clearButton.addEventListener('click', () => {
+  vertices.length = 0;
+  update();
+});
+
+visualization.addEventListener('mousedown', handleMouseDown);
+visualization.addEventListener('mousemove', handleMouseMove);
+visualization.addEventListener('mouseup', handleMouseUp);
+visualization.addEventListener('mouseleave', handleMouseUp);
+
+function handleMouseDown(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  // Check if click is near any existing vertex
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      activePoint = vertex;
+      return;
+    }
+  }
+
+  // If not dragging, add new vertex
+  vertices.push({ x: point.x, y: point.y });
+  update();
+}
+
+function handleMouseMove(event) {
+  const rect = visualization.getBoundingClientRect();
+  const point = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+
+  if (activePoint) {
+    // Update the position of the active point
+    activePoint.x = point.x;
+    activePoint.y = point.y;
+    update();
+    return;
+  }
+
+  // Update hover state
+  hoveredVertex = null;
+  for (const vertex of vertices) {
+    if (distance(point, vertex) < 10) {
+      hoveredVertex = vertex;
+      break;
+    }
+  }
+  visualization.style.cursor = hoveredVertex ? 'pointer' : 'default';
+}
+
+function handleMouseUp() {
+  activePoint = null;
+}
+
+function update() {
+  // Clear canvas
+  context.clearRect(0, 0, visualization.width, visualization.height);
+
+  // Create polygon if we have enough vertices
+  const polygon = vertices.length >= 3 ? { vertices } : null;
+  const convexHull = polygon ? polygonConvexHull(polygon) : null;
+
+  // Draw original polygon
+  if (vertices.length > 0) {
+    // Draw lines between vertices
+    context.strokeStyle = '#666';
+    context.lineWidth = 2;
+    context.beginPath();
+    context.setLineDash([]);
+    context.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      context.lineTo(vertices[i].x, vertices[i].y);
+    }
+    // Close the polygon if we have at least 3 vertices
+    if (vertices.length >= 3) {
+      context.lineTo(vertices[0].x, vertices[0].y);
+    }
+    context.stroke();
+
+    // Draw vertices and their numbers
+    context.fillStyle = 'blue';
+    vertices.forEach((vertex, i) => {
+      // Draw vertex point
+      context.beginPath();
+      context.arc(vertex.x, vertex.y, POINT_RADIUS, 0, Math.PI * 2);
+      context.fill();
+
+      // Draw vertex number
+      context.fillStyle = 'black';
+      context.font = '12px sans-serif';
+      context.textAlign = 'left';
+      context.textBaseline = 'bottom';
+      context.fillText(`${i + 1}`, vertex.x + 8, vertex.y - 4);
+      context.fillStyle = 'blue';
+    });
+  }
+
+  // Draw convex hull if available
+  if (convexHull) {
+    context.strokeStyle = '#00cc00';
+    context.lineWidth = 3;
+    context.beginPath();
+    context.setLineDash([5, 5]);
+    context.moveTo(convexHull.vertices[0].x, convexHull.vertices[0].y);
+    for (let i = 1; i < convexHull.vertices.length; i++) {
+      context.lineTo(convexHull.vertices[i].x, convexHull.vertices[i].y);
+    }
+    context.lineTo(convexHull.vertices[0].x, convexHull.vertices[0].y);
+    context.stroke();
+  }
+
+  // Update output text
+  if (vertices.length < 3) {
+    output.textContent = `Add at least 3 vertices to create a polygon. Current vertices: ${vertices.length}`;
+  } else {
+    const hullVertices = convexHull ? convexHull.vertices.length : 0;
+    output.textContent = `Original polygon: ${vertices.length} vertices, Convex hull: ${hullVertices} vertices`;
+  }
+}
+
+// Initial render
+update();
+
+</script>

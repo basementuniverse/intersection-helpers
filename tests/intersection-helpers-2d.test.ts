@@ -16,19 +16,23 @@ describe('IntersectionHelpers2D', () => {
     });
   });
 
-  describe('angleBetween', () => {
+  describe('angle', () => {
     it('should return the angle between two vectors in radians', () => {
       const vecA = { x: 1, y: 0 };
       const vecB = { x: 0, y: 1 };
-      const result = intersection2d.angleBetween(vecA, vecB);
+      const result = intersection2d.angle(vecA, vecB);
       expect(result).toBeCloseTo(Math.PI / 2); // 90 degrees in radians
     });
 
     it('should return 0 for the same vector', () => {
       const vecA = { x: 1, y: 1 };
-      const result = intersection2d.angleBetween(vecA, vecA);
+      const result = intersection2d.angle(vecA, vecA);
       expect(result).toBe(0);
     });
+  });
+
+  describe('angleBetween', () => {
+    // TODO angleBetween tests
   });
 
   describe('pointsAreCollinear', () => {
@@ -788,6 +792,10 @@ describe('IntersectionHelpers2D', () => {
       const result = intersection2d.polygonCentroid(polygon);
       expect(result).toEqual({ x: -1.5, y: -1.5 }); // Centroid of a square in negative quadrant
     });
+  });
+
+  describe('polygonConvexHull', () => {
+    // TODO polygonConvexHull tests
   });
 
   describe('optimisePolygon', () => {

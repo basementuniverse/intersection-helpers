@@ -32,31 +32,41 @@ export function distance(a: Point, b: Point): number {
 }
 
 /**
- * Calculate the clockwise angle from vector a to vector b
+ * Calculate the clockwise angle from point a to point b
  *
  * The result is in radians and ranges from 0 to 2π (360 degrees)
- * A positive angle indicates clockwise rotation from a to b
  *
- * Returns 0 if either vector is zero-length or if they are equal
+ * Returns 0 if the vectors are equal
  */
-export function angleBetween(a: vec2, b: vec2): number {
-  if (vectorAlmostZero(a) || vectorAlmostZero(b) || vectorsAlmostEqual(a, b)) {
+export function angle(a: Point, b: Point): number {
+  if (vectorsAlmostEqual(a, b)) {
     return 0;
   }
-
-  // Normalize vectors
-  const normA = vec2.nor(a);
-  const normB = vec2.nor(b);
-
-  // Calculate angle using atan2
-  let angle = Math.atan2(normB.y, normB.x) - Math.atan2(normA.y, normA.x);
-
-  // Ensure angle is positive (clockwise) and in range [0, 2π]
-  if (angle < 0) {
-    angle += 2 * Math.PI;
+  const theta = vec2.rad(vec2.sub(b, a)) % (2 * Math.PI);
+  if (theta < 0) {
+    return theta + 2 * Math.PI; // Ensure angle is positive
   }
+  return theta;
+}
 
-  return angle;
+/**
+ * Calculate the clockwise angle between two lines
+ *
+ * Returns 0 if either line is zero-length
+ */
+export function angleBetween(a: Line, b: Line): number {
+  if (
+    vectorAlmostZero(vec2.sub(a.end, a.start)) ||
+    vectorAlmostZero(vec2.sub(b.end, b.start))
+  ) {
+    return 0; // Zero-length line
+  }
+  const dirA = vec2.nor(vec2.sub(a.end, a.start));
+  const dirB = vec2.nor(vec2.sub(b.end, b.start));
+  const dot = vec2.dot(dirA, dirB);
+  const cross = vec2.cross(dirA, dirB);
+  const angle = Math.atan2(cross, dot);
+  return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
 }
 
 /**
@@ -200,7 +210,10 @@ export function rectangleIsRotated(rectangle: Rectangle): boolean {
  * Get the vertices of a rectangle
  *
  * Vertices will be returned in clockwise order starting at the top-left:
- * top-left, top-right, bottom-right, bottom-left
+ * - Top-left
+ * - Top-right
+ * - Bottom-right
+ * - Bottom-left
  */
 export function rectangleVertices(rectangle: Rectangle): Point[] {
   const { position, size, rotation = 0 } = rectangle;
@@ -232,8 +245,7 @@ export function rectangleVertices(rectangle: Rectangle): Point[] {
  */
 function verticesToEdges(vertices: Point[]): Line[] {
   const edges: Line[] = [];
-  const n = vertices.length;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < vertices.length; i++) {
     const start = vertices[i];
     const end = at(vertices, i + 1);
     edges.push({ start, end });
@@ -409,7 +421,6 @@ export function polygonCentroid(polygon: Polygon): Point | null {
   if (!polygonIsValid(polygon)) {
     return null;
   }
-  const n = polygon.vertices.length;
   if (
     polygon.vertices.every((v, i, a) =>
       pointsAreCollinear(v, at(a, i + 1), at(a, i + 2))
@@ -417,12 +428,78 @@ export function polygonCentroid(polygon: Polygon): Point | null {
   ) {
     return null; // All vertices are collinear
   }
-  let c = vec2();
-  for (let i = 0; i < n; i++) {
-    const a = polygon.vertices[i];
-    c = vec2.add(c, a);
+  return vec2.div(
+    [...polygon.vertices].reduce((a, c) => vec2.add(a, c), vec2()),
+    polygon.vertices.length
+  );
+}
+
+/**
+ * Calculate the convex hull of a polygon
+ */
+export function polygonConvexHull(polygon: Polygon): Polygon | null {
+  if (!polygonIsValid(polygon)) {
+    return null;
   }
-  return vec2(c.x / n, c.y / n);
+  if (polygonIsConvex(polygon)) {
+    return polygon; // The polygon is already convex
+  }
+
+  // Andrew's monotone chain algorithm for convex hull
+  // Sort vertices lexicographically (first by x, then by y)
+  const sorted = [...polygon.vertices].sort((a, b) =>
+    a.x !== b.x ? a.x - b.x : a.y - b.y
+  );
+
+  const lower: Point[] = [];
+  for (const p of sorted) {
+    while (
+      lower.length >= 2 &&
+      vec2.cross(
+        vec2.sub(lower[lower.length - 1], lower[lower.length - 2]),
+        vec2.sub(p, lower[lower.length - 1])
+      ) <= 0
+    ) {
+      lower.pop();
+    }
+    lower.push(p);
+  }
+
+  const upper: Point[] = [];
+  for (let i = sorted.length - 1; i >= 0; --i) {
+    const p = sorted[i];
+    while (
+      upper.length >= 2 &&
+      vec2.cross(
+        vec2.sub(upper[upper.length - 1], upper[upper.length - 2]),
+        vec2.sub(p, upper[upper.length - 1])
+      ) <= 0
+    ) {
+      upper.pop();
+    }
+    upper.push(p);
+  }
+
+  // Remove the last point of each half because it's repeated at the start of
+  // the other
+  lower.pop();
+  upper.pop();
+
+  const hull = lower.concat(upper);
+
+  if (hull.length < 3) {
+    return null;
+  }
+
+  // Ensure clockwise winding order
+  const winding = polygonWindingOrder({ vertices: hull });
+  if (winding === 'counter-clockwise') {
+    hull.reverse();
+  }
+
+  return {
+    vertices: removeDuplicateVertices(hull),
+  };
 }
 
 /**

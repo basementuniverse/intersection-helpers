@@ -169,7 +169,8 @@ export function isPolygon(value: any): value is Polygon {
     'vertices' in value &&
     Array.isArray(value.vertices) &&
     value.vertices.length === 3 &&
-    value.vertices.every(isPoint)
+    value.vertices.every(isPoint) &&
+    !('indices' in value)
   );
 }
 
