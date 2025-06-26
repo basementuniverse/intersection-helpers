@@ -1,5 +1,7 @@
 # Intersection Helpers
 
+> This project is a work in progress! The 2D namespace is mostly complete, but the 3D namespace is still under development.
+
 A collection of helper functions for detecting intersections between various geometric shapes in 2D and 3D.
 
 This library is not intended to be a full collision detection system - if you need that, I'd highly recommend [detect-collisions](https://www.npmjs.com/package/detect-collisions). If you just need to check for intersections between shapes, this library is for you.
