@@ -8,7 +8,7 @@
 
 > **Polygon** = `object`
 
-Defined in: [3d/types.ts:158](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L158)
+Defined in: [3d/types.ts:158](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L158)
 
 A polygon (triangle in 3D space) defined by three vertices
 
@@ -18,4 +18,4 @@ A polygon (triangle in 3D space) defined by three vertices
 
 > **vertices**: \[[`Point`](Point.md), [`Point`](Point.md), [`Point`](Point.md)\]
 
-Defined in: [3d/types.ts:159](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L159)
+Defined in: [3d/types.ts:159](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L159)

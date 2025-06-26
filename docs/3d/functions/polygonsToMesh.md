@@ -8,7 +8,7 @@
 
 > **polygonsToMesh**(`polygons`): [`Mesh`](../types/type-aliases/Mesh.md)
 
-Defined in: [3d/index.ts:305](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/index.ts#L305)
+Defined in: [3d/index.ts:345](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/index.ts#L345)
 
 Convert a list of polygons to a mesh
 

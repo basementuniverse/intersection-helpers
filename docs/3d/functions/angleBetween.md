@@ -2,15 +2,15 @@
 
 ***
 
-[@basementuniverse/intersection-helpers](../../README.md) / [2d](../README.md) / angleBetween
+[@basementuniverse/intersection-helpers](../../README.md) / [3d](../README.md) / angleBetween
 
 # Function: angleBetween()
 
 > **angleBetween**(`a`, `b`): `number`
 
-Defined in: [2d/index.ts:58](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L58)
+Defined in: [3d/index.ts:63](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/index.ts#L63)
 
-Calculate the clockwise angle between two lines or rays
+Calculate the angle between two lines or rays
 
 Returns 0 if either line is zero-length
 

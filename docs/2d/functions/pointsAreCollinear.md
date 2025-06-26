@@ -8,7 +8,7 @@
 
 > **pointsAreCollinear**(`a`, `b`, `c`): `boolean`
 
-Defined in: [2d/index.ts:78](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/2d/index.ts#L78)
+Defined in: [2d/index.ts:79](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L79)
 
 Check if points are collinear
 

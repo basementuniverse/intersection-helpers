@@ -348,20 +348,18 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
   export * from '@basementuniverse/intersection-helpers/src/3d/types';
   /**
     * Calculate the distance between two points in 3D space
-    *
-    * @param a First point
-    * @param b Second point
-    * @returns Distance between the two points
     */
   export function distance(a: Point, b: Point): number;
   /**
-    * Calculate the angle between two vectors in 3D space
-    *
-    * @param a First vector
-    * @param b Second vector
-    * @returns Angle in radians
+    * Calculate the Euler angle from point a to point b
     */
-  export function angle(a: vec3, b: vec3): number;
+  export function angle(a: Point, b: Point): vec3;
+  /**
+    * Calculate the angle between two lines or rays
+    *
+    * Returns 0 if either line is zero-length
+    */
+  export function angleBetween(a: Line | Ray, b: Line | Ray): number;
   /**
     * Convert a line segment to a ray
     */
@@ -370,6 +368,9 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * Convert a ray to a line segment
     */
   export function rayToLine(ray: Ray, length?: number): Line;
+  /**
+    * Get the bounding box (AABB) of a geometric object
+    */
   export function aabb(o: Line | Sphere | Cuboid | Polygon | Mesh): AABB | null;
   /**
     * Convert an AABB to a cuboid
@@ -439,6 +440,14 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     */
   export function meshCentroid(mesh: Mesh): Point;
   /**
+    * Perform an edge manifold check to tell if a mesh is watertight
+    *
+    * Every edge in a watertight mesh should be shared by exactly two triangles
+    *
+    * This isn't perfect, but it should be sufficient for most simple cases
+    */
+  export function meshIsWatertight(mesh: Mesh): boolean;
+  /**
     * Check if a point is on a ray
     *
     * Also returns the closest point on the ray and the distance to it
@@ -448,8 +457,20 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
       closestPoint?: Point;
       distance: number;
   };
-  export function rayIntersectsSphere(ray: Ray, sphere: Sphere): boolean;
-  export function rayIntersectsPlane(ray: Ray, plane: Plane): vec3 | null;
+  /**
+    * Check if a ray intersects a sphere
+    */
+  export function rayIntersectsSphere(ray: Ray, sphere: Sphere): {
+      intersects: boolean;
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if a ray intersects a plane
+    */
+  export function rayIntersectsPlane(ray: Ray, plane: Plane): {
+      intersects: boolean;
+      intersectionPoint?: Point;
+  };
 }
 
 declare module '@basementuniverse/intersection-helpers/src/utilities' {

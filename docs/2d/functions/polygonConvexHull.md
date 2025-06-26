@@ -8,7 +8,7 @@
 
 > **polygonConvexHull**(`polygon`, `options?`): `null` \| [`Polygon`](../types/type-aliases/Polygon.md)
 
-Defined in: [2d/index.ts:458](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/2d/index.ts#L458)
+Defined in: [2d/index.ts:459](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L459)
 
 Calculate the convex hull of a polygon
 

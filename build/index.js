@@ -2322,7 +2322,8 @@ function angleBetween(a, b) {
     }
     const dirA = vec_1.vec2.nor(vec_1.vec2.sub(aLine.end, aLine.start));
     const dirB = vec_1.vec2.nor(vec_1.vec2.sub(bLine.end, bLine.start));
-    const dot = vec_1.vec2.dot(dirA, dirB);
+    // Clamp dot product to [-1, 1] to avoid NaN due to floating-point errors
+    const dot = (0, utils_1.clamp)(vec_1.vec2.dot(dirA, dirB), -1, 1);
     const cross = vec_1.vec2.cross(dirA, dirB);
     const angle = Math.atan2(cross, dot);
     return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
@@ -4137,6 +4138,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.distance = distance;
 exports.angle = angle;
+exports.angleBetween = angleBetween;
 exports.lineToRay = lineToRay;
 exports.rayToLine = rayToLine;
 exports.aabb = aabb;
@@ -4151,10 +4153,11 @@ exports.polygonsToMesh = polygonsToMesh;
 exports.meshToPolygons = meshToPolygons;
 exports.meshToEdges = meshToEdges;
 exports.meshCentroid = meshCentroid;
+exports.meshIsWatertight = meshIsWatertight;
 exports.pointOnRay = pointOnRay;
 exports.rayIntersectsSphere = rayIntersectsSphere;
 exports.rayIntersectsPlane = rayIntersectsPlane;
-// import { at } from '@basementuniverse/utils';
+const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const _2d_1 = __webpack_require__(/*! ../2d */ "./src/2d/index.ts");
 const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
@@ -4163,23 +4166,49 @@ const types_1 = __webpack_require__(/*! ./types */ "./src/3d/types.ts");
 __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
 /**
  * Calculate the distance between two points in 3D space
- *
- * @param a First point
- * @param b Second point
- * @returns Distance between the two points
  */
 function distance(a, b) {
     return vec_1.vec3.len(vec_1.vec3.sub(a, b));
 }
 /**
- * Calculate the angle between two vectors in 3D space
- *
- * @param a First vector
- * @param b Second vector
- * @returns Angle in radians
+ * Calculate the Euler angle from point a to point b
  */
 function angle(a, b) {
-    return Math.acos(vec_1.vec3.dot(a, b) / (vec_1.vec3.len(a) * vec_1.vec3.len(b)));
+    if ((0, utilities_1.vectorsAlmostEqual)(a, b)) {
+        return (0, vec_1.vec3)();
+    }
+    let thetaX = vec_1.vec3.radx(vec_1.vec3.sub(b, a)) % (2 * Math.PI);
+    if (thetaX < 0) {
+        thetaX += 2 * Math.PI; // Ensure angle is positive
+    }
+    let thetaY = vec_1.vec3.rady(vec_1.vec3.sub(b, a)) % (2 * Math.PI);
+    if (thetaY < 0) {
+        thetaY += 2 * Math.PI; // Ensure angle is positive
+    }
+    let thetaZ = vec_1.vec3.radz(vec_1.vec3.sub(b, a)) % (2 * Math.PI);
+    if (thetaZ < 0) {
+        thetaZ += 2 * Math.PI; // Ensure angle is positive
+    }
+    return (0, vec_1.vec3)(thetaX, thetaY, thetaZ);
+}
+/**
+ * Calculate the angle between two lines or rays
+ *
+ * Returns 0 if either line is zero-length
+ */
+function angleBetween(a, b) {
+    let aLine = (0, types_1.isRay)(a) ? rayToLine(a, 1) : a;
+    let bLine = (0, types_1.isRay)(b) ? rayToLine(b, 1) : b;
+    if ((0, utilities_1.vectorAlmostZero)(vec_1.vec3.sub(aLine.start, aLine.end)) ||
+        (0, utilities_1.vectorAlmostZero)(vec_1.vec3.sub(bLine.start, bLine.end))) {
+        return 0; // Zero-length line
+    }
+    const dirA = vec_1.vec3.nor(vec_1.vec3.sub(aLine.end, aLine.start));
+    const dirB = vec_1.vec3.nor(vec_1.vec3.sub(bLine.end, bLine.start));
+    // Clamp dot product to [-1, 1] to avoid NaN due to floating-point errors
+    const dot = (0, utils_1.clamp)(vec_1.vec3.dot(dirA, dirB), -1, 1);
+    const angle = Math.acos(dot);
+    return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
 }
 /**
  * Convert a line segment to a ray
@@ -4199,6 +4228,9 @@ function rayToLine(ray, length = 1) {
         end: vec_1.vec3.add(ray.origin, vec_1.vec3.mul(ray.direction, length)),
     };
 }
+/**
+ * Get the bounding box (AABB) of a geometric object
+ */
 function aabb(o) {
     if ((0, types_1.isLine)(o)) {
         return {
@@ -4318,15 +4350,17 @@ function cuboidVertices(cuboid) {
 /**
  * Convert a list of vertices to a list of edges
  */
-// function verticesToEdges(vertices: Point[]): Line[] {
-//   const edges: Line[] = [];
-//   for (let i = 0; i < vertices.length; i++) {
-//     const start = vertices[i];
-//     const end = at(vertices, i + 1);
-//     edges.push({ start, end });
-//   }
-//   return edges;
-// }
+function verticesToEdges(vertices) {
+    const edges = [];
+    for (let i = 0; i < vertices.length; i++) {
+        const start = vertices[i];
+        const end = (0, utils_1.at)(vertices, i + 1);
+        edges.push({ start, end });
+    }
+    return edges;
+}
+// TODO temp
+console.log(verticesToEdges([]));
 /**
  * Check if a polygon is valid
  *
@@ -4446,6 +4480,37 @@ function meshCentroid(mesh) {
     return vec_1.vec3.div(mesh.vertices.reduce((acc, v) => vec_1.vec3.add(acc, v), (0, vec_1.vec3)()), mesh.vertices.length);
 }
 /**
+ * Perform an edge manifold check to tell if a mesh is watertight
+ *
+ * Every edge in a watertight mesh should be shared by exactly two triangles
+ *
+ * This isn't perfect, but it should be sufficient for most simple cases
+ */
+function meshIsWatertight(mesh) {
+    // Create a map to store edge counts
+    // Key format: "smallerVertexIndex,largerVertexIndex"
+    const edgeCounts = new Map();
+    // Process each triangle
+    for (let i = 0; i < mesh.indices.length; i += 3) {
+        const v1 = mesh.indices[i];
+        const v2 = mesh.indices[i + 1];
+        const v3 = mesh.indices[i + 2];
+        // For each edge in the triangle, create a canonical key
+        const edges = [
+            [Math.min(v1, v2), Math.max(v1, v2)],
+            [Math.min(v2, v3), Math.max(v2, v3)],
+            [Math.min(v3, v1), Math.max(v3, v1)],
+        ];
+        // Count each edge
+        edges.forEach(([a, b]) => {
+            const key = `${a},${b}`;
+            edgeCounts.set(key, (edgeCounts.get(key) || 0) + 1);
+        });
+    }
+    // Check if all edges appear exactly twice
+    return Array.from(edgeCounts.values()).every(count => count === 2);
+}
+/**
  * Check if a point is on a ray
  *
  * Also returns the closest point on the ray and the distance to it
@@ -4468,35 +4533,120 @@ function pointOnRay(point, ray) {
         distance,
     };
 }
-// TODO adapt the following functions to return more information
-// (e.g. intersection point, distance, etc.)
+// TODO pointOnLine
+// TODO pointInSphere
+// TODO pointInCuboid
+// TODO pointOnPolygon
+// TODO pointInMesh
+// TODO rayTraverseGrid
+// TODO rayIntersectsRay
+// TODO rayIntersectsLine
+// TODO (DONE) rayIntersectsSphere
+// TODO (DONE) rayIntersectsPlane
+// TODO rayIntersectsCuboid
+// TODO rayIntersectsPolygon
+// TODO rayIntersectsMesh
+// TODO lineIntersectsRay
+// TODO lineIntersectsLine
+// TODO lineIntersectsSphere
+// TODO lineIntersectsPlane
+// TODO lineIntersectsCuboid
+// TODO lineIntersectsPolygon
+// TODO lineIntersectsMesh
+// TODO sphereIntersectsSphere
+// TODO sphereIntersectsPlane
+// TODO sphereIntersectsCuboid
+// TODO sphereIntersectsPolygon
+// TODO sphereIntersectsMesh
+// TODO planeIntersectsPlane
+// TODO cuboidIntersectsCuboid
+// TODO cuboidIntersectsPlane
+// TODO cuboidIntersectsPolygon
+// TODO cuboidIntersectsMesh
+// TODO polygonIntersectsPolygon
+// TODO polygonIntersectsPlane
+// TODO polygonIntersectsMesh
+// TODO meshIntersectsMesh
+// TODO meshIntersectsPlane
+/**
+ * Check if a ray intersects a sphere
+ */
 function rayIntersectsSphere(ray, sphere) {
-    const oc = vec_1.vec3.sub(ray.origin, sphere.position);
-    const a = vec_1.vec3.dot(ray.direction, ray.direction);
-    const b = 2.0 * vec_1.vec3.dot(oc, ray.direction);
-    const c = vec_1.vec3.dot(oc, oc) - sphere.radius * sphere.radius;
+    // Normalize ray direction
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    // Calculate vector from ray origin to sphere center
+    const toCenter = vec_1.vec3.sub(sphere.position, ray.origin);
+    // Calculate quadratic equation coefficients
+    // a = dot(dir, dir) (should be 1 since dir is normalized)
+    const a = vec_1.vec3.dot(rayDir, rayDir);
+    // b = 2 * dot(dir, (origin - center))
+    const b = 2 * vec_1.vec3.dot(rayDir, vec_1.vec3.mul(toCenter, -1));
+    // c = dot((origin - center), (origin - center)) - radius²
+    const c = vec_1.vec3.dot(toCenter, toCenter) - sphere.radius * sphere.radius;
+    // Solve quadratic equation using discriminant
     const discriminant = b * b - 4 * a * c;
-    // Only consider intersections in the positive direction along the ray
-    if (discriminant < 0) {
-        return false;
+    // No intersection if discriminant is negative
+    if (discriminant < -constants.EPSILON) {
+        return { intersects: false };
     }
+    // Handle case where ray just touches sphere (discriminant ≈ 0)
+    if (Math.abs(discriminant) < constants.EPSILON) {
+        const t = -b / (2 * a);
+        if (t >= 0) {
+            const point = vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t));
+            return {
+                intersects: true,
+                intersectionPoints: [point],
+            };
+        }
+        return { intersects: false };
+    }
+    // Calculate intersection points for discriminant > 0
     const sqrtDiscriminant = Math.sqrt(discriminant);
     const t1 = (-b - sqrtDiscriminant) / (2 * a);
     const t2 = (-b + sqrtDiscriminant) / (2 * a);
-    return t1 >= 0 || t2 >= 0;
+    // If both t values are negative, ray points away from sphere
+    if (t2 < 0) {
+        return { intersects: false };
+    }
+    // Calculate intersection points for positive t values
+    const intersectionPoints = [];
+    if (t1 >= 0) {
+        intersectionPoints.push(vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t1)));
+    }
+    if (t2 >= 0) {
+        intersectionPoints.push(vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t2)));
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
 }
+/**
+ * Check if a ray intersects a plane
+ */
 function rayIntersectsPlane(ray, plane) {
-    const denominator = vec_1.vec3.dot(ray.direction, plane.normal);
+    // Normalize the ray direction and plane normal
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    const planeNormal = vec_1.vec3.nor(plane.normal);
+    // Calculate denominator (dot product of ray direction and plane normal)
+    const denominator = vec_1.vec3.dot(rayDir, planeNormal);
+    // If denominator is close to 0, ray is parallel to plane
     if (Math.abs(denominator) < constants.EPSILON) {
-        // Ray is parallel to the plane
-        return null;
+        return { intersects: false };
     }
-    const t = vec_1.vec3.dot(vec_1.vec3.sub(plane.point, ray.origin), plane.normal) / denominator;
+    // Calculate distance from ray origin to plane
+    const t = vec_1.vec3.dot(vec_1.vec3.sub(plane.point, ray.origin), planeNormal) / denominator;
+    // If t is negative, intersection is behind ray origin
     if (t < 0) {
-        // Intersection is behind the ray's origin
-        return null;
+        return { intersects: false };
     }
-    return vec_1.vec3.add(ray.origin, vec_1.vec3.scale(ray.direction, t));
+    // Calculate intersection point
+    const intersectionPoint = vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t));
+    return {
+        intersects: true,
+        intersectionPoint,
+    };
 }
 
 

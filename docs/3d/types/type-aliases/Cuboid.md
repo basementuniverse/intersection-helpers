@@ -8,7 +8,7 @@
 
 > **Cuboid** = `object`
 
-Defined in: [3d/types.ts:112](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L112)
+Defined in: [3d/types.ts:112](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L112)
 
 A cuboid defined by the position of its center, side lengths, and
 optional rotation
@@ -22,7 +22,7 @@ around the center of the rectangle
 
 > **position**: [`Point`](Point.md)
 
-Defined in: [3d/types.ts:113](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L113)
+Defined in: [3d/types.ts:113](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L113)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [3d/types.ts:113](https://github.com/basementuniverse/intersection-h
 
 > `optional` **rotation**: `vec3`
 
-Defined in: [3d/types.ts:115](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L115)
+Defined in: [3d/types.ts:115](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L115)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [3d/types.ts:115](https://github.com/basementuniverse/intersection-h
 
 > **size**: `vec3`
 
-Defined in: [3d/types.ts:114](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L114)
+Defined in: [3d/types.ts:114](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L114)

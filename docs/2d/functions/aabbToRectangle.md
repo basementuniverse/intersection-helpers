@@ -8,7 +8,7 @@
 
 > **aabbToRectangle**(`aabb`): [`Rectangle`](../types/type-aliases/Rectangle.md)
 
-Defined in: [2d/index.ts:161](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/2d/index.ts#L161)
+Defined in: [2d/index.ts:162](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L162)
 
 Convert an AABB to a rectangle
 

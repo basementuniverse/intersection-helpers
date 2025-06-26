@@ -8,7 +8,7 @@
 
 > **pointOnRay**(`point`, `ray`): `object`
 
-Defined in: [3d/index.ts:406](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/index.ts#L406)
+Defined in: [3d/index.ts:482](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/index.ts#L482)
 
 Check if a point is on a ray
 

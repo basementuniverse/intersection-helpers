@@ -8,7 +8,7 @@
 
 > **polygonIsValid**(`polygon`): `boolean`
 
-Defined in: [3d/index.ts:256](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/index.ts#L256)
+Defined in: [3d/index.ts:296](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/index.ts#L296)
 
 Check if a polygon is valid
 

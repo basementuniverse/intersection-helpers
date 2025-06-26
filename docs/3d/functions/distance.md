@@ -8,7 +8,7 @@
 
 > **distance**(`a`, `b`): `number`
 
-Defined in: [3d/index.ts:31](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/index.ts#L31)
+Defined in: [3d/index.ts:32](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/index.ts#L32)
 
 Calculate the distance between two points in 3D space
 
@@ -18,16 +18,10 @@ Calculate the distance between two points in 3D space
 
 `vec3`
 
-First point
-
 ### b
 
 `vec3`
 
-Second point
-
 ## Returns
 
 `number`
-
-Distance between the two points

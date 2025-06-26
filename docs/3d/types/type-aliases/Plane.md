@@ -8,7 +8,7 @@
 
 > **Plane** = `object`
 
-Defined in: [3d/types.ts:136](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L136)
+Defined in: [3d/types.ts:136](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L136)
 
 A plane defined by a point on the plane and a normal vector
 
@@ -18,7 +18,7 @@ A plane defined by a point on the plane and a normal vector
 
 > **normal**: `vec3`
 
-Defined in: [3d/types.ts:138](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L138)
+Defined in: [3d/types.ts:138](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L138)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [3d/types.ts:138](https://github.com/basementuniverse/intersection-h
 
 > **point**: [`Point`](Point.md)
 
-Defined in: [3d/types.ts:137](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/types.ts#L137)
+Defined in: [3d/types.ts:137](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/types.ts#L137)

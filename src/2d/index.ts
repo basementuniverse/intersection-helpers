@@ -66,7 +66,8 @@ export function angleBetween(a: Line | Ray, b: Line | Ray): number {
   }
   const dirA = vec2.nor(vec2.sub(aLine.end, aLine.start));
   const dirB = vec2.nor(vec2.sub(bLine.end, bLine.start));
-  const dot = vec2.dot(dirA, dirB);
+  // Clamp dot product to [-1, 1] to avoid NaN due to floating-point errors
+  const dot = clamp(vec2.dot(dirA, dirB), -1, 1);
   const cross = vec2.cross(dirA, dirB);
   const angle = Math.atan2(cross, dot);
   return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive

@@ -6,9 +6,11 @@
 
 # Function: rayIntersectsSphere()
 
-> **rayIntersectsSphere**(`ray`, `sphere`): `boolean`
+> **rayIntersectsSphere**(`ray`, `sphere`): `object`
 
-Defined in: [3d/index.ts:443](https://github.com/basementuniverse/intersection-helpers/blob/98a1762f467a7b92d986d7a09e3582c961f718d2/src/3d/index.ts#L443)
+Defined in: [3d/index.ts:562](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/3d/index.ts#L562)
+
+Check if a ray intersects a sphere
 
 ## Parameters
 
@@ -22,4 +24,12 @@ Defined in: [3d/index.ts:443](https://github.com/basementuniverse/intersection-h
 
 ## Returns
 
-`boolean`
+`object`
+
+### intersectionPoints?
+
+> `optional` **intersectionPoints**: `vec3`[]
+
+### intersects
+
+> **intersects**: `boolean`
