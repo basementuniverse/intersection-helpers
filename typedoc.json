@@ -1,0 +1,13 @@
+{
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "entryPoints": [
+    "src/utilities/index.ts",
+    "src/utilities/types.ts",
+    "src/2d/index.ts",
+    "src/2d/types.ts",
+    "src/3d/index.ts",
+    "src/3d/types.ts"
+  ],
+  "out": "./docs"
+}

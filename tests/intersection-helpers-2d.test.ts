@@ -18,7 +18,7 @@ describe('IntersectionHelpers2D', () => {
 
   describe('angle', () => {
     it('should return the angle between two vectors in radians', () => {
-      const vecA = { x: 1, y: 0 };
+      const vecA = { x: 0, y: 0 };
       const vecB = { x: 0, y: 1 };
       const result = intersection2d.angle(vecA, vecB);
       expect(result).toBeCloseTo(Math.PI / 2); // 90 degrees in radians
@@ -32,7 +32,157 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('angleBetween', () => {
-    // TODO angleBetween tests
+    it('should return the angle between two perpendicular lines', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 1 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBeCloseTo(Math.PI / 2); // 90 degrees
+    });
+
+    it('should return 0 for parallel lines pointing in the same direction', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const lineB = {
+        start: { x: 0, y: 1 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBe(0);
+    });
+
+    it('should return PI for lines pointing in opposite directions', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: -1, y: 0 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBeCloseTo(Math.PI); // 180 degrees
+    });
+
+    it('should handle diagonal lines', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: -1, y: 1 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBeCloseTo(Math.PI / 2); // 90 degrees
+    });
+
+    it('should return 0 for identical lines', () => {
+      const line = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.angleBetween(line, line);
+      expect(result).toBe(0);
+    });
+
+    it('should handle rays as input', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 1 },
+      };
+      const result = intersection2d.angleBetween(rayA, rayB);
+      expect(result).toBeCloseTo(Math.PI / 2); // 90 degrees
+    });
+
+    it('should handle mixed line and ray inputs', () => {
+      const line = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const ray = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 1 },
+      };
+      const result = intersection2d.angleBetween(line, ray);
+      expect(result).toBeCloseTo(Math.PI / 2); // 90 degrees
+    });
+
+    it('should return 0 for zero-length lines', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 0 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for rays with zero direction', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 },
+      };
+      const rayB = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 1, y: 0 },
+      };
+      const result = intersection2d.angleBetween(rayA, rayB);
+      expect(result).toBe(0);
+    });
+
+    it('should handle 45 degree angles', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 1 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBeCloseTo(Math.PI / 4); // 45 degrees
+    });
+
+    it('should handle angles greater than 180 degrees', () => {
+      const lineA = {
+        start: { x: 0, y: 0 },
+        end: { x: 1, y: 0 },
+      };
+      const lineB = {
+        start: { x: 0, y: 0 },
+        end: { x: -1, y: -1 },
+      };
+      const result = intersection2d.angleBetween(lineA, lineB);
+      expect(result).toBeCloseTo((5 * Math.PI) / 4); // 225 degrees
+    });
+
+    it('should be consistent with non-normalized ray directions', () => {
+      const rayA = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 2, y: 0 }, // Non-normalized
+      };
+      const rayB = {
+        origin: { x: 0, y: 0 },
+        direction: { x: 0, y: 3 }, // Non-normalized
+      };
+      const result = intersection2d.angleBetween(rayA, rayB);
+      expect(result).toBeCloseTo(Math.PI / 2); // Should still be 90 degrees
+    });
   });
 
   describe('pointsAreCollinear', () => {
@@ -585,7 +735,7 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('polygonWindingOrder', () => {
-    it('should return "clockwise" for a clockwise polygon', () => {
+    it('should return "clockwise" for a convex clockwise polygon (screen coords)', () => {
       const polygon = {
         vertices: [
           { x: 0, y: 0 },
@@ -598,7 +748,36 @@ describe('IntersectionHelpers2D', () => {
       expect(result).toBe('clockwise');
     });
 
-    it('should return "counter-clockwise" for a counterclockwise polygon', () => {
+    it('should return "clockwise" for a concave clockwise polygon (screen coords)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 4 },
+          { x: 2, y: 2 }, // Concave point
+          { x: 0, y: 4 },
+        ],
+      };
+      const result = intersection2d.polygonWindingOrder(polygon);
+      expect(result).toBe('clockwise');
+    });
+
+    it('should return "counter-clockwise" for a convex counterclockwise polygon (cartesian coords)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 0, y: -2 },
+          { x: 2, y: -2 },
+          { x: 2, y: 0 },
+        ],
+      };
+      const result = intersection2d.polygonWindingOrder(polygon, {
+        coordinateSystem: 'cartesian',
+      });
+      expect(result).toBe('counter-clockwise');
+    });
+
+    it('should return "counter-clockwise" for a convex counterclockwise polygon (screen coords)', () => {
       const polygon = {
         vertices: [
           { x: 0, y: 0 },
@@ -609,6 +788,35 @@ describe('IntersectionHelpers2D', () => {
       };
       const result = intersection2d.polygonWindingOrder(polygon);
       expect(result).toBe('counter-clockwise');
+    });
+
+    it('should return "counter-clockwise" for a concave counterclockwise polygon (screen coords)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 4 },
+          { x: 2, y: 2 }, // Concave point
+          { x: 4, y: 4 },
+          { x: 4, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      };
+      const result = intersection2d.polygonWindingOrder(polygon);
+      expect(result).toBe('counter-clockwise');
+    });
+
+    it('should return "clockwise" for a convex clockwise polygon (cartesian coords)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: -2 },
+          { x: 0, y: -2 },
+        ],
+      };
+      const result = intersection2d.polygonWindingOrder(polygon, {
+        coordinateSystem: 'cartesian',
+      });
+      expect(result).toBe('clockwise');
     });
 
     it('should return null for an invalid polygon (self-intersecting)', () => {
@@ -795,7 +1003,90 @@ describe('IntersectionHelpers2D', () => {
   });
 
   describe('polygonConvexHull', () => {
-    // TODO polygonConvexHull tests
+    it('should return null for invalid polygon (fewer than 3 vertices)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+      };
+      const result = intersection2d.polygonConvexHull(polygon);
+      expect(result).toBeNull();
+    });
+
+    it('should return the same polygon if already convex', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.polygonConvexHull(polygon);
+      expect(result).toEqual(polygon);
+    });
+
+    it('should compute convex hull of a simple concave polygon', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 1, y: 1 }, // Reflex vertex
+          { x: 2, y: 2 },
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.polygonConvexHull(polygon);
+
+      expect(result).not.toBeNull();
+      expect(result?.vertices).toHaveLength(4);
+      // Should form a rectangle without the reflex vertex
+      expect(result?.vertices).toEqual([
+        { x: 0, y: 0 },
+        { x: 2, y: 0 },
+        { x: 2, y: 2 },
+        { x: 0, y: 2 },
+      ]);
+    });
+
+    it('should preserve winding order (clockwise)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+          { x: 2, y: 2 },
+          { x: 1, y: 1 }, // Reflex vertex
+          { x: 0, y: 2 },
+        ],
+      };
+      const result = intersection2d.polygonConvexHull(polygon, {
+        keepWindingOrder: true,
+      });
+
+      expect(result).not.toBeNull();
+      expect(intersection2d.polygonWindingOrder(result!)).toBe('clockwise');
+    });
+
+    it('should preserve winding order (counter-clockwise)', () => {
+      const polygon = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 0, y: 2 },
+          { x: 1, y: 1 }, // Reflex vertex
+          { x: 2, y: 2 },
+          { x: 2, y: 0 },
+        ],
+      };
+      const result = intersection2d.polygonConvexHull(polygon, {
+        keepWindingOrder: true,
+      });
+
+      expect(result).not.toBeNull();
+      expect(intersection2d.polygonWindingOrder(result!)).toBe(
+        'counter-clockwise'
+      );
+    });
   });
 
   describe('optimisePolygon', () => {

@@ -2215,18 +2215,69 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.polygonIntersectsPolygon = exports.rectangleIntersectsPolygon = exports.rectangleIntersectsRectangle = exports.circleIntersectsPolygon = exports.circleIntersectsRectangle = exports.circleIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsRectangle = exports.lineIntersectsCircle = exports.lineIntersectsLine = exports.lineIntersectsRay = exports.rayIntersectsPolygon = exports.rayIntersectsRectangle = exports.rayIntersectsCircle = exports.rayIntersectsLine = exports.rayIntersectsRay = exports.rayTraverseGrid = exports.pointInPolygon = exports.pointInRectangle = exports.pointInCircle = exports.pointOnLine = exports.pointOnRay = exports.decomposePolygon = exports.optimisePolygon = exports.polygonConvexHull = exports.polygonCentroid = exports.polygonArea = exports.polygonWindingOrder = exports.polygonIsValid = exports.polygonSelfIntersects = exports.polygonIsConvex = exports.rectangleVertices = exports.rectangleIsRotated = exports.aabbsOverlap = exports.aabbToRectangle = exports.aabb = exports.rayToLine = exports.lineToRay = exports.pointsAreCollinear = exports.angleBetween = exports.angle = exports.distance = void 0;
+exports.distance = distance;
+exports.angle = angle;
+exports.angleBetween = angleBetween;
+exports.pointsAreCollinear = pointsAreCollinear;
+exports.lineToRay = lineToRay;
+exports.rayToLine = rayToLine;
+exports.aabb = aabb;
+exports.aabbToRectangle = aabbToRectangle;
+exports.aabbsOverlap = aabbsOverlap;
+exports.rectangleIsRotated = rectangleIsRotated;
+exports.rectangleVertices = rectangleVertices;
+exports.polygonIsConvex = polygonIsConvex;
+exports.polygonSelfIntersects = polygonSelfIntersects;
+exports.polygonIsValid = polygonIsValid;
+exports.polygonWindingOrder = polygonWindingOrder;
+exports.polygonArea = polygonArea;
+exports.polygonCentroid = polygonCentroid;
+exports.polygonConvexHull = polygonConvexHull;
+exports.optimisePolygon = optimisePolygon;
+exports.decomposePolygon = decomposePolygon;
+exports.pointOnRay = pointOnRay;
+exports.pointOnLine = pointOnLine;
+exports.pointInCircle = pointInCircle;
+exports.pointInRectangle = pointInRectangle;
+exports.pointInPolygon = pointInPolygon;
+exports.rayTraverseGrid = rayTraverseGrid;
+exports.rayIntersectsRay = rayIntersectsRay;
+exports.rayIntersectsLine = rayIntersectsLine;
+exports.rayIntersectsCircle = rayIntersectsCircle;
+exports.rayIntersectsRectangle = rayIntersectsRectangle;
+exports.rayIntersectsPolygon = rayIntersectsPolygon;
+exports.lineIntersectsRay = lineIntersectsRay;
+exports.lineIntersectsLine = lineIntersectsLine;
+exports.lineIntersectsCircle = lineIntersectsCircle;
+exports.lineIntersectsRectangle = lineIntersectsRectangle;
+exports.lineIntersectsPolygon = lineIntersectsPolygon;
+exports.circleIntersectsCircle = circleIntersectsCircle;
+exports.circleIntersectsRectangle = circleIntersectsRectangle;
+exports.circleIntersectsPolygon = circleIntersectsPolygon;
+exports.rectangleIntersectsRectangle = rectangleIntersectsRectangle;
+exports.rectangleIntersectsPolygon = rectangleIntersectsPolygon;
+exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const decomp = __importStar(__webpack_require__(/*! poly-decomp */ "./node_modules/poly-decomp/src/index.js"));
@@ -2240,7 +2291,6 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/2d/types.ts"), exports);
 function distance(a, b) {
     return vec_1.vec2.len(vec_1.vec2.sub(a, b));
 }
-exports.distance = distance;
 /**
  * Calculate the clockwise angle from point a to point b
  *
@@ -2258,25 +2308,25 @@ function angle(a, b) {
     }
     return theta;
 }
-exports.angle = angle;
 /**
- * Calculate the clockwise angle between two lines
+ * Calculate the clockwise angle between two lines or rays
  *
  * Returns 0 if either line is zero-length
  */
 function angleBetween(a, b) {
-    if ((0, utilities_1.vectorAlmostZero)(vec_1.vec2.sub(a.end, a.start)) ||
-        (0, utilities_1.vectorAlmostZero)(vec_1.vec2.sub(b.end, b.start))) {
+    let aLine = (0, types_1.isRay)(a) ? rayToLine(a, 1) : a;
+    let bLine = (0, types_1.isRay)(b) ? rayToLine(b, 1) : b;
+    if ((0, utilities_1.vectorAlmostZero)(vec_1.vec2.sub(aLine.end, aLine.start)) ||
+        (0, utilities_1.vectorAlmostZero)(vec_1.vec2.sub(bLine.end, bLine.start))) {
         return 0; // Zero-length line
     }
-    const dirA = vec_1.vec2.nor(vec_1.vec2.sub(a.end, a.start));
-    const dirB = vec_1.vec2.nor(vec_1.vec2.sub(b.end, b.start));
+    const dirA = vec_1.vec2.nor(vec_1.vec2.sub(aLine.end, aLine.start));
+    const dirB = vec_1.vec2.nor(vec_1.vec2.sub(bLine.end, bLine.start));
     const dot = vec_1.vec2.dot(dirA, dirB);
     const cross = vec_1.vec2.cross(dirA, dirB);
     const angle = Math.atan2(cross, dot);
     return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
 }
-exports.angleBetween = angleBetween;
 /**
  * Check if points are collinear
  */
@@ -2285,7 +2335,6 @@ function pointsAreCollinear(a, b, c) {
     const area = 0.5 * Math.abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
     return Math.abs(area) < constants.EPSILON;
 }
-exports.pointsAreCollinear = pointsAreCollinear;
 /**
  * Convert a line segment to a ray
  */
@@ -2295,7 +2344,6 @@ function lineToRay(line) {
         direction: vec_1.vec2.nor(vec_1.vec2.sub(line.end, line.start)),
     };
 }
-exports.lineToRay = lineToRay;
 /**
  * Convert a ray to a line segment
  */
@@ -2305,7 +2353,6 @@ function rayToLine(ray, length = 1) {
         end: vec_1.vec2.add(ray.origin, vec_1.vec2.mul(ray.direction, length)),
     };
 }
-exports.rayToLine = rayToLine;
 /**
  * Get the bounding box (AABB) of a geometric object
  */
@@ -2339,7 +2386,6 @@ function aabb(o) {
     }
     return null;
 }
-exports.aabb = aabb;
 /**
  * Convert an AABB to a rectangle
  */
@@ -2350,7 +2396,6 @@ function aabbToRectangle(aabb) {
         rotation: 0,
     };
 }
-exports.aabbToRectangle = aabbToRectangle;
 /**
  * Check if two AABBs overlap and return the overlapping area if so
  */
@@ -2369,7 +2414,6 @@ function aabbsOverlap(a, b) {
         },
     };
 }
-exports.aabbsOverlap = aabbsOverlap;
 /**
  * Check if a rectangle is rotated
  */
@@ -2377,7 +2421,6 @@ function rectangleIsRotated(rectangle) {
     return (rectangle.rotation !== undefined &&
         Math.abs(rectangle.rotation) > constants.EPSILON);
 }
-exports.rectangleIsRotated = rectangleIsRotated;
 /**
  * Get the vertices of a rectangle
  *
@@ -2409,7 +2452,6 @@ function rectangleVertices(rectangle) {
         vec_1.vec2.add(position, bottomLeftOffset),
     ];
 }
-exports.rectangleVertices = rectangleVertices;
 /**
  * Convert a list of vertices to a list of edges
  */
@@ -2488,7 +2530,6 @@ function polygonIsConvex(polygon) {
     }
     return true; // All cross products have the same sign, polygon is convex
 }
-exports.polygonIsConvex = polygonIsConvex;
 /**
  * Check if a polygon self-intersects
  */
@@ -2516,7 +2557,6 @@ function polygonSelfIntersects(polygon) {
     }
     return false; // No intersections found, polygon does not self-intersect
 }
-exports.polygonSelfIntersects = polygonSelfIntersects;
 /**
  * Check if a polygon is valid
  *
@@ -2526,15 +2566,18 @@ exports.polygonSelfIntersects = polygonSelfIntersects;
 function polygonIsValid(polygon) {
     return polygon.vertices.length >= 3 && !polygonSelfIntersects(polygon);
 }
-exports.polygonIsValid = polygonIsValid;
 /**
  * Determine the winding order of a polygon's vertices
  *
- * Returns 'clockwise' or 'counter-clockwise'
+ * Returns 'clockwise' or 'counter-clockwise' depending on the chosen
+ * coordinate system
+ *
+ * The coordinate system can be 'cartesian' (where y increases upwards) or
+ * 'screen' (where y increases downwards, this is the default)
  *
  * Returns null if the polygon is invalid
  */
-function polygonWindingOrder(polygon) {
+function polygonWindingOrder(polygon, options) {
     if (!polygonIsValid(polygon)) {
         return null;
     }
@@ -2544,9 +2587,16 @@ function polygonWindingOrder(polygon) {
         const b = (0, utils_1.at)(polygon.vertices, i + 1);
         sum += (b.x - a.x) * (b.y + a.y);
     }
-    return sum > 0 ? 'counter-clockwise' : 'clockwise';
+    const coordinateSystem = (options === null || options === void 0 ? void 0 : options.coordinateSystem) || 'screen';
+    switch (coordinateSystem) {
+        case 'cartesian':
+            return sum > 0 ? 'clockwise' : 'counter-clockwise';
+        case 'screen':
+            return sum > 0 ? 'counter-clockwise' : 'clockwise';
+        default:
+            return null;
+    }
 }
-exports.polygonWindingOrder = polygonWindingOrder;
 /**
  * Calculate the area of a polygon
  *
@@ -2564,7 +2614,6 @@ function polygonArea(polygon) {
     }
     return Math.abs(area) / 2;
 }
-exports.polygonArea = polygonArea;
 /**
  * Calculate the centroid of a polygon
  *
@@ -2580,26 +2629,19 @@ function polygonCentroid(polygon) {
     }
     return vec_1.vec2.div([...polygon.vertices].reduce((a, c) => vec_1.vec2.add(a, c), (0, vec_1.vec2)()), polygon.vertices.length);
 }
-exports.polygonCentroid = polygonCentroid;
 /**
  * Calculate the convex hull of a polygon
  */
-function polygonConvexHull(polygon) {
+function polygonConvexHull(polygon, options) {
+    var _a;
     if (!polygonIsValid(polygon)) {
         return null;
     }
     if (polygonIsConvex(polygon)) {
         return polygon; // The polygon is already convex
     }
-    // let vertices: Point[] = [];
-    // switch (polygonWindingOrder(polygon)) {
-    //   case 'clockwise':
-    //     vertices = [...polygon.vertices];
-    //     break;
-    //   case 'counter-clockwise':
-    //     vertices = [...polygon.vertices].reverse();
-    //     break;
-    // }
+    const keepWindingOrder = (_a = options === null || options === void 0 ? void 0 : options.keepWindingOrder) !== null && _a !== void 0 ? _a : true;
+    const originalWindingOrder = polygonWindingOrder(polygon);
     // Andrew's monotone chain algorithm for convex hull
     // Sort vertices lexicographically (first by x, then by y)
     const sorted = [...polygon.vertices].sort((a, b) => a.x !== b.x ? a.x - b.x : a.y - b.y);
@@ -2620,23 +2662,23 @@ function polygonConvexHull(polygon) {
         }
         upper.push(p);
     }
-    // Remove the last point of each half because it's repeated at the start of the other
+    // Remove the last point of each half because it's repeated at the start of
+    // the other
     lower.pop();
     upper.pop();
     const hull = lower.concat(upper);
     if (hull.length < 3) {
         return null;
     }
-    // Ensure clockwise winding order
-    const winding = polygonWindingOrder({ vertices: hull });
-    if (winding === 'counter-clockwise') {
+    // Optionally ensure the winding order is preserved
+    if (keepWindingOrder &&
+        polygonWindingOrder({ vertices: hull }) !== originalWindingOrder) {
         hull.reverse();
     }
     return {
         vertices: removeDuplicateVertices(hull),
     };
 }
-exports.polygonConvexHull = polygonConvexHull;
 /**
  * Remove duplicate vertices from a list of vertices
  */
@@ -2701,7 +2743,6 @@ function optimisePolygon(polygon) {
     }
     return { vertices: optimisedVertices };
 }
-exports.optimisePolygon = optimisePolygon;
 /**
  * Decompose a polygon into a set of convex polygons using the Bayazit
  * algorithm
@@ -2750,7 +2791,6 @@ function decomposePolygon(polygon, options) {
     }
     return result.length > 0 ? result : null;
 }
-exports.decomposePolygon = decomposePolygon;
 /**
  * Check if a point is on a ray
  *
@@ -2774,7 +2814,6 @@ function pointOnRay(point, ray) {
         distance,
     };
 }
-exports.pointOnRay = pointOnRay;
 /**
  * Check if a point intersects a line segment
  *
@@ -2804,7 +2843,6 @@ function pointOnLine(point, line) {
         distance,
     };
 }
-exports.pointOnLine = pointOnLine;
 /**
  * Check if a point is inside a circle
  *
@@ -2831,7 +2869,6 @@ function pointInCircle(point, circle) {
         distance,
     };
 }
-exports.pointInCircle = pointInCircle;
 /**
  * Check if a point is inside a rectangle
  *
@@ -2867,7 +2904,6 @@ function pointInRectangle(point, rectangle) {
     }
     return polygonResult;
 }
-exports.pointInRectangle = pointInRectangle;
 /**
  * Check if a point is inside a polygon
  *
@@ -2913,7 +2949,6 @@ function pointInPolygon(point, polygon) {
         distance: inside ? -distance : distance,
     };
 }
-exports.pointInPolygon = pointInPolygon;
 /**
  * Check which grid cells a ray traverses
  *
@@ -3031,7 +3066,6 @@ function rayTraverseGrid(ray, cellSize, gridTopLeft, gridBottomRight, maxCells =
     }
     return { cells };
 }
-exports.rayTraverseGrid = rayTraverseGrid;
 /**
  * Check if two rays intersect
  */
@@ -3084,7 +3118,6 @@ function rayIntersectsRay(rayA, rayB) {
         intersects: false,
     };
 }
-exports.rayIntersectsRay = rayIntersectsRay;
 /**
  * Check if a ray intersects a line segment
  */
@@ -3137,7 +3170,6 @@ function rayIntersectsLine(ray, line) {
         intersects: false,
     };
 }
-exports.rayIntersectsLine = rayIntersectsLine;
 /**
  * Check if a ray intersects a circle
  */
@@ -3195,7 +3227,6 @@ function rayIntersectsCircle(ray, circle) {
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
 }
-exports.rayIntersectsCircle = rayIntersectsCircle;
 /**
  * Check if a ray intersects a rectangle
  */
@@ -3226,7 +3257,6 @@ function rayIntersectsRectangle(ray, rectangle) {
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
 }
-exports.rayIntersectsRectangle = rayIntersectsRectangle;
 /**
  * Check if a ray intersects the edges of a convex polygon
  *
@@ -3278,14 +3308,12 @@ function rayIntersectsPolygon(ray, polygon) {
     // For convex polygons, check each edge
     return rayIntersectsValidConvexPolygonEdges(ray, verticesToEdges(polygon.vertices));
 }
-exports.rayIntersectsPolygon = rayIntersectsPolygon;
 /**
  * Check if a line segment intersects a ray
  */
 function lineIntersectsRay(line, ray) {
     return rayIntersectsLine(ray, line);
 }
-exports.lineIntersectsRay = lineIntersectsRay;
 /**
  * Check if two line segments intersect
  */
@@ -3338,7 +3366,6 @@ function lineIntersectsLine(lineA, lineB) {
         intersects: false,
     };
 }
-exports.lineIntersectsLine = lineIntersectsLine;
 /**
  * Check if a line segment intersects a circle
  */
@@ -3415,7 +3442,6 @@ function lineIntersectsCircle(line, circle) {
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
 }
-exports.lineIntersectsCircle = lineIntersectsCircle;
 /**
  * Check if a line segment intersects a rectangle
  */
@@ -3458,7 +3484,6 @@ function lineIntersectsRectangle(line, rectangle) {
         intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
     };
 }
-exports.lineIntersectsRectangle = lineIntersectsRectangle;
 /**
  * Check if a line segment intersects the edges of a convex polygon
  *
@@ -3524,7 +3549,6 @@ function lineIntersectsPolygon(line, polygon) {
     // For convex polygons, check each edge
     return lineIntersectsValidConvexPolygonEdges(line, polygon, verticesToEdges(polygon.vertices));
 }
-exports.lineIntersectsPolygon = lineIntersectsPolygon;
 /**
  * Check if two circles intersect
  */
@@ -3585,7 +3609,6 @@ function circleIntersectsCircle(circleA, circleB) {
         minimumSeparation,
     };
 }
-exports.circleIntersectsCircle = circleIntersectsCircle;
 /**
  * Check if a circle intersects a rectangle
  */
@@ -3638,7 +3661,6 @@ function circleIntersectsRectangle(circle, rectangle) {
     }
     return { intersects: false };
 }
-exports.circleIntersectsRectangle = circleIntersectsRectangle;
 /**
  * Check if a circle intersects the edges of a convex polygon
  *
@@ -3791,7 +3813,6 @@ function circleIntersectsPolygon(circle, polygon, options) {
     }
     return result;
 }
-exports.circleIntersectsPolygon = circleIntersectsPolygon;
 /**
  * Project vertices onto an axis and return the min/max values
  */
@@ -3879,7 +3900,6 @@ function rectangleIntersectsRectangle(rectangleA, rectangleB) {
         minimumSeparation,
     };
 }
-exports.rectangleIntersectsRectangle = rectangleIntersectsRectangle;
 /**
  * Check if a rectangle intersects a polygon
  *
@@ -3902,7 +3922,6 @@ function rectangleIntersectsPolygon(rectangle, polygon) {
     // Use polygon intersection algorithm
     return polygonIntersectsPolygon(rectPolygon, polygon);
 }
-exports.rectangleIntersectsPolygon = rectangleIntersectsPolygon;
 /**
  * Check if two polygons intersect
  *
@@ -3974,7 +3993,6 @@ function polygonIntersectsPolygon(polygonA, polygonB) {
         intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
     };
 }
-exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 
 
 /***/ }),
@@ -3988,7 +4006,13 @@ exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isPolygon = exports.isRectangle = exports.isAABB = exports.isCircle = exports.isLine = exports.isRay = exports.isPoint = void 0;
+exports.isPoint = isPoint;
+exports.isRay = isRay;
+exports.isLine = isLine;
+exports.isCircle = isCircle;
+exports.isAABB = isAABB;
+exports.isRectangle = isRectangle;
+exports.isPolygon = isPolygon;
 const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
 /**
  * Type guard to check if a value is a Point
@@ -3996,7 +4020,6 @@ const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/t
 function isPoint(value) {
     return (0, types_1.isVec2)(value);
 }
-exports.isPoint = isPoint;
 /**
  * Check if a value is a Ray
  */
@@ -4008,7 +4031,6 @@ function isRay(value) {
         'direction' in value &&
         (0, types_1.isVec2)(value.direction));
 }
-exports.isRay = isRay;
 /**
  * Check if a value is a Line
  */
@@ -4020,7 +4042,6 @@ function isLine(value) {
         'end' in value &&
         isPoint(value.end));
 }
-exports.isLine = isLine;
 /**
  * Check if a value is a Circle
  */
@@ -4032,7 +4053,6 @@ function isCircle(value) {
         'radius' in value &&
         typeof value.radius === 'number');
 }
-exports.isCircle = isCircle;
 /**
  * Check if a value is an AABB
  */
@@ -4044,7 +4064,6 @@ function isAABB(value) {
         'size' in value &&
         (0, types_1.isVec2)(value.size));
 }
-exports.isAABB = isAABB;
 /**
  * Check if a value is a Rectangle
  */
@@ -4057,7 +4076,6 @@ function isRectangle(value) {
         (0, types_1.isVec2)(value.size) &&
         ('rotation' in value ? typeof value.rotation === 'number' : true));
 }
-exports.isRectangle = isRectangle;
 /**
  * Check if a value is a Polygon
  */
@@ -4068,7 +4086,6 @@ function isPolygon(value) {
         Array.isArray(value.vertices) &&
         value.vertices.every(isPoint));
 }
-exports.isPolygon = isPolygon;
 
 
 /***/ }),
@@ -4097,18 +4114,46 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.pointOnRay = exports.meshCentroid = exports.meshToEdges = exports.meshToPolygons = exports.polygonsToMesh = exports.polygonCentroid = exports.polygonArea = exports.polygonIsValid = exports.cuboidVertices = exports.cuboidIsRotated = exports.aabbsOverlap = exports.aabbToCuboid = exports.aabb = exports.rayToLine = exports.lineToRay = exports.angle = exports.distance = void 0;
+exports.distance = distance;
+exports.angle = angle;
+exports.lineToRay = lineToRay;
+exports.rayToLine = rayToLine;
+exports.aabb = aabb;
+exports.aabbToCuboid = aabbToCuboid;
+exports.aabbsOverlap = aabbsOverlap;
+exports.cuboidIsRotated = cuboidIsRotated;
+exports.cuboidVertices = cuboidVertices;
+exports.polygonIsValid = polygonIsValid;
+exports.polygonArea = polygonArea;
+exports.polygonCentroid = polygonCentroid;
+exports.polygonsToMesh = polygonsToMesh;
+exports.meshToPolygons = meshToPolygons;
+exports.meshToEdges = meshToEdges;
+exports.meshCentroid = meshCentroid;
+exports.pointOnRay = pointOnRay;
+exports.rayIntersectsSphere = rayIntersectsSphere;
+exports.rayIntersectsPlane = rayIntersectsPlane;
 // import { at } from '@basementuniverse/utils';
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const _2d_1 = __webpack_require__(/*! ../2d */ "./src/2d/index.ts");
@@ -4126,7 +4171,6 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
 function distance(a, b) {
     return vec_1.vec3.len(vec_1.vec3.sub(a, b));
 }
-exports.distance = distance;
 /**
  * Calculate the angle between two vectors in 3D space
  *
@@ -4137,7 +4181,6 @@ exports.distance = distance;
 function angle(a, b) {
     return Math.acos(vec_1.vec3.dot(a, b) / (vec_1.vec3.len(a) * vec_1.vec3.len(b)));
 }
-exports.angle = angle;
 /**
  * Convert a line segment to a ray
  */
@@ -4147,7 +4190,6 @@ function lineToRay(line) {
         direction: vec_1.vec3.nor(vec_1.vec3.sub(line.end, line.start)),
     };
 }
-exports.lineToRay = lineToRay;
 /**
  * Convert a ray to a line segment
  */
@@ -4157,7 +4199,6 @@ function rayToLine(ray, length = 1) {
         end: vec_1.vec3.add(ray.origin, vec_1.vec3.mul(ray.direction, length)),
     };
 }
-exports.rayToLine = rayToLine;
 function aabb(o) {
     if ((0, types_1.isLine)(o)) {
         return {
@@ -4188,7 +4229,6 @@ function aabb(o) {
     }
     return null;
 }
-exports.aabb = aabb;
 /**
  * Convert an AABB to a cuboid
  */
@@ -4199,7 +4239,6 @@ function aabbToCuboid(aabb) {
         rotation: (0, vec_1.vec3)(0, 0, 0),
     };
 }
-exports.aabbToCuboid = aabbToCuboid;
 /**
  * Check if two AABBs overlap and return the overlapping area if they do
  */
@@ -4219,14 +4258,12 @@ function aabbsOverlap(a, b) {
         },
     };
 }
-exports.aabbsOverlap = aabbsOverlap;
 /**
  * Check if a cuboid is rotated
  */
 function cuboidIsRotated(cuboid) {
     return cuboid.rotation !== undefined && !(0, utilities_1.vectorAlmostZero)(cuboid.rotation);
 }
-exports.cuboidIsRotated = cuboidIsRotated;
 /**
  * Get the vertices of a cuboid
  *
@@ -4278,7 +4315,6 @@ function cuboidVertices(cuboid) {
         vec_1.vec3.add(position, lowerBottomLeftOffset),
     ];
 }
-exports.cuboidVertices = cuboidVertices;
 /**
  * Convert a list of vertices to a list of edges
  */
@@ -4299,7 +4335,6 @@ exports.cuboidVertices = cuboidVertices;
 function polygonIsValid(polygon) {
     return polygon.vertices.length === 3;
 }
-exports.polygonIsValid = polygonIsValid;
 /**
  * Calculate the 2D area of a polygon in 3D space
  *
@@ -4316,7 +4351,6 @@ function polygonArea(polygon) {
         b.x * (c.y - c.x) * b.y +
         c.x * (a.y - a.x) * c.y) / 2);
 }
-exports.polygonArea = polygonArea;
 /**
  * Calculate the centroid of a polygon
  *
@@ -4328,37 +4362,89 @@ function polygonCentroid(polygon) {
     }
     return vec_1.vec3.div(vec_1.vec3.add(polygon.vertices[0], vec_1.vec3.add(polygon.vertices[1], polygon.vertices[2])), 3);
 }
-exports.polygonCentroid = polygonCentroid;
 /**
  * Convert a list of polygons to a mesh
  *
  * This optimises the number of vertices and edges by merging common vertices
  */
 function polygonsToMesh(polygons) {
-    throw new Error('not implemented yet'); // TODO
+    if (polygons.length === 0) {
+        return { vertices: [], indices: [] };
+    }
+    // Create a map to store unique vertices
+    const vertexMap = new Map();
+    const indices = [];
+    // Iterate over each polygon
+    polygons.forEach((polygon, polygonIndex) => {
+        if (!polygonIsValid(polygon)) {
+            throw new Error(`Invalid polygon at index ${polygonIndex}`);
+        }
+        // Iterate over each vertex in the polygon
+        polygon.vertices.forEach(vertex => {
+            // Create a unique key for the vertex
+            const key = `${vertex.x},${vertex.y},${vertex.z}`;
+            if (!vertexMap.has(key)) {
+                // If the vertex is not in the map, add it
+                vertexMap.set(key, vertex);
+            }
+            // Get the index of the vertex in the map
+            const index = Array.from(vertexMap.keys()).indexOf(key);
+            indices.push(index);
+        });
+    });
+    // Convert the vertex map to an array
+    const vertices = Array.from(vertexMap.values());
+    return {
+        vertices,
+        indices,
+    };
 }
-exports.polygonsToMesh = polygonsToMesh;
 /**
  * Convert a mesh to a list of polygons
  */
 function meshToPolygons(mesh) {
-    throw new Error('not implemented yet'); // TODO
+    if (mesh.indices.length % 3 !== 0) {
+        throw new Error('Mesh indices must be a multiple of 3 to form triangles');
+    }
+    const polygons = [];
+    for (let i = 0; i < mesh.indices.length; i += 3) {
+        const indices = mesh.indices.slice(i, i + 3);
+        if (indices.length !== 3) {
+            throw new Error('Mesh indices must form triangles');
+        }
+        const vertices = indices.map(index => mesh.vertices[index]);
+        polygons.push({ vertices });
+    }
+    return polygons;
 }
-exports.meshToPolygons = meshToPolygons;
 /**
  * Convert a mesh to a list of edges
  */
 function meshToEdges(mesh) {
-    throw new Error('not implemented yet'); // TODO
+    if (mesh.indices.length % 2 !== 0) {
+        throw new Error('Mesh indices must be a multiple of 2 to form edges');
+    }
+    const edges = [];
+    for (let i = 0; i < mesh.indices.length; i += 2) {
+        const startIndex = mesh.indices[i];
+        const endIndex = mesh.indices[i + 1];
+        if (startIndex >= mesh.vertices.length ||
+            endIndex >= mesh.vertices.length) {
+            throw new Error('Mesh indices out of bounds');
+        }
+        edges.push({
+            start: mesh.vertices[startIndex],
+            end: mesh.vertices[endIndex],
+        });
+    }
+    return edges;
 }
-exports.meshToEdges = meshToEdges;
 /**
  * Calculate the centroid of a mesh
  */
 function meshCentroid(mesh) {
-    throw new Error('not implemented yet'); // TODO
+    return vec_1.vec3.div(mesh.vertices.reduce((acc, v) => vec_1.vec3.add(acc, v), (0, vec_1.vec3)()), mesh.vertices.length);
 }
-exports.meshCentroid = meshCentroid;
 /**
  * Check if a point is on a ray
  *
@@ -4382,7 +4468,36 @@ function pointOnRay(point, ray) {
         distance,
     };
 }
-exports.pointOnRay = pointOnRay;
+// TODO adapt the following functions to return more information
+// (e.g. intersection point, distance, etc.)
+function rayIntersectsSphere(ray, sphere) {
+    const oc = vec_1.vec3.sub(ray.origin, sphere.position);
+    const a = vec_1.vec3.dot(ray.direction, ray.direction);
+    const b = 2.0 * vec_1.vec3.dot(oc, ray.direction);
+    const c = vec_1.vec3.dot(oc, oc) - sphere.radius * sphere.radius;
+    const discriminant = b * b - 4 * a * c;
+    // Only consider intersections in the positive direction along the ray
+    if (discriminant < 0) {
+        return false;
+    }
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDiscriminant) / (2 * a);
+    const t2 = (-b + sqrtDiscriminant) / (2 * a);
+    return t1 >= 0 || t2 >= 0;
+}
+function rayIntersectsPlane(ray, plane) {
+    const denominator = vec_1.vec3.dot(ray.direction, plane.normal);
+    if (Math.abs(denominator) < constants.EPSILON) {
+        // Ray is parallel to the plane
+        return null;
+    }
+    const t = vec_1.vec3.dot(vec_1.vec3.sub(plane.point, ray.origin), plane.normal) / denominator;
+    if (t < 0) {
+        // Intersection is behind the ray's origin
+        return null;
+    }
+    return vec_1.vec3.add(ray.origin, vec_1.vec3.scale(ray.direction, t));
+}
 
 
 /***/ }),
@@ -4396,7 +4511,15 @@ exports.pointOnRay = pointOnRay;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isMesh = exports.isPolygon = exports.isPlane = exports.isCuboid = exports.isAABB = exports.isSphere = exports.isLine = exports.isRay = exports.isPoint = void 0;
+exports.isPoint = isPoint;
+exports.isRay = isRay;
+exports.isLine = isLine;
+exports.isSphere = isSphere;
+exports.isAABB = isAABB;
+exports.isCuboid = isCuboid;
+exports.isPlane = isPlane;
+exports.isPolygon = isPolygon;
+exports.isMesh = isMesh;
 const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
 /**
  * Type guard to check if a value is a Point
@@ -4404,7 +4527,6 @@ const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/t
 function isPoint(value) {
     return (0, types_1.isVec3)(value);
 }
-exports.isPoint = isPoint;
 /**
  * Check if a value is a Ray
  */
@@ -4416,7 +4538,6 @@ function isRay(value) {
         'direction' in value &&
         (0, types_1.isVec3)(value.direction));
 }
-exports.isRay = isRay;
 /**
  * Check if a value is a Line
  */
@@ -4428,7 +4549,6 @@ function isLine(value) {
         'end' in value &&
         isPoint(value.end));
 }
-exports.isLine = isLine;
 /**
  * Check if a value is a Sphere
  */
@@ -4440,7 +4560,6 @@ function isSphere(value) {
         'radius' in value &&
         typeof value.radius === 'number');
 }
-exports.isSphere = isSphere;
 /**
  * Check if a value is an AABB
  */
@@ -4452,7 +4571,6 @@ function isAABB(value) {
         'size' in value &&
         (0, types_1.isVec3)(value.size));
 }
-exports.isAABB = isAABB;
 /**
  * Check if a value is a Cuboid
  */
@@ -4465,7 +4583,6 @@ function isCuboid(value) {
         (0, types_1.isVec3)(value.size) &&
         ('rotation' in value ? (0, types_1.isVec3)(value.rotation) : true));
 }
-exports.isCuboid = isCuboid;
 /**
  * Check if a value is a Plane
  */
@@ -4477,7 +4594,6 @@ function isPlane(value) {
         'normal' in value &&
         (0, types_1.isVec3)(value.normal));
 }
-exports.isPlane = isPlane;
 /**
  * Check if a value is a Polygon
  */
@@ -4490,7 +4606,6 @@ function isPolygon(value) {
         value.vertices.every(isPoint) &&
         !('indices' in value));
 }
-exports.isPolygon = isPolygon;
 /**
  * Check if a value is a Mesh
  */
@@ -4504,7 +4619,6 @@ function isMesh(value) {
         Array.isArray(value.indices) &&
         value.indices.every((i) => typeof i === 'number'));
 }
-exports.isMesh = isMesh;
 
 
 /***/ }),
@@ -4533,13 +4647,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.intersectionUtilities = exports.intersection3d = exports.intersection2d = void 0;
 exports.intersection2d = __importStar(__webpack_require__(/*! ./2d */ "./src/2d/index.ts"));
@@ -4588,15 +4712,29 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.overlapInterval = exports.intervalsOverlap = exports.valueInInterval = exports.vectorsAlmostEqual = exports.vectorAlmostZero = void 0;
+exports.vectorAlmostZero = vectorAlmostZero;
+exports.vectorsAlmostEqual = vectorsAlmostEqual;
+exports.valueInInterval = valueInInterval;
+exports.intervalsOverlap = intervalsOverlap;
+exports.overlapInterval = overlapInterval;
 const constants = __importStar(__webpack_require__(/*! ./constants */ "./src/utilities/constants.ts"));
 const types_1 = __webpack_require__(/*! ./types */ "./src/utilities/types.ts");
 function vectorAlmostZero(v) {
@@ -4610,7 +4748,6 @@ function vectorAlmostZero(v) {
     }
     return false;
 }
-exports.vectorAlmostZero = vectorAlmostZero;
 function vectorsAlmostEqual(a, b) {
     if ((0, types_1.isVec3)(a) && (0, types_1.isVec3)(b)) {
         return (Math.abs(a.x - b.x) < constants.EPSILON &&
@@ -4623,7 +4760,6 @@ function vectorsAlmostEqual(a, b) {
     }
     return false;
 }
-exports.vectorsAlmostEqual = vectorsAlmostEqual;
 /**
  * Check if a value is within a specified interval
  */
@@ -4632,14 +4768,12 @@ function valueInInterval(value, interval) {
     return ((minInclusive ? value >= min : value > min) &&
         (maxInclusive ? value <= max : value < max));
 }
-exports.valueInInterval = valueInInterval;
 /**
  * Check if two intervals (a1, a2) and (b1, b2) overlap
  */
 function intervalsOverlap(a, b) {
     return Math.max(a.min, b.min) <= Math.min(a.max, b.max);
 }
-exports.intervalsOverlap = intervalsOverlap;
 /**
  * Get the overlapping part of two intervals (a1, a2) and (b1, b2)
  *
@@ -4651,7 +4785,6 @@ function overlapInterval(a, b) {
     }
     return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
 }
-exports.overlapInterval = overlapInterval;
 
 
 /***/ }),
@@ -4665,7 +4798,8 @@ exports.overlapInterval = overlapInterval;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isVec3 = exports.isVec2 = void 0;
+exports.isVec2 = isVec2;
+exports.isVec3 = isVec3;
 /**
  * Check if a value is a vec2
  */
@@ -4678,7 +4812,6 @@ function isVec2(value) {
         typeof value.y === 'number' &&
         !('z' in value));
 }
-exports.isVec2 = isVec2;
 /**
  * Check if a value is a vec3
  */
@@ -4692,7 +4825,6 @@ function isVec3(value) {
         'z' in value &&
         typeof value.z === 'number');
 }
-exports.isVec3 = isVec3;
 
 
 /***/ })

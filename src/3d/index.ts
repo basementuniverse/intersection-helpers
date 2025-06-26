@@ -303,28 +303,99 @@ export function polygonCentroid(polygon: Polygon): Point | null {
  * This optimises the number of vertices and edges by merging common vertices
  */
 export function polygonsToMesh(polygons: Polygon[]): Mesh {
-  throw new Error('not implemented yet'); // TODO
+  if (polygons.length === 0) {
+    return { vertices: [], indices: [] };
+  }
+
+  // Create a map to store unique vertices
+  const vertexMap: Map<string, Point> = new Map();
+  const indices: number[] = [];
+
+  // Iterate over each polygon
+  polygons.forEach((polygon, polygonIndex) => {
+    if (!polygonIsValid(polygon)) {
+      throw new Error(`Invalid polygon at index ${polygonIndex}`);
+    }
+
+    // Iterate over each vertex in the polygon
+    polygon.vertices.forEach(vertex => {
+      // Create a unique key for the vertex
+      const key = `${vertex.x},${vertex.y},${vertex.z}`;
+      if (!vertexMap.has(key)) {
+        // If the vertex is not in the map, add it
+        vertexMap.set(key, vertex);
+      }
+      // Get the index of the vertex in the map
+      const index = Array.from(vertexMap.keys()).indexOf(key);
+      indices.push(index);
+    });
+  });
+
+  // Convert the vertex map to an array
+  const vertices: Point[] = Array.from(vertexMap.values());
+
+  return {
+    vertices,
+    indices,
+  };
 }
 
 /**
  * Convert a mesh to a list of polygons
  */
 export function meshToPolygons(mesh: Mesh): Polygon[] {
-  throw new Error('not implemented yet'); // TODO
+  if (mesh.indices.length % 3 !== 0) {
+    throw new Error('Mesh indices must be a multiple of 3 to form triangles');
+  }
+  const polygons: Polygon[] = [];
+  for (let i = 0; i < mesh.indices.length; i += 3) {
+    const indices = mesh.indices.slice(i, i + 3);
+    if (indices.length !== 3) {
+      throw new Error('Mesh indices must form triangles');
+    }
+    const vertices = indices.map(index => mesh.vertices[index]) as [
+      Point,
+      Point,
+      Point
+    ];
+    polygons.push({ vertices });
+  }
+  return polygons;
 }
 
 /**
  * Convert a mesh to a list of edges
  */
 export function meshToEdges(mesh: Mesh): Line[] {
-  throw new Error('not implemented yet'); // TODO
+  if (mesh.indices.length % 2 !== 0) {
+    throw new Error('Mesh indices must be a multiple of 2 to form edges');
+  }
+  const edges: Line[] = [];
+  for (let i = 0; i < mesh.indices.length; i += 2) {
+    const startIndex = mesh.indices[i];
+    const endIndex = mesh.indices[i + 1];
+    if (
+      startIndex >= mesh.vertices.length ||
+      endIndex >= mesh.vertices.length
+    ) {
+      throw new Error('Mesh indices out of bounds');
+    }
+    edges.push({
+      start: mesh.vertices[startIndex],
+      end: mesh.vertices[endIndex],
+    });
+  }
+  return edges;
 }
 
 /**
  * Calculate the centroid of a mesh
  */
 export function meshCentroid(mesh: Mesh): Point {
-  throw new Error('not implemented yet'); // TODO
+  return vec3.div(
+    mesh.vertices.reduce((acc, v) => vec3.add(acc, v), vec3()),
+    mesh.vertices.length
+  );
 }
 
 /**
@@ -365,6 +436,9 @@ export function pointOnRay(
     distance,
   };
 }
+
+// TODO adapt the following functions to return more information
+// (e.g. intersection point, distance, etc.)
 
 export function rayIntersectsSphere(ray: Ray, sphere: Sphere): boolean {
   const oc = vec3.sub(ray.origin, sphere.position);

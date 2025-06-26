@@ -25,11 +25,11 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     */
   export function angle(a: Point, b: Point): number;
   /**
-    * Calculate the clockwise angle between two lines
+    * Calculate the clockwise angle between two lines or rays
     *
     * Returns 0 if either line is zero-length
     */
-  export function angleBetween(a: Line, b: Line): number;
+  export function angleBetween(a: Line | Ray, b: Line | Ray): number;
   /**
     * Check if points are collinear
     */
@@ -91,11 +91,17 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
   /**
     * Determine the winding order of a polygon's vertices
     *
-    * Returns 'clockwise' or 'counter-clockwise'
+    * Returns 'clockwise' or 'counter-clockwise' depending on the chosen
+    * coordinate system
+    *
+    * The coordinate system can be 'cartesian' (where y increases upwards) or
+    * 'screen' (where y increases downwards, this is the default)
     *
     * Returns null if the polygon is invalid
     */
-  export function polygonWindingOrder(polygon: Polygon): 'clockwise' | 'counter-clockwise' | null;
+  export function polygonWindingOrder(polygon: Polygon, options?: {
+      coordinateSystem?: 'cartesian' | 'screen';
+  }): 'clockwise' | 'counter-clockwise' | null;
   /**
     * Calculate the area of a polygon
     *
@@ -112,7 +118,9 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
   /**
     * Calculate the convex hull of a polygon
     */
-  export function polygonConvexHull(polygon: Polygon): Polygon | null;
+  export function polygonConvexHull(polygon: Polygon, options?: {
+      keepWindingOrder?: boolean;
+  }): Polygon | null;
   /**
     * Optimise a polygon by removing collinear vertices and duplicate adjacent
     * vertices
@@ -336,7 +344,7 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
 
 declare module '@basementuniverse/intersection-helpers/src/3d' {
   import { vec3 } from '@basementuniverse/vec';
-  import { AABB, Cuboid, Line, Mesh, Point, Polygon, Ray, Sphere } from '@basementuniverse/intersection-helpers/src/3d/types';
+  import { AABB, Cuboid, Line, Mesh, Plane, Point, Polygon, Ray, Sphere } from '@basementuniverse/intersection-helpers/src/3d/types';
   export * from '@basementuniverse/intersection-helpers/src/3d/types';
   /**
     * Calculate the distance between two points in 3D space
@@ -440,6 +448,8 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
       closestPoint?: Point;
       distance: number;
   };
+  export function rayIntersectsSphere(ray: Ray, sphere: Sphere): boolean;
+  export function rayIntersectsPlane(ray: Ray, plane: Plane): vec3 | null;
 }
 
 declare module '@basementuniverse/intersection-helpers/src/utilities' {

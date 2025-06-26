@@ -14,6 +14,7 @@ import {
   isCircle,
   isLine,
   isPolygon,
+  isRay,
   isRectangle,
   Line,
   Point,
@@ -50,19 +51,21 @@ export function angle(a: Point, b: Point): number {
 }
 
 /**
- * Calculate the clockwise angle between two lines
+ * Calculate the clockwise angle between two lines or rays
  *
  * Returns 0 if either line is zero-length
  */
-export function angleBetween(a: Line, b: Line): number {
+export function angleBetween(a: Line | Ray, b: Line | Ray): number {
+  let aLine: Line = isRay(a) ? rayToLine(a, 1) : a;
+  let bLine: Line = isRay(b) ? rayToLine(b, 1) : b;
   if (
-    vectorAlmostZero(vec2.sub(a.end, a.start)) ||
-    vectorAlmostZero(vec2.sub(b.end, b.start))
+    vectorAlmostZero(vec2.sub(aLine.end, aLine.start)) ||
+    vectorAlmostZero(vec2.sub(bLine.end, bLine.start))
   ) {
     return 0; // Zero-length line
   }
-  const dirA = vec2.nor(vec2.sub(a.end, a.start));
-  const dirB = vec2.nor(vec2.sub(b.end, b.start));
+  const dirA = vec2.nor(vec2.sub(aLine.end, aLine.start));
+  const dirB = vec2.nor(vec2.sub(bLine.end, bLine.start));
   const dot = vec2.dot(dirA, dirB);
   const cross = vec2.cross(dirA, dirB);
   const angle = Math.atan2(cross, dot);
@@ -374,12 +377,19 @@ export function polygonIsValid(polygon: Polygon): boolean {
 /**
  * Determine the winding order of a polygon's vertices
  *
- * Returns 'clockwise' or 'counter-clockwise'
+ * Returns 'clockwise' or 'counter-clockwise' depending on the chosen
+ * coordinate system
+ *
+ * The coordinate system can be 'cartesian' (where y increases upwards) or
+ * 'screen' (where y increases downwards, this is the default)
  *
  * Returns null if the polygon is invalid
  */
 export function polygonWindingOrder(
-  polygon: Polygon
+  polygon: Polygon,
+  options?: {
+    coordinateSystem?: 'cartesian' | 'screen';
+  }
 ): 'clockwise' | 'counter-clockwise' | null {
   if (!polygonIsValid(polygon)) {
     return null;
@@ -390,7 +400,15 @@ export function polygonWindingOrder(
     const b = at(polygon.vertices, i + 1);
     sum += (b.x - a.x) * (b.y + a.y);
   }
-  return sum > 0 ? 'counter-clockwise' : 'clockwise';
+  const coordinateSystem = options?.coordinateSystem || 'screen';
+  switch (coordinateSystem) {
+    case 'cartesian':
+      return sum > 0 ? 'clockwise' : 'counter-clockwise';
+    case 'screen':
+      return sum > 0 ? 'counter-clockwise' : 'clockwise';
+    default:
+      return null;
+  }
 }
 
 /**
@@ -437,13 +455,21 @@ export function polygonCentroid(polygon: Polygon): Point | null {
 /**
  * Calculate the convex hull of a polygon
  */
-export function polygonConvexHull(polygon: Polygon): Polygon | null {
+export function polygonConvexHull(
+  polygon: Polygon,
+  options?: {
+    keepWindingOrder?: boolean;
+  }
+): Polygon | null {
   if (!polygonIsValid(polygon)) {
     return null;
   }
   if (polygonIsConvex(polygon)) {
     return polygon; // The polygon is already convex
   }
+
+  const keepWindingOrder = options?.keepWindingOrder ?? true;
+  const originalWindingOrder = polygonWindingOrder(polygon);
 
   // Andrew's monotone chain algorithm for convex hull
   // Sort vertices lexicographically (first by x, then by y)
@@ -491,9 +517,11 @@ export function polygonConvexHull(polygon: Polygon): Polygon | null {
     return null;
   }
 
-  // Ensure clockwise winding order
-  const winding = polygonWindingOrder({ vertices: hull });
-  if (winding === 'counter-clockwise') {
+  // Optionally ensure the winding order is preserved
+  if (
+    keepWindingOrder &&
+    polygonWindingOrder({ vertices: hull }) !== originalWindingOrder
+  ) {
     hull.reverse();
   }
 
