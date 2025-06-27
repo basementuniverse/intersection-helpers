@@ -8,7 +8,7 @@
 
 > **overlapInterval**(`a`, `b`): `null` \| [`Interval`](../types/type-aliases/Interval.md)
 
-Defined in: [utilities/index.ts:71](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/utilities/index.ts#L71)
+Defined in: [utilities/index.ts:73](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/utilities/index.ts#L73)
 
 Get the overlapping part of two intervals (a1, a2) and (b1, b2)
 

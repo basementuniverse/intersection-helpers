@@ -8,7 +8,7 @@
 
 > **circleIntersectsCircle**(`circleA`, `circleB`): `object`
 
-Defined in: [2d/index.ts:1747](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L1747)
+Defined in: [2d/index.ts:1747](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L1747)
 
 Check if two circles intersect
 

@@ -8,7 +8,7 @@
 
 > **polygonCentroid**(`polygon`): `null` \| `vec2`
 
-Defined in: [2d/index.ts:439](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L439)
+Defined in: [2d/index.ts:439](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L439)
 
 Calculate the centroid of a polygon
 

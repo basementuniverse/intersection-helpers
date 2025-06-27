@@ -8,7 +8,7 @@
 
 > **polygonIntersectsPolygon**(`polygonA`, `polygonB`): `null` \| \{ `intersectionPoints?`: `vec2`[]; `intersects`: `boolean`; \}
 
-Defined in: [2d/index.ts:2314](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L2314)
+Defined in: [2d/index.ts:2314](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L2314)
 
 Check if two polygons intersect
 

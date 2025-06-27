@@ -4159,7 +4159,6 @@ exports.rayIntersectsSphere = rayIntersectsSphere;
 exports.rayIntersectsPlane = rayIntersectsPlane;
 const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
-const _2d_1 = __webpack_require__(/*! ../2d */ "./src/2d/index.ts");
 const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
 const constants = __importStar(__webpack_require__(/*! ../utilities/constants */ "./src/utilities/constants.ts"));
 const types_1 = __webpack_require__(/*! ./types */ "./src/3d/types.ts");
@@ -4252,7 +4251,7 @@ function aabb(o) {
             size: (0, vec_1.vec3)(Math.max(...vertices.map(v => v.x)) - position.x, Math.max(...vertices.map(v => v.y)) - position.y, Math.max(...vertices.map(v => v.z)) - position.z),
         };
     }
-    if ((0, types_1.isMesh)(o) || (0, _2d_1.isPolygon)(o)) {
+    if ((0, types_1.isMesh)(o) || (0, types_1.isPolygon)(o)) {
         const position = (0, vec_1.vec3)(Math.min(...o.vertices.map(v => v.x)), Math.min(...o.vertices.map(v => v.y)), Math.min(...o.vertices.map(v => v.z)));
         return {
             position,
@@ -4879,6 +4878,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.vectorAlmostZero = vectorAlmostZero;
 exports.vectorsAlmostEqual = vectorsAlmostEqual;
@@ -4887,6 +4889,7 @@ exports.intervalsOverlap = intervalsOverlap;
 exports.overlapInterval = overlapInterval;
 const constants = __importStar(__webpack_require__(/*! ./constants */ "./src/utilities/constants.ts"));
 const types_1 = __webpack_require__(/*! ./types */ "./src/utilities/types.ts");
+__exportStar(__webpack_require__(/*! ./types */ "./src/utilities/types.ts"), exports);
 function vectorAlmostZero(v) {
     if ((0, types_1.isVec3)(v)) {
         return (Math.abs(v.x) < constants.EPSILON &&

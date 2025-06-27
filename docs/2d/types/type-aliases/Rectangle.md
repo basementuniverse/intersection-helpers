@@ -8,7 +8,7 @@
 
 > **Rectangle** = `object`
 
-Defined in: [2d/types.ts:111](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L111)
+Defined in: [2d/types.ts:111](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L111)
 
 A rectangle defined by the position of its center, side lengths, and
 optional rotation
@@ -21,7 +21,7 @@ Rotation is in radians and is applied around the center of the rectangle
 
 > **position**: [`Point`](Point.md)
 
-Defined in: [2d/types.ts:112](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L112)
+Defined in: [2d/types.ts:112](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L112)
 
 ***
 
@@ -29,7 +29,7 @@ Defined in: [2d/types.ts:112](https://github.com/basementuniverse/intersection-h
 
 > `optional` **rotation**: `number`
 
-Defined in: [2d/types.ts:114](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L114)
+Defined in: [2d/types.ts:114](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L114)
 
 ***
 
@@ -37,4 +37,4 @@ Defined in: [2d/types.ts:114](https://github.com/basementuniverse/intersection-h
 
 > **size**: `vec2`
 
-Defined in: [2d/types.ts:113](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L113)
+Defined in: [2d/types.ts:113](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L113)

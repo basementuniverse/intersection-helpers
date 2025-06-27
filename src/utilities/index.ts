@@ -2,6 +2,8 @@ import { vec2, vec3 } from '@basementuniverse/vec';
 import * as constants from './constants';
 import { Interval, isVec2, isVec3 } from './types';
 
+export * from './types';
+
 /**
  * Check if a vector is almost zero
  */

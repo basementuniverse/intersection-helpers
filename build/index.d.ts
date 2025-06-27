@@ -476,6 +476,7 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
 declare module '@basementuniverse/intersection-helpers/src/utilities' {
   import { vec2, vec3 } from '@basementuniverse/vec';
   import { Interval } from '@basementuniverse/intersection-helpers/src/utilities/types';
+  export * from '@basementuniverse/intersection-helpers/src/utilities/types';
   /**
     * Check if a vector is almost zero
     */

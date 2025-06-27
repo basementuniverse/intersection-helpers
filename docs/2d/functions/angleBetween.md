@@ -8,7 +8,7 @@
 
 > **angleBetween**(`a`, `b`): `number`
 
-Defined in: [2d/index.ts:58](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/index.ts#L58)
+Defined in: [2d/index.ts:58](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L58)
 
 Calculate the clockwise angle between two lines or rays
 

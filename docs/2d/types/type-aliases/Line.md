@@ -8,7 +8,7 @@
 
 > **Line** = `object`
 
-Defined in: [2d/types.ts:41](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L41)
+Defined in: [2d/types.ts:41](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L41)
 
 A line segment defined by two endpoints
 
@@ -18,7 +18,7 @@ A line segment defined by two endpoints
 
 > **end**: [`Point`](Point.md)
 
-Defined in: [2d/types.ts:43](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L43)
+Defined in: [2d/types.ts:43](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L43)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [2d/types.ts:43](https://github.com/basementuniverse/intersection-he
 
 > **start**: [`Point`](Point.md)
 
-Defined in: [2d/types.ts:42](https://github.com/basementuniverse/intersection-helpers/blob/ce8bdda9fbd616d6a406e87a4824e91fffc01d0e/src/2d/types.ts#L42)
+Defined in: [2d/types.ts:42](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L42)

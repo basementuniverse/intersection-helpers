@@ -1,6 +1,5 @@
 import { at, clamp } from '@basementuniverse/utils';
 import { vec3 } from '@basementuniverse/vec';
-import { isPolygon } from '../2d';
 import {
   overlapInterval,
   vectorAlmostZero,
@@ -13,6 +12,7 @@ import {
   isCuboid,
   isLine,
   isMesh,
+  isPolygon,
   isRay,
   isSphere,
   Line,
