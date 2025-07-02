@@ -458,6 +458,36 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
       distance: number;
   };
   /**
+    * Check if a point intersects a line segment
+    *
+    * Also returns the closest point on the line segment and the distance to it
+    */
+  export function pointOnLine(point: Point, line: Line): {
+      intersects: boolean;
+      closestPoint: Point;
+      distance: number;
+  };
+  /**
+    * Check if a point is inside a sphere
+    *
+    * Also returns the closest point on the sphere edge and the distance to it
+    *
+    * If the point is inside the sphere, the distance will be negative
+    */
+  export function pointInSphere(point: Point, sphere: Sphere): {
+      intersects: boolean;
+      closestPoint: Point;
+      distance: number;
+  };
+  /**
+    * Check if a point is inside a cuboid
+    */
+  export function pointInCuboid(point: Point, cuboid: Cuboid): {
+      intersects: boolean;
+      closestPoint: Point;
+      distance: number;
+  };
+  /**
     * Check if a ray intersects a sphere
     */
   export function rayIntersectsSphere(ray: Ray, sphere: Sphere): {

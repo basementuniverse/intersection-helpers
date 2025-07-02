@@ -4155,6 +4155,9 @@ exports.meshToEdges = meshToEdges;
 exports.meshCentroid = meshCentroid;
 exports.meshIsWatertight = meshIsWatertight;
 exports.pointOnRay = pointOnRay;
+exports.pointOnLine = pointOnLine;
+exports.pointInSphere = pointInSphere;
+exports.pointInCuboid = pointInCuboid;
 exports.rayIntersectsSphere = rayIntersectsSphere;
 exports.rayIntersectsPlane = rayIntersectsPlane;
 const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
@@ -4358,8 +4361,6 @@ function verticesToEdges(vertices) {
     }
     return edges;
 }
-// TODO temp
-console.log(verticesToEdges([]));
 /**
  * Check if a polygon is valid
  *
@@ -4532,9 +4533,98 @@ function pointOnRay(point, ray) {
         distance,
     };
 }
-// TODO pointOnLine
-// TODO pointInSphere
-// TODO pointInCuboid
+/**
+ * Check if a point intersects a line segment
+ *
+ * Also returns the closest point on the line segment and the distance to it
+ */
+function pointOnLine(point, line) {
+    // Get vector from line start to end
+    const lineVector = vec_1.vec3.sub(line.end, line.start);
+    // Get normalized line direction
+    const lineDirection = vec_1.vec3.nor(lineVector);
+    // Get vector from line start to point
+    const toPoint = vec_1.vec3.sub(point, line.start);
+    // Project toPoint onto the line direction
+    const projection = vec_1.vec3.dot(toPoint, lineDirection);
+    // Get line length
+    const lineLength = vec_1.vec3.len(lineVector);
+    // Clamp projection to line segment
+    const clampedProjection = Math.max(0, Math.min(lineLength, projection));
+    // Calculate closest point on line segment
+    const closestPoint = vec_1.vec3.add(line.start, vec_1.vec3.mul(lineDirection, clampedProjection));
+    // Calculate distance from point to closest point
+    const distance = vec_1.vec3.len(vec_1.vec3.sub(point, closestPoint));
+    return {
+        // Point is on line if distance is effectively zero
+        intersects: distance < constants.EPSILON,
+        closestPoint,
+        distance,
+    };
+}
+/**
+ * Check if a point is inside a sphere
+ *
+ * Also returns the closest point on the sphere edge and the distance to it
+ *
+ * If the point is inside the sphere, the distance will be negative
+ */
+function pointInSphere(point, sphere) {
+    // Calculate vector from sphere center to point
+    const toPoint = vec_1.vec3.sub(point, sphere.position);
+    // Calculate distance from point to sphere center
+    const distanceToCenter = vec_1.vec3.len(toPoint);
+    // Check if point is inside the sphere
+    const intersects = distanceToCenter <= sphere.radius;
+    // Calculate distance to circle edge
+    const distance = intersects
+        ? -(sphere.radius - distanceToCenter) // Negative if inside
+        : distanceToCenter - sphere.radius; // Positive if outside
+    // Calculate closest point on sphere edge
+    const closestPoint = vec_1.vec3.add(sphere.position, vec_1.vec3.mul(vec_1.vec3.nor(toPoint), sphere.radius));
+    return {
+        intersects,
+        closestPoint,
+        distance,
+    };
+}
+/**
+ * Check if a point is inside a cuboid
+ */
+function pointInCuboid(point, cuboid) {
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Transform point to local space by undoing rotation and translation
+    let localPoint = vec_1.vec3.sub(point, position);
+    if (cuboidIsRotated(cuboid)) {
+        localPoint = vec_1.vec3.rota(localPoint, vec_1.vec3.mul(rotation, -1));
+    }
+    // Calculate distances to each face in local space
+    const dx = Math.max(Math.abs(localPoint.x) - halfSize.x, 0);
+    const dy = Math.max(Math.abs(localPoint.y) - halfSize.y, 0);
+    const dz = Math.max(Math.abs(localPoint.z) - halfSize.z, 0);
+    // Calculate closest point in local space
+    const closestLocalPoint = (0, vec_1.vec3)((0, utils_1.clamp)(localPoint.x, -halfSize.x, halfSize.x), (0, utils_1.clamp)(localPoint.y, -halfSize.y, halfSize.y), (0, utils_1.clamp)(localPoint.z, -halfSize.z, halfSize.z));
+    // Transform closest point back to world space
+    let closestPoint = closestLocalPoint;
+    if (cuboidIsRotated(cuboid)) {
+        closestPoint = vec_1.vec3.rota(closestPoint, rotation);
+    }
+    closestPoint = vec_1.vec3.add(closestPoint, position);
+    // Calculate if point is inside and the distance
+    const intersects = dx === 0 && dy === 0 && dz === 0;
+    const distance = intersects
+        ? -Math.min(halfSize.x - Math.abs(localPoint.x), halfSize.y - Math.abs(localPoint.y), halfSize.z - Math.abs(localPoint.z))
+        : Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return {
+        intersects,
+        closestPoint,
+        distance,
+    };
+}
+// TODO (DONE) pointOnLine
+// TODO (DONE) pointInSphere
+// TODO (DONE) pointInCuboid
 // TODO pointOnPolygon
 // TODO pointInMesh
 // TODO rayTraverseGrid
