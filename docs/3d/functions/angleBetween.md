@@ -8,7 +8,7 @@
 
 > **angleBetween**(`a`, `b`): `number`
 
-Defined in: [3d/index.ts:63](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/index.ts#L63)
+Defined in: [3d/index.ts:63](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L63)
 
 Calculate the angle between two lines or rays
 

@@ -8,7 +8,7 @@
 
 > **decomposePolygon**(`polygon`, `options?`): `null` \| [`Polygon`](../types/type-aliases/Polygon.md)[]
 
-Defined in: [2d/index.ts:615](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L615)
+Defined in: [2d/index.ts:670](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L670)
 
 Decompose a polygon into a set of convex polygons using the Bayazit
 algorithm

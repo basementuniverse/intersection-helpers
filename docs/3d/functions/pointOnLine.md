@@ -2,13 +2,13 @@
 
 ***
 
-[@basementuniverse/intersection-helpers](../../README.md) / [2d](../README.md) / pointOnLine
+[@basementuniverse/intersection-helpers](../../README.md) / [3d](../README.md) / pointOnLine
 
 # Function: pointOnLine()
 
 > **pointOnLine**(`point`, `line`): `object`
 
-Defined in: [2d/index.ts:766](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L766)
+Defined in: [3d/index.ts:518](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L518)
 
 Check if a point intersects a line segment
 
@@ -18,7 +18,7 @@ Also returns the closest point on the line segment and the distance to it
 
 ### point
 
-`vec2`
+`vec3`
 
 ### line
 
@@ -30,7 +30,7 @@ Also returns the closest point on the line segment and the distance to it
 
 ### closestPoint
 
-> **closestPoint**: `vec2`
+> **closestPoint**: `vec3`
 
 ### distance
 

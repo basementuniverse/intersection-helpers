@@ -8,7 +8,7 @@
 
 > **rayToLine**(`ray`, `length`): [`Line`](../types/type-aliases/Line.md)
 
-Defined in: [3d/index.ts:93](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/index.ts#L93)
+Defined in: [3d/index.ts:93](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L93)
 
 Convert a ray to a line segment
 

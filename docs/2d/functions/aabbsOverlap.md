@@ -8,7 +8,7 @@
 
 > **aabbsOverlap**(`a`, `b`): `object`
 
-Defined in: [2d/index.ts:173](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L173)
+Defined in: [2d/index.ts:174](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L174)
 
 Check if two AABBs overlap and return the overlapping area if so
 

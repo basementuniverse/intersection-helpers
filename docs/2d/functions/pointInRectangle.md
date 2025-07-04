@@ -8,7 +8,7 @@
 
 > **pointInRectangle**(`point`, `rectangle`): `object`
 
-Defined in: [2d/index.ts:808](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L808)
+Defined in: [2d/index.ts:863](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L863)
 
 Check if a point is inside a rectangle
 

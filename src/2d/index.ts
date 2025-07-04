@@ -3,6 +3,7 @@ import { vec2 } from '@basementuniverse/vec';
 import * as decomp from 'poly-decomp';
 import {
   overlapInterval,
+  valueInInterval,
   vectorAlmostZero,
   vectorsAlmostEqual,
 } from '../utilities';
@@ -197,6 +198,60 @@ export function aabbsOverlap(
       position: vec2(overlapX.min, overlapY.min),
       size: vec2(overlapX.max - overlapX.min, overlapY.max - overlapY.min),
     },
+  };
+}
+
+/**
+ * Check if a point is inside an AABB
+ *
+ * This should be a bit faster than pointInRectangle since we don't need to
+ * worry about rotation
+ */
+export function pointInAABB(
+  point: Point,
+  aabb: AABB
+): {
+  intersects: boolean;
+  closestPoint: Point;
+  distance: number;
+} {
+  const { position, size } = aabb;
+  const min = position;
+  const max = vec2.add(position, size);
+
+  // Check if the point is inside the AABB
+  const intersects =
+    valueInInterval(point.x, { min: min.x, max: max.x }) &&
+    valueInInterval(point.y, { min: min.y, max: max.y });
+
+  // Find the closest point on the AABB perimeter to the given point
+  let closestPoint: Point;
+  if (!intersects) {
+    // If the point is outside, clamp to the box as before
+    closestPoint = vec2(
+      clamp(point.x, min.x, max.x),
+      clamp(point.y, min.y, max.y)
+    );
+  } else {
+    // If the point is inside, project to the nearest edge
+    const distances = [
+      { x: min.x, y: point.y, d: Math.abs(point.x - min.x) }, // left
+      { x: max.x, y: point.y, d: Math.abs(point.x - max.x) }, // right
+      { x: point.x, y: min.y, d: Math.abs(point.y - min.y) }, // top
+      { x: point.x, y: max.y, d: Math.abs(point.y - max.y) }, // bottom
+    ];
+    const nearest = distances.reduce((a, b) => (a.d < b.d ? a : b));
+    closestPoint = vec2(nearest.x, nearest.y);
+  }
+
+  // Calculate the distance from the point to the closest point
+  const distance = vec2.len(vec2.sub(point, closestPoint));
+
+  // If the point is inside, distance should be negative
+  return {
+    intersects,
+    closestPoint,
+    distance: intersects ? -distance : distance,
   };
 }
 

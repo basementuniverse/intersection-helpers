@@ -25,6 +25,7 @@
 - [lineIntersectsRectangle](functions/lineIntersectsRectangle.md)
 - [lineToRay](functions/lineToRay.md)
 - [optimisePolygon](functions/optimisePolygon.md)
+- [pointInAABB](functions/pointInAABB.md)
 - [pointInCircle](functions/pointInCircle.md)
 - [pointInPolygon](functions/pointInPolygon.md)
 - [pointInRectangle](functions/pointInRectangle.md)

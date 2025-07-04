@@ -8,7 +8,7 @@
 
 > **Sphere** = `object`
 
-Defined in: [3d/types.ts:63](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/types.ts#L63)
+Defined in: [3d/types.ts:63](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L63)
 
 A sphere defined by its center and radius
 
@@ -18,7 +18,7 @@ A sphere defined by its center and radius
 
 > **position**: [`Point`](Point.md)
 
-Defined in: [3d/types.ts:64](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/types.ts#L64)
+Defined in: [3d/types.ts:64](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L64)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [3d/types.ts:64](https://github.com/basementuniverse/intersection-he
 
 > **radius**: `number`
 
-Defined in: [3d/types.ts:65](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/types.ts#L65)
+Defined in: [3d/types.ts:65](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L65)

@@ -8,7 +8,7 @@
 
 > **rayIntersectsSphere**(`ray`, `sphere`): `object`
 
-Defined in: [3d/index.ts:562](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/index.ts#L562)
+Defined in: [3d/index.ts:705](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L705)
 
 Check if a ray intersects a sphere
 

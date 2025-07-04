@@ -8,7 +8,7 @@
 
 > **rayIntersectsLine**(`ray`, `line`): `object`
 
-Defined in: [2d/index.ts:1144](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L1144)
+Defined in: [2d/index.ts:1199](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1199)
 
 Check if a ray intersects a line segment
 

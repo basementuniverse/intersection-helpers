@@ -58,6 +58,17 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
       overlap?: AABB;
   };
   /**
+    * Check if a point is inside an AABB
+    *
+    * This should be a bit faster than pointInRectangle since we don't need to
+    * worry about rotation
+    */
+  export function pointInAABB(point: Point, aabb: AABB): {
+      intersects: boolean;
+      closestPoint: Point;
+      distance: number;
+  };
+  /**
     * Check if a rectangle is rotated
     */
   export function rectangleIsRotated(rectangle: Rectangle): boolean;

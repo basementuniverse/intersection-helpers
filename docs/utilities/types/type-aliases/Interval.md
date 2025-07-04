@@ -8,7 +8,7 @@
 
 > **Interval** = `object`
 
-Defined in: [utilities/types.ts:6](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/utilities/types.ts#L6)
+Defined in: [utilities/types.ts:6](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/utilities/types.ts#L6)
 
 A numeric interval with optional inclusivity
 
@@ -18,7 +18,7 @@ A numeric interval with optional inclusivity
 
 > **max**: `number`
 
-Defined in: [utilities/types.ts:9](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/utilities/types.ts#L9)
+Defined in: [utilities/types.ts:9](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/utilities/types.ts#L9)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [utilities/types.ts:9](https://github.com/basementuniverse/intersect
 
 > `optional` **maxInclusive**: `boolean`
 
-Defined in: [utilities/types.ts:10](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/utilities/types.ts#L10)
+Defined in: [utilities/types.ts:10](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/utilities/types.ts#L10)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [utilities/types.ts:10](https://github.com/basementuniverse/intersec
 
 > **min**: `number`
 
-Defined in: [utilities/types.ts:7](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/utilities/types.ts#L7)
+Defined in: [utilities/types.ts:7](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/utilities/types.ts#L7)
 
 ***
 
@@ -42,4 +42,4 @@ Defined in: [utilities/types.ts:7](https://github.com/basementuniverse/intersect
 
 > `optional` **minInclusive**: `boolean`
 
-Defined in: [utilities/types.ts:8](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/utilities/types.ts#L8)
+Defined in: [utilities/types.ts:8](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/utilities/types.ts#L8)

@@ -8,7 +8,7 @@
 
 > **isAABB**(`value`): `value is AABB`
 
-Defined in: [2d/types.ts:94](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/types.ts#L94)
+Defined in: [2d/types.ts:94](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/types.ts#L94)
 
 Check if a value is an AABB
 

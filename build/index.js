@@ -2245,6 +2245,7 @@ exports.rayToLine = rayToLine;
 exports.aabb = aabb;
 exports.aabbToRectangle = aabbToRectangle;
 exports.aabbsOverlap = aabbsOverlap;
+exports.pointInAABB = pointInAABB;
 exports.rectangleIsRotated = rectangleIsRotated;
 exports.rectangleVertices = rectangleVertices;
 exports.polygonIsConvex = polygonIsConvex;
@@ -2413,6 +2414,45 @@ function aabbsOverlap(a, b) {
             position: (0, vec_1.vec2)(overlapX.min, overlapY.min),
             size: (0, vec_1.vec2)(overlapX.max - overlapX.min, overlapY.max - overlapY.min),
         },
+    };
+}
+/**
+ * Check if a point is inside an AABB
+ *
+ * This should be a bit faster than pointInRectangle since we don't need to
+ * worry about rotation
+ */
+function pointInAABB(point, aabb) {
+    const { position, size } = aabb;
+    const min = position;
+    const max = vec_1.vec2.add(position, size);
+    // Check if the point is inside the AABB
+    const intersects = (0, utilities_1.valueInInterval)(point.x, { min: min.x, max: max.x }) &&
+        (0, utilities_1.valueInInterval)(point.y, { min: min.y, max: max.y });
+    // Find the closest point on the AABB perimeter to the given point
+    let closestPoint;
+    if (!intersects) {
+        // If the point is outside, clamp to the box as before
+        closestPoint = (0, vec_1.vec2)((0, utils_1.clamp)(point.x, min.x, max.x), (0, utils_1.clamp)(point.y, min.y, max.y));
+    }
+    else {
+        // If the point is inside, project to the nearest edge
+        const distances = [
+            { x: min.x, y: point.y, d: Math.abs(point.x - min.x) }, // left
+            { x: max.x, y: point.y, d: Math.abs(point.x - max.x) }, // right
+            { x: point.x, y: min.y, d: Math.abs(point.y - min.y) }, // top
+            { x: point.x, y: max.y, d: Math.abs(point.y - max.y) }, // bottom
+        ];
+        const nearest = distances.reduce((a, b) => (a.d < b.d ? a : b));
+        closestPoint = (0, vec_1.vec2)(nearest.x, nearest.y);
+    }
+    // Calculate the distance from the point to the closest point
+    const distance = vec_1.vec2.len(vec_1.vec2.sub(point, closestPoint));
+    // If the point is inside, distance should be negative
+    return {
+        intersects,
+        closestPoint,
+        distance: intersects ? -distance : distance,
     };
 }
 /**

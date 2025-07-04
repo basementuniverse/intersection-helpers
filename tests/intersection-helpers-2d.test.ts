@@ -535,6 +535,130 @@ describe('IntersectionHelpers2D', () => {
     });
   });
 
+  describe('pointInAABB', () => {
+    it('should return true when point is inside AABB', () => {
+      const aabb = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const point = { x: 2, y: 2 };
+      const result = intersection2d.pointInAABB(point, aabb);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeLessThan(0); // Negative distance when inside
+      // Closest point should be on nearest edge
+      expect(result.closestPoint).toEqual({ x: 2, y: 4 });
+    });
+
+    it('should return false when point is outside AABB', () => {
+      const aabb = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const point = { x: 6, y: 6 };
+      const result = intersection2d.pointInAABB(point, aabb);
+
+      expect(result.intersects).toBe(false);
+      expect(result.distance).toBeGreaterThan(0); // Positive distance when outside
+      // Closest point should be clamped to nearest corner
+      expect(result.closestPoint).toEqual({ x: 4, y: 4 });
+    });
+
+    it('should return true when point is exactly on AABB edge', () => {
+      const aabb = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const point = { x: 4, y: 2 };
+      const result = intersection2d.pointInAABB(point, aabb);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeCloseTo(0); // Zero distance when on edge
+      expect(result.closestPoint).toEqual(point);
+    });
+
+    it('should handle points at AABB corners', () => {
+      const aabb = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const point = { x: 4, y: 4 };
+      const result = intersection2d.pointInAABB(point, aabb);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeCloseTo(0);
+      expect(result.closestPoint).toEqual(point);
+    });
+
+    it('should handle AABB at non-origin position', () => {
+      const aabb = {
+        position: { x: -2, y: -2 },
+        size: { x: 4, y: 4 },
+      };
+      const point = { x: -1, y: -1 };
+      const result = intersection2d.pointInAABB(point, aabb);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeLessThan(0);
+      expect(result.closestPoint).toEqual({ x: -1, y: -2 });
+    });
+
+    it('should handle zero-size AABB', () => {
+      const aabb = {
+        position: { x: 1, y: 1 },
+        size: { x: 0, y: 0 },
+      };
+      const point = { x: 1, y: 1 };
+      const result = intersection2d.pointInAABB(point, aabb);
+
+      expect(result.intersects).toBe(true);
+      expect(result.distance).toBeCloseTo(0);
+      expect(result.closestPoint).toEqual(point);
+    });
+
+    it('should handle point near but outside AABB edges', () => {
+      const aabb = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const testCases = [
+        // Test points near each edge
+        { point: { x: 2, y: -1 }, expectedClosest: { x: 2, y: 0 } }, // Top
+        { point: { x: 2, y: 5 }, expectedClosest: { x: 2, y: 4 } }, // Bottom
+        { point: { x: -1, y: 2 }, expectedClosest: { x: 0, y: 2 } }, // Left
+        { point: { x: 5, y: 2 }, expectedClosest: { x: 4, y: 2 } }, // Right
+      ];
+
+      for (const { point, expectedClosest } of testCases) {
+        const result = intersection2d.pointInAABB(point, aabb);
+        expect(result.intersects).toBe(false);
+        expect(result.distance).toBeGreaterThan(0);
+        expect(result.closestPoint).toEqual(expectedClosest);
+      }
+    });
+
+    it('should handle point inside AABB near edges', () => {
+      const aabb = {
+        position: { x: 0, y: 0 },
+        size: { x: 4, y: 4 },
+      };
+      const testCases = [
+        // Test points near each edge from inside
+        { point: { x: 2, y: 0.5 }, expectedClosest: { x: 2, y: 0 } }, // Near top
+        { point: { x: 2, y: 3.5 }, expectedClosest: { x: 2, y: 4 } }, // Near bottom
+        { point: { x: 0.5, y: 2 }, expectedClosest: { x: 0, y: 2 } }, // Near left
+        { point: { x: 3.5, y: 2 }, expectedClosest: { x: 4, y: 2 } }, // Near right
+      ];
+
+      for (const { point, expectedClosest } of testCases) {
+        const result = intersection2d.pointInAABB(point, aabb);
+        expect(result.intersects).toBe(true);
+        expect(result.distance).toBeLessThan(0);
+        expect(result.closestPoint).toEqual(expectedClosest);
+      }
+    });
+  });
+
   describe('rectangleIsRotated', () => {
     it('should return true for a rotated rectangle', () => {
       const rect = {

@@ -21,6 +21,7 @@ const context = visualization.getContext('2d');
 const {
   aabb,
   aabbsOverlap,
+  pointInAABB,
   distance,
   vec2,
 } = intersection2d;
@@ -188,9 +189,12 @@ function update() {
   // Check overlap between rectangle and polygon AABBs
   const overlap = aabbsOverlap(rectangleAABB, polygonAABB);
 
+  // Check if circle center point is inside rectangle AABB
+  const pointInAABBResult = pointInAABB(circle.position, rectangleAABB);
+
   // Draw overlapping region if it exists
   if (overlap.intersects && overlap.overlap) {
-    context.fillStyle = 'rgba(255, 255, 0, 0.2)';
+    context.fillStyle = 'rgba(255, 0, 0, 0.2)';
     context.fillRect(
       overlap.overlap.position.x,
       overlap.overlap.position.y,
@@ -199,11 +203,21 @@ function update() {
     );
   }
 
-  // Draw circle
+  // Draw circle with thicker outline if its center is inside rectangle AABB
   context.strokeStyle = 'blue';
-  context.lineWidth = 2;
+  context.lineWidth = pointInAABBResult.intersects ? 4 : 2;
   context.beginPath();
   context.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Draw closest point on rectangle AABB to circle center
+  context.strokeStyle = 'red';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(pointInAABBResult.closestPoint.x - 5, pointInAABBResult.closestPoint.y - 5);
+  context.lineTo(pointInAABBResult.closestPoint.x + 5, pointInAABBResult.closestPoint.y + 5);
+  context.moveTo(pointInAABBResult.closestPoint.x - 5, pointInAABBResult.closestPoint.y + 5);
+  context.lineTo(pointInAABBResult.closestPoint.x + 5, pointInAABBResult.closestPoint.y - 5);
   context.stroke();
 
   // Draw circle AABB

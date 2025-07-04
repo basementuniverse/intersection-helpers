@@ -8,7 +8,7 @@
 
 > **Mesh** = `object`
 
-Defined in: [3d/types.ts:183](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/types.ts#L183)
+Defined in: [3d/types.ts:183](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L183)
 
 A mesh defined by its vertices and indices
 
@@ -21,7 +21,7 @@ are connected to form triangles
 
 > **indices**: `number`[]
 
-Defined in: [3d/types.ts:185](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/types.ts#L185)
+Defined in: [3d/types.ts:185](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L185)
 
 ***
 
@@ -29,4 +29,4 @@ Defined in: [3d/types.ts:185](https://github.com/basementuniverse/intersection-h
 
 > **vertices**: [`Point`](Point.md)[]
 
-Defined in: [3d/types.ts:184](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/3d/types.ts#L184)
+Defined in: [3d/types.ts:184](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L184)

@@ -8,7 +8,7 @@
 
 > **circleIntersectsRectangle**(`circle`, `rectangle`): `object`
 
-Defined in: [2d/index.ts:1840](https://github.com/basementuniverse/intersection-helpers/blob/39011b43f2fd5dca5c24f1c152bb983bef87ec23/src/2d/index.ts#L1840)
+Defined in: [2d/index.ts:1895](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1895)
 
 Check if a circle intersects a rectangle
 
