@@ -2,6 +2,7 @@ import { at, clamp } from '@basementuniverse/utils';
 import { vec3 } from '@basementuniverse/vec';
 import {
   overlapInterval,
+  valueInInterval,
   vectorAlmostZero,
   vectorsAlmostEqual,
 } from '../utilities';
@@ -25,6 +26,96 @@ import {
 } from './types';
 
 export * from './types';
+
+/**
+ * Contents
+ *
+ * Utilities
+ * @see distance
+ * @see angle
+ * @see angleBetween
+ * @see pointsAreCollinear
+ *
+ * Line and ray utilities
+ * @see lineToRay
+ * @see rayToLine
+ *
+ * AABBs
+ * @see aabb
+ * @see aabbToCuboid
+ * @see aabbsOverlap
+ * @see pointInAABB
+ *
+ * Cuboid utilities
+ * @see cuboidIsRotated
+ * @see cuboidVertices
+ *
+ * Polygon utilities
+ * @see verticesToEdges (not exported)
+ * @see polygonIsValid
+ * @see polygonWindingOrder
+ * @see polygonArea
+ * @see polygonCentroid
+ *
+ * Mesh utilities
+ * @see polygonsToMesh
+ * @see meshToPolygons
+ * @see meshToEdges
+ * @see meshCentroid
+ * @see meshIsWatertight
+ *
+ * Points
+ * @see pointOnRay
+ * @see pointOnLine
+ * @see pointInSphere
+ * @see pointInCuboid
+ * @see pointOnPolygon // TODO
+ * @see pointInMesh // TODO
+ *
+ * Rays
+ * @see rayTraverseGrid // TODO
+ * @see rayIntersectsRay // TODO
+ * @see rayIntersectsLine // TODO
+ * @see rayIntersectsSphere
+ * @see rayIntersectsPlane
+ * @see rayIntersectsCuboid // TODO
+ * @see rayIntersectsPolygon // TODO
+ * @see rayIntersectsMesh // TODO
+ *
+ * Lines
+ * @see lineIntersectsRay // TODO
+ * @see lineIntersectsLine // TODO
+ * @see lineIntersectsSphere // TODO
+ * @see lineIntersectsPlane // TODO
+ * @see lineIntersectsCuboid // TODO
+ * @see lineIntersectsPolygon // TODO
+ * @see lineIntersectsMesh // TODO
+ *
+ * Spheres
+ * @see sphereIntersectsSphere // TODO
+ * @see sphereIntersectsPlane // TODO
+ * @see sphereIntersectsCuboid // TODO
+ * @see sphereIntersectsPolygon // TODO
+ * @see sphereIntersectsMesh // TODO
+ *
+ * Planes
+ * @see planeIntersectsPlane // TODO
+ *
+ * Cuboids
+ * @see cuboidIntersectsCuboid // TODO
+ * @see cuboidIntersectsPlane // TODO
+ * @see cuboidIntersectsPolygon // TODO
+ * @see cuboidIntersectsMesh // TODO
+ *
+ * Polygons
+ * @see polygonIntersectsPolygon // TODO
+ * @see polygonIntersectsPlane // TODO
+ * @see polygonIntersectsMesh // TODO
+ *
+ * Meshes
+ * @see meshIntersectsMesh // TODO
+ * @see meshIntersectsPlane // TODO
+ */
 
 /**
  * Calculate the distance between two points in 3D space
@@ -75,6 +166,24 @@ export function angleBetween(a: Line | Ray, b: Line | Ray): number {
   const dot = clamp(vec3.dot(dirA, dirB), -1, 1);
   const angle = Math.acos(dot);
   return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
+}
+
+/**
+ * Check if three points in 3D space are collinear
+ */
+export function pointsAreCollinear(a: Point, b: Point, c: Point): boolean {
+  // Create two vectors from the points:
+  // v1 = b - a
+  // v2 = c - a
+  const v1 = vec3.sub(b, a);
+  const v2 = vec3.sub(c, a);
+
+  // Calculate the cross product of the two vectors
+  const cross = vec3.cross(v1, v2);
+
+  // If the cross product is zero (or very close to zero),
+  // the points are collinear
+  return vec3.len(cross) < constants.EPSILON;
 }
 
 /**
@@ -212,6 +321,64 @@ export function aabbsOverlap(
 }
 
 /**
+ * Check if a point is inside an AABB
+ *
+ * This should be a bit faster than pointInRectangle since we don't need to
+ * worry about rotation
+ */
+export function pointInAABB(
+  point: Point,
+  aabb: AABB
+): {
+  intersects: boolean;
+  closestPoint: Point;
+  distance: number;
+} {
+  const { position, size } = aabb;
+  const min = position;
+  const max = vec3.add(position, size);
+
+  // Check if the point is inside the AABB
+  const intersects =
+    valueInInterval(point.x, { min: min.x, max: max.x }) &&
+    valueInInterval(point.y, { min: min.y, max: max.y }) &&
+    valueInInterval(point.z, { min: min.z, max: max.z });
+
+  // Find the closest point on the AABB surface to the given point
+  let closestPoint: Point;
+  if (!intersects) {
+    // If the point is outside, clamp to the box
+    closestPoint = vec3(
+      clamp(point.x, min.x, max.x),
+      clamp(point.y, min.y, max.y),
+      clamp(point.z, min.z, max.z)
+    );
+  } else {
+    // If the point is inside, project to the nearest edge
+    const distances = [
+      { x: min.x, y: point.y, z: point.z, d: Math.abs(point.x - min.x) }, // left
+      { x: max.x, y: point.y, z: point.z, d: Math.abs(point.x - max.x) }, // right
+      { x: point.x, y: min.y, z: point.z, d: Math.abs(point.y - min.y) }, // bottom
+      { x: point.x, y: max.y, z: point.z, d: Math.abs(point.y - max.y) }, // top
+      { x: point.x, y: point.y, z: min.z, d: Math.abs(point.z - min.z) }, // front
+      { x: point.x, y: point.y, z: max.z, d: Math.abs(point.z - max.z) }, // back
+    ];
+    const nearest = distances.reduce((a, b) => (a.d < b.d ? a : b));
+    closestPoint = vec3(nearest.x, nearest.y, nearest.z);
+  }
+
+  // Calculate the distance from the point to the closest point
+  const distance = vec3.len(vec3.sub(point, closestPoint));
+
+  // If the point is inside, distance should be negative
+  return {
+    intersects,
+    closestPoint,
+    distance: intersects ? -distance : distance,
+  };
+}
+
+/**
  * Check if a cuboid is rotated
  */
 export function cuboidIsRotated(cuboid: Cuboid): boolean {
@@ -292,6 +459,81 @@ function verticesToEdges(vertices: Point[]): Line[] {
  */
 export function polygonIsValid(polygon: Polygon): boolean {
   return polygon.vertices.length === 3;
+}
+
+/**
+ * Determine the winding order of a polygon's vertices
+ *
+ * Returns 'clockwise' or 'counter-clockwise'
+ *
+ * By default uses the right-hand rule: if the vertices are ordered
+ * counter-clockwise, the normal points towards the viewer
+ *
+ * Returns null if the polygon is invalid or degenerate
+ */
+export function polygonWindingOrder(
+  polygon: Polygon,
+  options?: {
+    /**
+     * Which hand rule to use for determining winding order
+     * - 'right' (default): Counter-clockwise vertices create a normal pointing
+     *   towards viewer
+     * - 'left': Clockwise vertices create a normal pointing towards viewer
+     */
+    handedness?: 'right' | 'left';
+    /**
+     * Optional normal vector to use as reference
+     * If provided, winding order will be determined relative to this vector
+     */
+    normal?: Point;
+  }
+): 'clockwise' | 'counter-clockwise' | null {
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+
+  const [a, b, c] = polygon.vertices;
+  const handedness = options?.handedness || 'right';
+
+  // Calculate vectors from vertex a to b and a to c
+  const ab = vec3.sub(b, a);
+  const ac = vec3.sub(c, a);
+
+  // Calculate normal vector using cross product
+  const normal = vec3.cross(ab, ac);
+
+  // If normal is zero vector (or very close to zero), vertices are collinear
+  if (vectorAlmostZero(normal)) {
+    return null;
+  }
+
+  // If a reference normal was provided, use it
+  if (options?.normal) {
+    const dot = vec3.dot(vec3.nor(normal), vec3.nor(options.normal));
+
+    // Dot product > 0 means normals point in similar direction
+    if (Math.abs(dot) < constants.EPSILON) {
+      return null; // Normals are perpendicular, can't determine order
+    }
+
+    if (handedness === 'right') {
+      return dot > 0 ? 'counter-clockwise' : 'clockwise';
+    } else {
+      return dot > 0 ? 'clockwise' : 'counter-clockwise';
+    }
+  }
+
+  // Without a reference normal, we'll use the z-component of the normal
+  // to determine winding order (positive z points towards viewer)
+  if (Math.abs(normal.z) < constants.EPSILON) {
+    return null; // Normal is perpendicular to view direction
+  }
+
+  if (handedness === 'right') {
+    return normal.z > 0 ? 'counter-clockwise' : 'clockwise';
+  } else {
+    return normal.z > 0 ? 'clockwise' : 'counter-clockwise';
+  }
 }
 
 /**
@@ -655,49 +897,6 @@ export function pointInCuboid(
     distance,
   };
 }
-
-// TODO (DONE) pointOnLine
-// TODO (DONE) pointInSphere
-// TODO (DONE) pointInCuboid
-// TODO pointOnPolygon
-// TODO pointInMesh
-
-// TODO rayTraverseGrid
-// TODO rayIntersectsRay
-// TODO rayIntersectsLine
-// TODO (DONE) rayIntersectsSphere
-// TODO (DONE) rayIntersectsPlane
-// TODO rayIntersectsCuboid
-// TODO rayIntersectsPolygon
-// TODO rayIntersectsMesh
-
-// TODO lineIntersectsRay
-// TODO lineIntersectsLine
-// TODO lineIntersectsSphere
-// TODO lineIntersectsPlane
-// TODO lineIntersectsCuboid
-// TODO lineIntersectsPolygon
-// TODO lineIntersectsMesh
-
-// TODO sphereIntersectsSphere
-// TODO sphereIntersectsPlane
-// TODO sphereIntersectsCuboid
-// TODO sphereIntersectsPolygon
-// TODO sphereIntersectsMesh
-
-// TODO planeIntersectsPlane
-
-// TODO cuboidIntersectsCuboid
-// TODO cuboidIntersectsPlane
-// TODO cuboidIntersectsPolygon
-// TODO cuboidIntersectsMesh
-
-// TODO polygonIntersectsPolygon
-// TODO polygonIntersectsPlane
-// TODO polygonIntersectsMesh
-
-// TODO meshIntersectsMesh
-// TODO meshIntersectsPlane
 
 /**
  * Check if a ray intersects a sphere

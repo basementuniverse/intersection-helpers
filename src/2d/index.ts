@@ -27,6 +27,84 @@ import {
 export * from './types';
 
 /**
+ * Contents
+ *
+ * Utilities
+ * @see distance
+ * @see angle
+ * @see angleBetween
+ * @see pointsAreCollinear
+ *
+ * Line and ray utilities
+ * @see lineToRay
+ * @see rayToLine
+ *
+ * AABBs
+ * @see aabb
+ * @see aabbToRectangle
+ * @see aabbsOverlap
+ * @see pointInAABB
+ *
+ * Rectangle utilities
+ * @see rectangleIsRotated
+ * @see rectangleVertices
+ *
+ * Polygon utilities
+ * @see verticesToEdges (not exported)
+ * @see findOuterEdges (not exported)
+ * @see polygonIsConvex
+ * @see polygonSelfIntersects
+ * @see polygonIsValid
+ * @see polygonWindingOrder
+ * @see polygonArea
+ * @see polygonCentroid
+ * @see polygonConvexHull
+ * @see removeDuplicateVertices (not exported)
+ * @see removeDuplicateAdjacentVertices (not exported)
+ * @see removeCollinearVertices (not exported)
+ * @see optimisePolygon
+ * @see decomposePolygon
+ *
+ * Points
+ * @see pointOnRay
+ * @see pointOnLine
+ * @see pointInCircle
+ * @see pointInRectangle
+ * @see pointInPolygon
+ *
+ * Rays
+ * @see rayTraverseGrid
+ * @see rayIntersectsRay
+ * @see rayIntersectsLine
+ * @see rayIntersectsCircle
+ * @see rayIntersectsRectangle
+ * @see rayIntersectsValidConvexPolygonEdges (not exported)
+ * @see rayIntersectsPolygon
+ *
+ * Lines
+ * @see lineIntersectsRay
+ * @see lineIntersectsLine
+ * @see lineIntersectsCircle
+ * @see lineIntersectsRectangle
+ * @see lineIntersectsValidConvexPolygonEdges (not exported)
+ * @see lineIntersectsPolygon
+ *
+ * Circles
+ * @see circleIntersectsCircle
+ * @see circleIntersectsRectangle
+ * @see circleIntersectsValidConvexPolygonEdges (not exported)
+ * @see circleIntersectsPolygon
+ *
+ * Rectangles
+ * @see projectVerticesToAxis (not exported)
+ * @see rectangleIntersectsRectangle
+ * @see rectangleIntersectsPolygon
+ *
+ * Polygons
+ * @see polygonIntersectsPolygon
+ */
+
+/**
  * Calculate the distance between two points
  */
 export function distance(a: Point, b: Point): number {
@@ -75,7 +153,7 @@ export function angleBetween(a: Line | Ray, b: Line | Ray): number {
 }
 
 /**
- * Check if points are collinear
+ * Check if three points in 2D space are collinear
  */
 export function pointsAreCollinear(a: Point, b: Point, c: Point): boolean {
   // Check if the area of the triangle formed by the points is zero
@@ -227,7 +305,7 @@ export function pointInAABB(
   // Find the closest point on the AABB perimeter to the given point
   let closestPoint: Point;
   if (!intersects) {
-    // If the point is outside, clamp to the box as before
+    // If the point is outside, clamp to the box
     closestPoint = vec2(
       clamp(point.x, min.x, max.x),
       clamp(point.y, min.y, max.y)
@@ -436,14 +514,17 @@ export function polygonIsValid(polygon: Polygon): boolean {
  * Returns 'clockwise' or 'counter-clockwise' depending on the chosen
  * coordinate system
  *
- * The coordinate system can be 'cartesian' (where y increases upwards) or
- * 'screen' (where y increases downwards, this is the default)
+ * By default we use the 'screen' coordinate system (y increases downwards)
  *
  * Returns null if the polygon is invalid
  */
 export function polygonWindingOrder(
   polygon: Polygon,
   options?: {
+    /**
+     * The coordinate system can be 'cartesian' (where y increases upwards) or
+     * 'screen' (where y increases downwards, this is the default)
+     */
     coordinateSystem?: 'cartesian' | 'screen';
   }
 ): 'clockwise' | 'counter-clockwise' | null {
