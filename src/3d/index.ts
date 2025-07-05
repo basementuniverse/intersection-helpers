@@ -51,7 +51,7 @@ export * from './types';
  * @see cuboidVertices
  *
  * Polygon utilities
- * @see verticesToEdges (not exported)
+ * @see verticesToEdges
  * @see polygonIsValid
  * @see polygonWindingOrder
  * @see polygonArea
@@ -69,18 +69,16 @@ export * from './types';
  * @see pointOnLine
  * @see pointInSphere
  * @see pointInCuboid
- * @see pointOnPolygon // TODO
- * @see pointInMesh // TODO
+ * @see pointOnPolygon
  *
  * Rays
- * @see rayTraverseGrid // TODO
+ * @see rayTraverseGrid
  * @see rayIntersectsRay // TODO
  * @see rayIntersectsLine // TODO
  * @see rayIntersectsSphere
  * @see rayIntersectsPlane
- * @see rayIntersectsCuboid // TODO
+ * @see rayIntersectsCuboid
  * @see rayIntersectsPolygon // TODO
- * @see rayIntersectsMesh // TODO
  *
  * Lines
  * @see lineIntersectsRay // TODO
@@ -89,14 +87,12 @@ export * from './types';
  * @see lineIntersectsPlane // TODO
  * @see lineIntersectsCuboid // TODO
  * @see lineIntersectsPolygon // TODO
- * @see lineIntersectsMesh // TODO
  *
  * Spheres
  * @see sphereIntersectsSphere // TODO
  * @see sphereIntersectsPlane // TODO
  * @see sphereIntersectsCuboid // TODO
  * @see sphereIntersectsPolygon // TODO
- * @see sphereIntersectsMesh // TODO
  *
  * Planes
  * @see planeIntersectsPlane // TODO
@@ -105,7 +101,6 @@ export * from './types';
  * @see cuboidIntersectsCuboid // TODO
  * @see cuboidIntersectsPlane // TODO
  * @see cuboidIntersectsPolygon // TODO
- * @see cuboidIntersectsMesh // TODO
  *
  * Polygons
  * @see polygonIntersectsPolygon // TODO
@@ -442,7 +437,7 @@ export function cuboidVertices(cuboid: Cuboid): Point[] {
 /**
  * Convert a list of vertices to a list of edges
  */
-function verticesToEdges(vertices: Point[]): Line[] {
+export function verticesToEdges(vertices: Point[]): Line[] {
   const edges: Line[] = [];
   for (let i = 0; i < vertices.length; i++) {
     const start = vertices[i];
@@ -898,6 +893,282 @@ export function pointInCuboid(
   };
 }
 
+export function pointOnPolygon(
+  point: Point,
+  polygon: Polygon
+): {
+  intersects: boolean;
+  closestPoint: Point;
+  distance: number;
+} | null {
+  // First validate the polygon
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+  const [v1, v2, v3] = polygon.vertices;
+
+  // Calculate two edges of the triangle
+  const edge1 = vec3.sub(v2, v1);
+  const edge2 = vec3.sub(v3, v1);
+
+  // Calculate the normal vector of the plane containing the triangle
+  const normal = vec3.nor(vec3.cross(edge1, edge2));
+
+  // Calculate plane constant d
+  const d = -vec3.dot(normal, v1);
+
+  // Calculate the signed distance from the point to the plane
+  const signedDistance = vec3.dot(normal, point) + d;
+
+  // Project the point onto the plane
+  const projectedPoint = vec3.sub(point, vec3.mul(normal, signedDistance));
+
+  // Now we need to check if the projected point is inside the triangle
+  // We'll use the barycentric coordinate method
+  const area = vec3.len(vec3.cross(edge1, edge2)) / 2; // Triangle area
+
+  // Calculate barycentric coordinates using sub-triangle areas
+  const edge3 = vec3.sub(v3, v2);
+  const vp1 = vec3.sub(projectedPoint, v1);
+  const vp2 = vec3.sub(projectedPoint, v2);
+  const vp3 = vec3.sub(projectedPoint, v3);
+
+  const alpha = vec3.len(vec3.cross(edge3, vp2)) / (2 * area);
+  const beta = vec3.len(vec3.cross(edge2, vp3)) / (2 * area);
+  const gamma = vec3.len(vec3.cross(edge1, vp1)) / (2 * area);
+
+  // Point is inside triangle if all barycentric coordinates are between 0 and 1
+  // and their sum is approximately 1
+  const sum = alpha + beta + gamma;
+  const isInside =
+    alpha >= -constants.EPSILON &&
+    beta >= -constants.EPSILON &&
+    gamma >= -constants.EPSILON &&
+    Math.abs(sum - 1) < constants.EPSILON;
+
+  // If point is inside, the closest point is the projected point
+  // If point is outside, find the closest point on the triangle's edges
+  let closestPoint: Point;
+  let distance: number;
+
+  if (isInside) {
+    closestPoint = projectedPoint;
+    distance = Math.abs(signedDistance);
+  } else {
+    // Check distances to each edge
+    const p1 = pointOnLine(point, { start: v1, end: v2 });
+    const p2 = pointOnLine(point, { start: v2, end: v3 });
+    const p3 = pointOnLine(point, { start: v3, end: v1 });
+
+    // Find the minimum distance
+    const minDist = Math.min(p1.distance, p2.distance, p3.distance);
+
+    // Use the closest point from the edge with minimum distance
+    if (minDist === p1.distance) {
+      closestPoint = p1.closestPoint;
+    } else if (minDist === p2.distance) {
+      closestPoint = p2.closestPoint;
+    } else {
+      closestPoint = p3.closestPoint;
+    }
+    distance = minDist;
+  }
+
+  return {
+    intersects: distance < constants.EPSILON,
+    closestPoint,
+    distance,
+  };
+}
+
+/**
+ * Check which grid cells a ray traverses
+ *
+ * Based on "A Fast Voxel Traversal Algorithm for Ray Tracing" by Amanatides
+ * and Woo
+ *
+ * We can optionally limit the number of cells traversed by the ray, or set
+ * maxCells to -1 to continue traversing until the ray exits the grid (or until
+ * we hit the hard limit of 10000 cells).
+ */
+export function rayTraverseGrid(
+  ray: Ray,
+  cellSize: number,
+  gridTopLeftFront: vec3,
+  gridBottomRightBack: vec3,
+  maxCells: number = -1
+): {
+  cells: Point[];
+} {
+  if (cellSize <= 0) {
+    return { cells: [] }; // Invalid cell size, return empty cells array
+  }
+
+  // Set a limit on the number of cells traversed
+  const HARD_LIMIT = 10000;
+  maxCells = clamp(maxCells === -1 ? HARD_LIMIT : maxCells, 0, HARD_LIMIT);
+  if (maxCells <= 0) {
+    return { cells: [] }; // No cells to traverse
+  }
+
+  // Make sure the grid boundaries are integers
+  gridTopLeftFront = vec3.map(gridTopLeftFront, Math.floor);
+  gridBottomRightBack = vec3.map(gridBottomRightBack, Math.ceil);
+
+  // Normalize ray direction and handle zero components
+  const rayDir = vec3.nor(ray.direction);
+  if (vectorAlmostZero(rayDir)) {
+    return { cells: [] };
+  }
+
+  const cells: Point[] = [];
+
+  // Calculate initial cell coordinates
+  let currentCell = vec3.map(
+    vec3.div(vec3.sub(ray.origin, gridTopLeftFront), cellSize),
+    Math.floor
+  );
+
+  // Calculate grid size in cells
+  const gridSize = vec3.sub(gridBottomRightBack, gridTopLeftFront);
+
+  // If starting point is outside grid bounds, find entry point
+  if (
+    currentCell.x < 0 ||
+    currentCell.x >= gridSize.x ||
+    currentCell.y < 0 ||
+    currentCell.y >= gridSize.y ||
+    currentCell.z < 0 ||
+    currentCell.z >= gridSize.z
+  ) {
+    // Use cuboid intersection to find grid entry point
+    const gridCuboid = {
+      position: vec3.add(
+        gridTopLeftFront,
+        vec3.div(vec3.sub(gridBottomRightBack, gridTopLeftFront), 2)
+      ),
+      size: vec3.sub(gridBottomRightBack, gridTopLeftFront),
+    };
+
+    const intersection = rayIntersectsCuboid(ray, gridCuboid);
+    if (!intersection.intersects || !intersection.intersectionPoints) {
+      return { cells }; // Ray misses grid entirely
+    }
+
+    // Get the first intersection point (closest to ray origin)
+    const entryPoint = intersection.intersectionPoints[0];
+    currentCell = vec3.map(
+      vec3.div(vec3.sub(entryPoint, gridTopLeftFront), cellSize),
+      Math.floor
+    );
+
+    // Check if entry point is valid
+    if (
+      currentCell.x < 0 ||
+      currentCell.x >= gridSize.x ||
+      currentCell.y < 0 ||
+      currentCell.y >= gridSize.y ||
+      currentCell.z < 0 ||
+      currentCell.z >= gridSize.z
+    ) {
+      return { cells }; // No valid entry point found
+    }
+  }
+
+  // Calculate step direction (either 1 or -1) for each axis
+  const step = {
+    x: Math.sign(rayDir.x),
+    y: Math.sign(rayDir.y),
+    z: Math.sign(rayDir.z),
+  };
+
+  // Calculate tDelta - distance along ray from one grid line to next
+  const tDelta = {
+    x: rayDir.x !== 0 ? Math.abs(cellSize / rayDir.x) : Infinity,
+    y: rayDir.y !== 0 ? Math.abs(cellSize / rayDir.y) : Infinity,
+    z: rayDir.z !== 0 ? Math.abs(cellSize / rayDir.z) : Infinity,
+  };
+
+  // Calculate initial cell boundary positions
+  const initialBoundary = vec3(
+    gridTopLeftFront.x + (currentCell.x + (step.x > 0 ? 1 : 0)) * cellSize,
+    gridTopLeftFront.y + (currentCell.y + (step.y > 0 ? 1 : 0)) * cellSize,
+    gridTopLeftFront.z + (currentCell.z + (step.z > 0 ? 1 : 0)) * cellSize
+  );
+
+  // Calculate initial tMax values
+  const tMax = {
+    x:
+      rayDir.x !== 0
+        ? Math.abs((initialBoundary.x - ray.origin.x) / rayDir.x)
+        : Infinity,
+    y:
+      rayDir.y !== 0
+        ? Math.abs((initialBoundary.y - ray.origin.y) / rayDir.y)
+        : Infinity,
+    z:
+      rayDir.z !== 0
+        ? Math.abs((initialBoundary.z - ray.origin.z) / rayDir.z)
+        : Infinity,
+  };
+
+  // If we're exactly on a boundary, we need to adjust tMax
+  if (Math.abs(ray.origin.x - initialBoundary.x) < constants.EPSILON) {
+    tMax.x = tDelta.x;
+  }
+  if (Math.abs(ray.origin.y - initialBoundary.y) < constants.EPSILON) {
+    tMax.y = tDelta.y;
+  }
+  if (Math.abs(ray.origin.z - initialBoundary.z) < constants.EPSILON) {
+    tMax.z = tDelta.z;
+  }
+
+  // Add starting cell
+  cells.push(vec3(currentCell.x, currentCell.y, currentCell.z));
+  let cellCount = 1;
+
+  // Main loop
+  while (
+    cellCount < maxCells &&
+    currentCell.x >= 0 &&
+    currentCell.x < gridSize.x &&
+    currentCell.y >= 0 &&
+    currentCell.y < gridSize.y &&
+    currentCell.z >= 0 &&
+    currentCell.z < gridSize.z
+  ) {
+    // Advance to next cell based on shortest tMax
+    if (tMax.x < tMax.y && tMax.x < tMax.z) {
+      tMax.x += tDelta.x;
+      currentCell.x += step.x;
+    } else if (tMax.y < tMax.z) {
+      tMax.y += tDelta.y;
+      currentCell.y += step.y;
+    } else {
+      tMax.z += tDelta.z;
+      currentCell.z += step.z;
+    }
+
+    // Check if we're still in bounds
+    if (
+      currentCell.x < 0 ||
+      currentCell.x >= gridSize.x ||
+      currentCell.y < 0 ||
+      currentCell.y >= gridSize.y ||
+      currentCell.z < 0 ||
+      currentCell.z >= gridSize.z
+    ) {
+      break;
+    }
+
+    // Add current cell
+    cells.push(vec3(currentCell.x, currentCell.y, currentCell.z));
+    cellCount++;
+  }
+
+  return { cells };
+}
+
 /**
  * Check if a ray intersects a sphere
  */
@@ -1008,5 +1279,90 @@ export function rayIntersectsPlane(
   return {
     intersects: true,
     intersectionPoint,
+  };
+}
+
+/**
+ * Check if a ray intersects a cuboid
+ */
+export function rayIntersectsCuboid(
+  ray: Ray,
+  cuboid: Cuboid
+): {
+  intersects: boolean;
+  intersectionPoints?: Point[];
+} {
+  // Normalize ray direction
+  const rayDir = vec3.nor(ray.direction);
+
+  // Extract cuboid properties with default rotation
+  const { position, size, rotation = vec3() } = cuboid;
+
+  // Transform ray to local space if cuboid is rotated
+  let localRayOrigin = vec3.sub(ray.origin, position);
+  let localRayDir = rayDir;
+
+  if (cuboidIsRotated(cuboid)) {
+    // Undo rotation by applying inverse rotation to ray
+    const inverseRotation = vec3.mul(rotation, -1);
+    localRayOrigin = vec3.rota(localRayOrigin, inverseRotation);
+    localRayDir = vec3.rota(localRayDir, inverseRotation);
+  }
+
+  const halfSize = vec3.div(size, 2);
+
+  // Calculate intersection with each pair of parallel planes
+  const txMin = vec3.div(
+    vec3.sub(vec3.mul(halfSize, -1), localRayOrigin),
+    localRayDir
+  );
+  const txMax = vec3.div(vec3.sub(halfSize, localRayOrigin), localRayDir);
+
+  // Find the farthest near intersection and the closest far intersection
+  const tNear = vec3(
+    Math.min(txMin.x, txMax.x),
+    Math.min(txMin.y, txMax.y),
+    Math.min(txMin.z, txMax.z)
+  );
+  const tFar = vec3(
+    Math.max(txMin.x, txMax.x),
+    Math.max(txMin.y, txMax.y),
+    Math.max(txMin.z, txMax.z)
+  );
+
+  // If the largest tNear is greater than the smallest tFar, there is no
+  // intersection
+  const tMin = Math.max(tNear.x, tNear.y, tNear.z);
+  const tMax = Math.min(tFar.x, tFar.y, tFar.z);
+
+  if (tMin > tMax || tMax < 0) {
+    return { intersects: false };
+  }
+
+  // Calculate intersection points
+  const intersectionPoints: Point[] = [];
+
+  // Add entry point if it's in front of ray origin
+  if (tMin >= 0) {
+    let point = vec3.add(localRayOrigin, vec3.mul(localRayDir, tMin));
+    if (cuboidIsRotated(cuboid)) {
+      point = vec3.rota(point, rotation);
+    }
+    intersectionPoints.push(vec3.add(position, point));
+  }
+
+  // Add exit point if different from entry point
+  if (tMax > tMin && tMax >= 0) {
+    let point = vec3.add(localRayOrigin, vec3.mul(localRayDir, tMax));
+    if (cuboidIsRotated(cuboid)) {
+      point = vec3.rota(point, rotation);
+    }
+    intersectionPoints.push(vec3.add(position, point));
+  }
+
+  return {
+    intersects: intersectionPoints.length > 0,
+    intersectionPoints:
+      intersectionPoints.length > 0 ? intersectionPoints : undefined,
   };
 }

@@ -50,7 +50,7 @@ export * from './types';
  * @see rectangleVertices
  *
  * Polygon utilities
- * @see verticesToEdges (not exported)
+ * @see verticesToEdges
  * @see findOuterEdges (not exported)
  * @see polygonIsConvex
  * @see polygonSelfIntersects
@@ -380,7 +380,7 @@ export function rectangleVertices(rectangle: Rectangle): Point[] {
 /**
  * Convert a list of vertices to a list of edges
  */
-function verticesToEdges(vertices: Point[]): Line[] {
+export function verticesToEdges(vertices: Point[]): Line[] {
   const edges: Line[] = [];
   for (let i = 0; i < vertices.length; i++) {
     const start = vertices[i];
@@ -1074,13 +1074,13 @@ export function rayTraverseGrid(
   gridTopLeft = vec2.map(gridTopLeft, Math.floor);
   gridBottomRight = vec2.map(gridBottomRight, Math.ceil);
 
-  const cells: Point[] = [];
-
   // Normalize ray direction and handle zero components
   const rayDir = vec2.nor(ray.direction);
   if (vectorAlmostZero(rayDir)) {
-    return { cells };
+    return { cells: [] };
   }
+
+  const cells: Point[] = [];
 
   // Calculate initial cell coordinates
   let currentCell = vec2.map(
