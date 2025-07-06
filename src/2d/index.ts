@@ -953,7 +953,7 @@ export function pointInRectangle(
   if (vectorAlmostZero(rectangle.size)) {
     // If the rectangle has no size, check if the point is at the rectangle's
     // position
-    const isAtPosition = vec2.eq(point, rectangle.position);
+    const isAtPosition = vectorsAlmostEqual(point, rectangle.position);
     return {
       intersects: isAtPosition,
       closestPoint: rectangle.position,
@@ -1222,7 +1222,7 @@ export function rayIntersectsRay(
   const dirB = vec2.nor(rayB.direction);
 
   // If either ray has zero direction, they cannot intersect
-  if (vec2.eq(dirA, vec2()) || vec2.eq(dirB, vec2())) {
+  if (vectorAlmostZero(dirA) || vectorAlmostZero(dirB)) {
     return {
       intersects: false,
     };
@@ -1291,7 +1291,7 @@ export function rayIntersectsLine(
   const rayDir = vec2.nor(ray.direction);
 
   // If either the ray or the line has zero direction, they cannot intersect
-  if (vec2.eq(lineDir, vec2()) || vec2.eq(rayDir, vec2())) {
+  if (vectorAlmostZero(lineDir) || vectorAlmostZero(rayDir)) {
     return {
       intersects: false,
     };
@@ -1566,7 +1566,7 @@ export function lineIntersectsLine(
   const dirB = vec2.sub(lineB.end, lineB.start);
 
   // If either line has zero direction, they cannot intersect
-  if (vec2.eq(dirA, vec2()) || vec2.eq(dirB, vec2())) {
+  if (vectorAlmostZero(dirA) || vectorAlmostZero(dirB)) {
     return {
       intersects: false,
     };

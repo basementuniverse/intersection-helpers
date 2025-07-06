@@ -73,15 +73,15 @@ export * from './types';
  *
  * Rays
  * @see rayTraverseGrid
- * @see rayIntersectsRay // TODO
- * @see rayIntersectsLine // TODO
+ * @see rayIntersectsRay
+ * @see rayIntersectsLine
  * @see rayIntersectsSphere
  * @see rayIntersectsPlane
  * @see rayIntersectsCuboid
- * @see rayIntersectsPolygon // TODO
+ * @see rayIntersectsPolygon
  *
  * Lines
- * @see lineIntersectsRay // TODO
+ * @see lineIntersectsRay
  * @see lineIntersectsLine // TODO
  * @see lineIntersectsSphere // TODO
  * @see lineIntersectsPlane // TODO
@@ -1170,6 +1170,156 @@ export function rayTraverseGrid(
 }
 
 /**
+ * Check if two rays intersect
+ */
+export function rayIntersectsRay(
+  rayA: Ray,
+  rayB: Ray
+): {
+  intersects: boolean;
+  intersectionPoint?: Point;
+} {
+  // Normalize ray directions
+  const dirA = vec3.nor(rayA.direction);
+  const dirB = vec3.nor(rayB.direction);
+
+  // If either ray has zero direction, they cannot intersect
+  if (vectorAlmostZero(dirA) || vectorAlmostZero(dirB)) {
+    return {
+      intersects: false,
+    };
+  }
+
+  // Calculate vector between ray origins
+  const originDiff = vec3.sub(rayB.origin, rayA.origin);
+
+  // Calculate triple products
+  const normal = vec3.cross(dirA, dirB);
+  const normalLengthSq = vec3.dot(normal, normal);
+
+  // If normal is zero, rays are parallel
+  if (normalLengthSq < constants.EPSILON) {
+    // Check if rays are coincident
+    const crossOrigins = vec3.cross(originDiff, dirA);
+    if (vec3.len(crossOrigins) < constants.EPSILON) {
+      // Rays are coincident - return point on rayA closest to rayB.origin
+      const t = vec3.dot(originDiff, dirA);
+      if (t >= 0) {
+        return {
+          intersects: true,
+          intersectionPoint: vec3.add(rayA.origin, vec3.mul(dirA, t)),
+        };
+      }
+    }
+    return { intersects: false };
+  }
+
+  // Calculate parameters for closest points
+  const c1 = vec3.dot(originDiff, vec3.cross(dirB, normal)) / normalLengthSq;
+  const c2 = vec3.dot(originDiff, vec3.cross(dirA, normal)) / normalLengthSq;
+
+  // If either parameter is negative, closest points are behind ray origins
+  if (c1 < 0 || c2 < 0) {
+    return { intersects: false };
+  }
+
+  // Calculate closest points on each ray
+  const pointA = vec3.add(rayA.origin, vec3.mul(dirA, c1));
+  const pointB = vec3.add(rayB.origin, vec3.mul(dirB, c2));
+
+  // Check if points are close enough to consider intersection
+  const distance = vec3.len(vec3.sub(pointA, pointB));
+  if (distance < constants.EPSILON) {
+    // Use midpoint as intersection point
+    return {
+      intersects: true,
+      intersectionPoint: vec3.add(
+        pointA,
+        vec3.mul(vec3.sub(pointB, pointA), 0.5)
+      ),
+    };
+  }
+
+  return { intersects: false };
+}
+
+/**
+ * Check if a ray intersects a line segment
+ */
+export function rayIntersectsLine(
+  ray: Ray,
+  line: Line
+): {
+  intersects: boolean;
+  intersectionPoint?: Point;
+} {
+  // Convert line to a direction vector
+  let lineDir = vec3.sub(line.end, line.start);
+  const lineLength = vec3.len(lineDir);
+
+  // If the line has zero length, it cannot intersect
+  if (lineLength < constants.EPSILON) {
+    return {
+      intersects: false,
+    };
+  }
+
+  // Normalize ray and line directions
+  const rayDir = vec3.nor(ray.direction);
+  lineDir = vec3.div(lineDir, lineLength); // Normalize line direction
+
+  // Calculate vector between ray origin and line start
+  const startDiff = vec3.sub(line.start, ray.origin);
+
+  // Calculate triple products
+  const normal = vec3.cross(rayDir, lineDir);
+  const normalLengthSq = vec3.dot(normal, normal);
+
+  // If normal is zero, ray and line are parallel
+  if (normalLengthSq < constants.EPSILON) {
+    // Check if they are collinear
+    const crossOrigins = vec3.cross(startDiff, rayDir);
+    if (vec3.len(crossOrigins) < constants.EPSILON) {
+      // They are collinear - find closest point on line to ray origin
+      const t = vec3.dot(startDiff, lineDir);
+      if (t >= 0 && t <= lineLength) {
+        return {
+          intersects: true,
+          intersectionPoint: vec3.add(line.start, vec3.mul(lineDir, t)),
+        };
+      }
+    }
+    return { intersects: false };
+  }
+
+  // Calculate parameters for closest points
+  const c1 = vec3.dot(startDiff, vec3.cross(lineDir, normal)) / normalLengthSq;
+  const c2 = vec3.dot(startDiff, vec3.cross(rayDir, normal)) / normalLengthSq;
+
+  // Check if intersection occurs on ray and within line segment bounds
+  if (c1 >= 0 && c2 >= 0 && c2 <= lineLength) {
+    // Calculate closest points
+    const pointOnRay = vec3.add(ray.origin, vec3.mul(rayDir, c1));
+    const pointOnLine = vec3.add(line.start, vec3.mul(lineDir, c2));
+
+    // Check if points are close enough to consider intersection
+    const distance = vec3.len(vec3.sub(pointOnRay, pointOnLine));
+    if (distance < constants.EPSILON) {
+      // Use midpoint as intersection point
+      return {
+        intersects: true,
+        intersectionPoint: vec3.add(
+          pointOnRay,
+          vec3.mul(vec3.sub(pointOnLine, pointOnRay), 0.5)
+        ),
+      };
+    }
+  }
+
+  return { intersects: false };
+}
+
+/**
  * Check if a ray intersects a sphere
  */
 export function rayIntersectsSphere(
@@ -1365,4 +1515,62 @@ export function rayIntersectsCuboid(
     intersectionPoints:
       intersectionPoints.length > 0 ? intersectionPoints : undefined,
   };
+}
+
+/**
+ * Check if a ray intersects a polygon
+ */
+export function rayIntersectsPolygon(
+  ray: Ray,
+  polygon: Polygon
+): {
+  intersects: boolean;
+  intersectionPoint?: Point;
+} | null {
+  // First validate the polygon
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+
+  // Calculate the plane of the polygon
+  const [v1, v2, v3] = polygon.vertices;
+  const edge1 = vec3.sub(v2, v1);
+  const edge2 = vec3.sub(v3, v1);
+  const normal = vec3.nor(vec3.cross(edge1, edge2));
+
+  // Create a plane from the polygon
+  const plane: Plane = {
+    point: v1,
+    normal,
+  };
+
+  // Check if the ray intersects the plane
+  const intersection = rayIntersectsPlane(ray, plane);
+  if (!intersection.intersects || !intersection.intersectionPoint) {
+    return { intersects: false };
+  }
+
+  // Check if the intersection point is inside the polygon
+  const pointCheck = pointOnPolygon(intersection.intersectionPoint, polygon);
+  if (!pointCheck || !pointCheck.intersects) {
+    return { intersects: false };
+  }
+
+  return {
+    intersects: true,
+    intersectionPoint: intersection.intersectionPoint,
+  };
+}
+
+/**
+ * Check if a line segment intersects a ray
+ */
+export function lineIntersectsRay(
+  line: Line,
+  ray: Ray
+): {
+  intersects: boolean;
+  intersectionPoint?: Point;
+} {
+  return rayIntersectsLine(ray, line);
 }
