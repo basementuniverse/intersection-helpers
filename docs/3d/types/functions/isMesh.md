@@ -8,7 +8,7 @@
 
 > **isMesh**(`value`): `value is Mesh`
 
-Defined in: [3d/types.ts:191](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L191)
+Defined in: [3d/types.ts:191](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/types.ts#L191)
 
 Check if a value is a Mesh
 

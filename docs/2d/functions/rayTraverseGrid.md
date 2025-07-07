@@ -8,7 +8,7 @@
 
 > **rayTraverseGrid**(`ray`, `cellSize`, `gridTopLeft`, `gridBottomRight`, `maxCells`): `object`
 
-Defined in: [2d/index.ts:972](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L972)
+Defined in: [2d/index.ts:1141](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1141)
 
 Check which grid cells a ray traverses
 

@@ -253,7 +253,14 @@ export function aabbsOverlap(
   a: AABB,
   b: AABB
 ): {
+  /**
+   * Whether the two AABBs overlap
+   */
   intersects: boolean;
+
+  /**
+   * The overlapping area, if the AABBs overlap
+   */
   overlap?: AABB;
 } {
   const overlapX = overlapInterval(
@@ -282,15 +289,28 @@ export function aabbsOverlap(
 /**
  * Check if a point is inside an AABB
  *
- * This should be a bit faster than pointInRectangle since we don't need to
- * worry about rotation
+ * This should be faster than pointInRectangle since we don't need to consider
+ * rotation
  */
 export function pointInAABB(
   point: Point,
   aabb: AABB
 ): {
+  /**
+   * Whether the point is inside the AABB
+   */
   intersects: boolean;
+
+  /**
+   * The closest point on the AABB perimeter to the given point
+   */
   closestPoint: Point;
+
+  /**
+   * The distance from the point to the closest point on the AABB
+   *
+   * If the point is inside the AABB, this will be negative
+   */
   distance: number;
 } {
   const { position, size } = aabb;
@@ -595,6 +615,13 @@ export function polygonCentroid(polygon: Polygon): Point | null {
 export function polygonConvexHull(
   polygon: Polygon,
   options?: {
+    /**
+     * Whether or not the convex hull should keep the same winding order as the
+     * original polygon. Default value is true
+     *
+     * If this is false, the convex hull will always be returned in
+     * counter-clockwise winding order
+     */
     keepWindingOrder?: boolean;
   }
 ): Polygon | null {
@@ -751,7 +778,23 @@ export function optimisePolygon(polygon: Polygon): Polygon | null {
 export function decomposePolygon(
   polygon: Polygon,
   options?: {
+    /**
+     * The mode of decomposition: 'fast' uses a quick decomposition
+     * algorithm that may not always produce the optimal result, while 'optimal'
+     * uses a more complex algorithm that guarantees the best result
+     * but is slower. Default is 'fast'
+     */
     mode?: 'fast' | 'optimal';
+
+    /**
+     * Whether or not the convex polygons should keep the same winding
+     * order as the original polygon. Default value is true
+     *
+     * If this is false, the convex polygons will be returned in whichever
+     * winding order the decomposition algorithm produces (generally this is
+     * clockwise, but it's not guaranteed; it could return a mixture of
+     * clockwise and counter-clockwise winding orders)
+     */
     keepWindingOrder?: boolean;
   }
 ): Polygon[] | null {
@@ -802,15 +845,24 @@ export function decomposePolygon(
 
 /**
  * Check if a point is on a ray
- *
- * Also returns the closest point on the ray and the distance to it
  */
 export function pointOnRay(
   point: Point,
   ray: Ray
 ): {
+  /**
+   * Whether the point is on the ray
+   */
   intersects: boolean;
+
+  /**
+   * The closest point on the ray to the given point
+   */
   closestPoint: Point;
+
+  /**
+   * The distance from the point to the closest point on the ray
+   */
   distance: number;
 } {
   // Vector from ray origin to point
@@ -841,15 +893,24 @@ export function pointOnRay(
 
 /**
  * Check if a point intersects a line segment
- *
- * Also returns the closest point on the line segment and the distance to it
  */
 export function pointOnLine(
   point: Point,
   line: Line
 ): {
+  /**
+   * Whether the point intersects the line segment
+   */
   intersects: boolean;
+
+  /**
+   * The closest point on the line segment to the given point
+   */
   closestPoint: Point;
+
+  /**
+   * The distance from the point to the closest point on the line segment
+   */
   distance: number;
 } {
   // Get vector from line start to end
@@ -889,17 +950,26 @@ export function pointOnLine(
 
 /**
  * Check if a point is inside a circle
- *
- * Also returns the closest point on the circle edge and the distance to it
- *
- * If the point is inside the circle, the distance will be negative
  */
 export function pointInCircle(
   point: Point,
   circle: Circle
 ): {
+  /**
+   * Whether the point is inside the circle
+   */
   intersects: boolean;
+
+  /**
+   * The closest point on the circle edge to the given point
+   */
   closestPoint: Point;
+
+  /**
+   * The distance from the point to the closest point on the circle edge
+   *
+   * If the point is inside the circle, this will be negative
+   */
   distance: number;
 } {
   // Calculate vector from circle center to point
@@ -932,10 +1002,6 @@ export function pointInCircle(
 /**
  * Check if a point is inside a rectangle
  *
- * Also returns the closest point on the rectangle edge and the distance to it
- *
- * If the point is inside the rectangle, the distance will be negative
- *
  * In cases where the closest point is ambiguous (e.g. corners), the first edge
  * encountered with a closest point will be returned after evaluating edges in
  * this order:
@@ -945,8 +1011,21 @@ export function pointInRectangle(
   point: Point,
   rectangle: Rectangle
 ): {
+  /**
+   * Whether the point is inside the rectangle
+   */
   intersects: boolean;
+
+  /**
+   * The closest point on the rectangle edge to the given point
+   */
   closestPoint: Point;
+
+  /**
+   * The distance from the point to the closest point on the rectangle edge
+   *
+   * If the point is inside the rectangle, this will be negative
+   */
   distance: number;
 } {
   // Edge case: zero-size rectangle
@@ -979,17 +1058,26 @@ export function pointInRectangle(
  * Check if a point is inside a polygon
  *
  * Returns null if the polygon is invalid
- *
- * Also returns the closest point on the polygon edge and the distance to it
- *
- * If the point is inside the polygon, the distance will be negative
  */
 export function pointInPolygon(
   point: Point,
   polygon: Polygon
 ): {
+  /**
+   * Whether the point is inside the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The closest point on the polygon edge to the given point
+   */
   closestPoint: Point;
+
+  /**
+   * The distance from the point to the closest point on the polygon edge
+   *
+   * If the point is inside the polygon, this will be negative
+   */
   distance: number;
 } | null {
   // First check if the polygon is valid
@@ -1214,7 +1302,14 @@ export function rayIntersectsRay(
   rayA: Ray,
   rayB: Ray
 ): {
+  /**
+   * Whether the rays intersect
+   */
   intersects: boolean;
+
+  /**
+   * The intersection point if the rays intersect
+   */
   intersectionPoint?: Point;
 } {
   // Normalize the direction vectors
@@ -1281,7 +1376,14 @@ export function rayIntersectsLine(
   ray: Ray,
   line: Line
 ): {
+  /**
+   * Whether the ray intersects the line segment
+   */
   intersects: boolean;
+
+  /**
+   * The intersection point if the ray intersects the line segment
+   */
   intersectionPoint?: Point;
 } {
   // Convert line to a direction vector
@@ -1349,7 +1451,14 @@ export function rayIntersectsCircle(
   ray: Ray,
   circle: Circle
 ): {
+  /**
+   * Whether the ray intersects the circle
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the ray intersects the circle
+   */
   intersectionPoints?: Point[];
 } {
   // 1. Parameterized ray equation: P(t) = origin + t * direction
@@ -1426,7 +1535,14 @@ export function rayIntersectsRectangle(
   ray: Ray,
   rectangle: Rectangle
 ): {
+  /**
+   * Whether the ray intersects the rectangle
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the ray intersects the rectangle
+   */
   intersectionPoints?: Point[];
 } {
   // Get vertices of the rectangle in clockwise order
@@ -1469,7 +1585,14 @@ function rayIntersectsValidConvexPolygonEdges(
   ray: Ray,
   edges: Line[]
 ): {
+  /**
+   * Whether the ray intersects the edges of the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the ray intersects the edges of the polygon
+   */
   intersectionPoints?: Point[];
 } {
   let intersectionPoints: Point[] = [];
@@ -1509,7 +1632,14 @@ export function rayIntersectsPolygon(
   ray: Ray,
   polygon: Polygon
 ): {
+  /**
+   * Whether the ray intersects the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the ray intersects the polygon
+   */
   intersectionPoints?: Point[];
 } | null {
   // First check if the polygon is valid
@@ -1545,7 +1675,14 @@ export function lineIntersectsRay(
   line: Line,
   ray: Ray
 ): {
+  /**
+   * Whether the line segment intersects the ray
+   */
   intersects: boolean;
+
+  /**
+   * The intersection point if the line segment intersects the ray
+   */
   intersectionPoint?: Point;
 } {
   return rayIntersectsLine(ray, line);
@@ -1558,7 +1695,14 @@ export function lineIntersectsLine(
   lineA: Line,
   lineB: Line
 ): {
+  /**
+   * Whether the line segments intersect
+   */
   intersects: boolean;
+
+  /**
+   * The intersection point if the line segments intersect
+   */
   intersectionPoint?: Point;
 } {
   // Get the vectors representing the directions of each line
@@ -1626,7 +1770,14 @@ export function lineIntersectsCircle(
   line: Line,
   circle: Circle
 ): {
+  /**
+   * Whether the line segment intersects the circle
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the line segment intersects the circle
+   */
   intersectionPoints?: Point[];
 } {
   // 1. Parameterized line equation: P(t) = start + t * (end - start)
@@ -1728,7 +1879,14 @@ export function lineIntersectsRectangle(
   line: Line,
   rectangle: Rectangle
 ): {
+  /**
+   * Whether the line segment intersects the rectangle
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the line segment intersects the rectangle
+   */
   intersectionPoints?: Point[];
 } {
   // Edge case: zero-size rectangle
@@ -1789,7 +1947,15 @@ function lineIntersectsValidConvexPolygonEdges(
   polygon: Polygon,
   edges: Line[]
 ): {
+  /**
+   * Whether the line segment intersects the edges of the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the line segment intersects the edges
+   * of the polygon
+   */
   intersectionPoints?: Point[];
 } {
   // Special case: line segment is entirely inside polygon
@@ -1846,7 +2012,14 @@ export function lineIntersectsPolygon(
   line: Line,
   polygon: Polygon
 ): {
+  /**
+   * Whether the line segment intersects the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points if the line segment intersects the polygon
+   */
   intersectionPoints?: Point[];
 } | null {
   // First check if the polygon is valid
@@ -1884,8 +2057,20 @@ export function circleIntersectsCircle(
   circleA: Circle,
   circleB: Circle
 ): {
+  /**
+   * Whether the circles intersect
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on each circle's circumference if the circles
+   * intersect
+   */
   intersectionPoints?: Point[];
+
+  /**
+   * The minimum separation vector between the circles if they intersect
+   */
   minimumSeparation?: vec2;
 } {
   // Calculate the vector from center A to center B
@@ -1957,7 +2142,7 @@ export function circleIntersectsCircle(
 
   const intersectionPoints = [vec2.add(p, perpVec), vec2.sub(p, perpVec)];
 
-  // Calculate the minimum separation vector (negative value indicates overlap)
+  // Calculate the minimum separation vector
   const minimumSeparation = vec2.mul(
     vec2.nor(centerToCenterVec),
     sumRadii - centerToCenter
@@ -1977,8 +2162,21 @@ export function circleIntersectsRectangle(
   circle: Circle,
   rectangle: Rectangle
 ): {
+  /**
+   * Whether the circle intersects the rectangle
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on the rectangle's edges if the circle intersects
+   * the rectangle
+   */
   intersectionPoints?: Point[];
+
+  /**
+   * The minimum separation vector between the circle and rectangle if they
+   * intersect
+   */
   minimumSeparation?: vec2;
 } {
   // Get rectangle vertices so we can test against rotated rectangles
@@ -2054,7 +2252,14 @@ function circleIntersectsValidConvexPolygonEdges(
   circleCenterInsidePolygon: boolean,
   polygonCenterInsideCircle: boolean
 ): {
+  /**
+   * Whether the circle intersects the edges of the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on the polygon's edges if the circle intersects
+   */
   intersectionPoints?: Point[];
 } {
   let intersectionPoints: Point[] = [];
@@ -2095,11 +2300,28 @@ export function circleIntersectsPolygon(
   circle: Circle,
   polygon: Polygon,
   options?: {
+    /**
+     * Whether to find the minimum separation vector between the circle and
+     * polygon if they intersect. Default is false
+     */
     findMinimumSeparation?: boolean;
   }
 ): {
+  /**
+   * Whether the circle intersects the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on the polygon's edges if the circle intersects
+   * the polygon
+   */
   intersectionPoints?: Point[];
+
+  /**
+   * The minimum separation vector between the circle and polygon if they
+   * intersect and `findMinimumSeparation` is true
+   */
   minimumSeparation?: vec2;
 } | null {
   // First check if the polygon is valid
@@ -2311,8 +2533,19 @@ export function rectangleIntersectsRectangle(
   rectangleA: Rectangle,
   rectangleB: Rectangle
 ): {
+  /**
+   * Whether the rectangles intersect
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on the edges of the rectangles if they intersect
+   */
   intersectionPoints?: Point[];
+
+  /**
+   * The minimum separation vector between the rectangles if they intersect
+   */
   minimumSeparation?: vec2;
 } {
   // Edge case: if either rectangle has zero size, they cannot intersect
@@ -2419,7 +2652,15 @@ export function rectangleIntersectsPolygon(
   rectangle: Rectangle,
   polygon: Polygon
 ): {
+  /**
+   * Whether the rectangle intersects the polygon
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on the polygon's edges if the rectangle intersects
+   * the polygon
+   */
   intersectionPoints?: Point[];
 } | null {
   // First check if the polygon is valid
@@ -2451,7 +2692,14 @@ export function polygonIntersectsPolygon(
   polygonA: Polygon,
   polygonB: Polygon
 ): {
+  /**
+   * Whether the polygons intersect
+   */
   intersects: boolean;
+
+  /**
+   * The intersection points on the edges of the polygons if they intersect
+   */
   intersectionPoints?: Point[];
 } | null {
   // First check if both polygons are valid

@@ -8,7 +8,7 @@
 
 > **circleIntersectsRectangle**(`circle`, `rectangle`): `object`
 
-Defined in: [2d/index.ts:1895](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1895)
+Defined in: [2d/index.ts:2161](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L2161)
 
 Check if a circle intersects a rectangle
 
@@ -24,16 +24,22 @@ Check if a circle intersects a rectangle
 
 ## Returns
 
-`object`
-
 ### intersectionPoints?
 
 > `optional` **intersectionPoints**: `vec2`[]
+
+The intersection points on the rectangle's edges if the circle intersects
+the rectangle
 
 ### intersects
 
 > **intersects**: `boolean`
 
+Whether the circle intersects the rectangle
+
 ### minimumSeparation?
 
 > `optional` **minimumSeparation**: `vec2`
+
+The minimum separation vector between the circle and rectangle if they
+intersect

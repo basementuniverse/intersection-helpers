@@ -8,7 +8,7 @@
 
 > **rayIntersectsRectangle**(`ray`, `rectangle`): `object`
 
-Defined in: [2d/index.ts:1344](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1344)
+Defined in: [2d/index.ts:1534](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1534)
 
 Check if a ray intersects a rectangle
 
@@ -24,12 +24,14 @@ Check if a ray intersects a rectangle
 
 ## Returns
 
-`object`
-
 ### intersectionPoints?
 
 > `optional` **intersectionPoints**: `vec2`[]
 
+The intersection points if the ray intersects the rectangle
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the ray intersects the rectangle

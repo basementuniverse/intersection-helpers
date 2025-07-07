@@ -8,7 +8,7 @@
 
 > **rayIntersectsRay**(`rayA`, `rayB`): `object`
 
-Defined in: [2d/index.ts:1132](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1132)
+Defined in: [2d/index.ts:1301](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1301)
 
 Check if two rays intersect
 
@@ -24,12 +24,14 @@ Check if two rays intersect
 
 ## Returns
 
-`object`
-
 ### intersectionPoint?
 
 > `optional` **intersectionPoint**: `vec2`
 
+The intersection point if the rays intersect
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the rays intersect

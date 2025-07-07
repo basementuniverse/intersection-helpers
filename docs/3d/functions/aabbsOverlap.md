@@ -8,9 +8,9 @@
 
 > **aabbsOverlap**(`a`, `b`): `object`
 
-Defined in: [3d/index.ts:176](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L176)
+Defined in: [3d/index.ts:285](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L285)
 
-Check if two AABBs overlap and return the overlapping area if they do
+Check if two AABBs overlap and return the overlapping volume if they do
 
 ## Parameters
 
@@ -24,12 +24,14 @@ Check if two AABBs overlap and return the overlapping area if they do
 
 ## Returns
 
-`object`
-
 ### intersects
 
 > **intersects**: `boolean`
 
+Whether the two AABBs overlap
+
 ### overlap?
 
 > `optional` **overlap**: [`AABB`](../types/type-aliases/AABB.md)
+
+The overlapping volume as an AABB

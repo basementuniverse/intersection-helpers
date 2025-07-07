@@ -8,11 +8,9 @@
 
 > **pointOnRay**(`point`, `ray`): `object`
 
-Defined in: [2d/index.ts:727](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L727)
+Defined in: [2d/index.ts:849](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L849)
 
 Check if a point is on a ray
-
-Also returns the closest point on the ray and the distance to it
 
 ## Parameters
 
@@ -26,16 +24,20 @@ Also returns the closest point on the ray and the distance to it
 
 ## Returns
 
-`object`
-
 ### closestPoint
 
 > **closestPoint**: `vec2`
+
+The closest point on the ray to the given point
 
 ### distance
 
 > **distance**: `number`
 
+The distance from the point to the closest point on the ray
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the point is on the ray

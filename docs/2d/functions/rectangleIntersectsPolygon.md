@@ -8,7 +8,7 @@
 
 > **rectangleIntersectsPolygon**(`rectangle`, `polygon`): `null` \| \{ `intersectionPoints?`: `vec2`[]; `intersects`: `boolean`; \}
 
-Defined in: [2d/index.ts:2337](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L2337)
+Defined in: [2d/index.ts:2651](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L2651)
 
 Check if a rectangle intersects a polygon
 
@@ -26,4 +26,19 @@ Returns null if the polygon is invalid
 
 ## Returns
 
-`null` \| \{ `intersectionPoints?`: `vec2`[]; `intersects`: `boolean`; \}
+`null`
+
+\{ `intersectionPoints?`: `vec2`[]; `intersects`: `boolean`; \}
+
+### intersectionPoints?
+
+> `optional` **intersectionPoints**: `vec2`[]
+
+The intersection points on the polygon's edges if the rectangle intersects
+the polygon
+
+### intersects
+
+> **intersects**: `boolean`
+
+Whether the rectangle intersects the polygon

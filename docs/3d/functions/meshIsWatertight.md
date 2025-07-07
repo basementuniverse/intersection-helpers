@@ -8,7 +8,7 @@
 
 > **meshIsWatertight**(`mesh`): `boolean`
 
-Defined in: [3d/index.ts:445](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L445)
+Defined in: [3d/index.ts:709](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L709)
 
 Perform an edge manifold check to tell if a mesh is watertight
 

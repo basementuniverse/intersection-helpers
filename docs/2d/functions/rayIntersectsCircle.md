@@ -8,7 +8,7 @@
 
 > **rayIntersectsCircle**(`ray`, `circle`): `object`
 
-Defined in: [2d/index.ts:1267](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1267)
+Defined in: [2d/index.ts:1450](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1450)
 
 Check if a ray intersects a circle
 
@@ -24,12 +24,14 @@ Check if a ray intersects a circle
 
 ## Returns
 
-`object`
-
 ### intersectionPoints?
 
 > `optional` **intersectionPoints**: `vec2`[]
 
+The intersection points if the ray intersects the circle
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the ray intersects the circle

@@ -51,6 +51,7 @@
 - [rectangleIntersectsRectangle](functions/rectangleIntersectsRectangle.md)
 - [rectangleIsRotated](functions/rectangleIsRotated.md)
 - [rectangleVertices](functions/rectangleVertices.md)
+- [verticesToEdges](functions/verticesToEdges.md)
 
 ## References
 

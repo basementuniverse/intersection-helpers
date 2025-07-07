@@ -8,15 +8,11 @@
 
 > **pointInPolygon**(`point`, `polygon`): `null` \| \{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; \}
 
-Defined in: [2d/index.ts:906](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L906)
+Defined in: [2d/index.ts:1062](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1062)
 
 Check if a point is inside a polygon
 
 Returns null if the polygon is invalid
-
-Also returns the closest point on the polygon edge and the distance to it
-
-If the point is inside the polygon, the distance will be negative
 
 ## Parameters
 
@@ -30,4 +26,26 @@ If the point is inside the polygon, the distance will be negative
 
 ## Returns
 
-`null` \| \{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; \}
+`null`
+
+\{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; \}
+
+### closestPoint
+
+> **closestPoint**: `vec2`
+
+The closest point on the polygon edge to the given point
+
+### distance
+
+> **distance**: `number`
+
+The distance from the point to the closest point on the polygon edge
+
+If the point is inside the polygon, this will be negative
+
+### intersects
+
+> **intersects**: `boolean`
+
+Whether the point is inside the polygon

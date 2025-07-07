@@ -8,7 +8,7 @@
 
 > **lineIntersectsCircle**(`line`, `circle`): `object`
 
-Defined in: [2d/index.ts:1544](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1544)
+Defined in: [2d/index.ts:1769](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1769)
 
 Check if a line segment intersects a circle
 
@@ -24,12 +24,14 @@ Check if a line segment intersects a circle
 
 ## Returns
 
-`object`
-
 ### intersectionPoints?
 
 > `optional` **intersectionPoints**: `vec2`[]
 
+The intersection points if the line segment intersects the circle
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the line segment intersects the circle

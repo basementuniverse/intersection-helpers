@@ -8,15 +8,14 @@
 
 > **polygonWindingOrder**(`polygon`, `options?`): `null` \| `"clockwise"` \| `"counter-clockwise"`
 
-Defined in: [2d/index.ts:444](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L444)
+Defined in: [2d/index.ts:541](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L541)
 
 Determine the winding order of a polygon's vertices
 
 Returns 'clockwise' or 'counter-clockwise' depending on the chosen
 coordinate system
 
-The coordinate system can be 'cartesian' (where y increases upwards) or
-'screen' (where y increases downwards, this is the default)
+By default we use the 'screen' coordinate system (y increases downwards)
 
 Returns null if the polygon is invalid
 
@@ -31,6 +30,9 @@ Returns null if the polygon is invalid
 #### coordinateSystem?
 
 `"screen"` \| `"cartesian"`
+
+The coordinate system can be 'cartesian' (where y increases upwards) or
+'screen' (where y increases downwards, this is the default)
 
 ## Returns
 

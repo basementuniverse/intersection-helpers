@@ -8,6 +8,6 @@
 
 > **Point** = `vec2`
 
-Defined in: [2d/types.ts:7](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/types.ts#L7)
+Defined in: [2d/types.ts:7](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/types.ts#L7)
 
 A point in 2D space

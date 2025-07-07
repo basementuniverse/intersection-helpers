@@ -8,13 +8,9 @@
 
 > **pointInCircle**(`point`, `circle`): `object`
 
-Defined in: [2d/index.ts:816](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L816)
+Defined in: [2d/index.ts:954](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L954)
 
 Check if a point is inside a circle
-
-Also returns the closest point on the circle edge and the distance to it
-
-If the point is inside the circle, the distance will be negative
 
 ## Parameters
 
@@ -28,16 +24,22 @@ If the point is inside the circle, the distance will be negative
 
 ## Returns
 
-`object`
-
 ### closestPoint
 
 > **closestPoint**: `vec2`
+
+The closest point on the circle edge to the given point
 
 ### distance
 
 > **distance**: `number`
 
+The distance from the point to the closest point on the circle edge
+
+If the point is inside the circle, this will be negative
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the point is inside the circle

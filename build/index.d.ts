@@ -31,7 +31,7 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     */
   export function angleBetween(a: Line | Ray, b: Line | Ray): number;
   /**
-    * Check if points are collinear
+    * Check if three points in 2D space are collinear
     */
   export function pointsAreCollinear(a: Point, b: Point, c: Point): boolean;
   /**
@@ -54,18 +54,35 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Check if two AABBs overlap and return the overlapping area if so
     */
   export function aabbsOverlap(a: AABB, b: AABB): {
+      /**
+        * Whether the two AABBs overlap
+        */
       intersects: boolean;
+      /**
+        * The overlapping area, if the AABBs overlap
+        */
       overlap?: AABB;
   };
   /**
     * Check if a point is inside an AABB
     *
-    * This should be a bit faster than pointInRectangle since we don't need to
-    * worry about rotation
+    * This should be faster than pointInRectangle since we don't need to consider
+    * rotation
     */
   export function pointInAABB(point: Point, aabb: AABB): {
+      /**
+        * Whether the point is inside the AABB
+        */
       intersects: boolean;
+      /**
+        * The closest point on the AABB perimeter to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the AABB
+        *
+        * If the point is inside the AABB, this will be negative
+        */
       distance: number;
   };
   /**
@@ -82,6 +99,10 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * - Bottom-left
     */
   export function rectangleVertices(rectangle: Rectangle): Point[];
+  /**
+    * Convert a list of vertices to a list of edges
+    */
+  export function verticesToEdges(vertices: Point[]): Line[];
   /**
     * Check if a polygon is convex
     *
@@ -105,12 +126,15 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns 'clockwise' or 'counter-clockwise' depending on the chosen
     * coordinate system
     *
-    * The coordinate system can be 'cartesian' (where y increases upwards) or
-    * 'screen' (where y increases downwards, this is the default)
+    * By default we use the 'screen' coordinate system (y increases downwards)
     *
     * Returns null if the polygon is invalid
     */
   export function polygonWindingOrder(polygon: Polygon, options?: {
+      /**
+        * The coordinate system can be 'cartesian' (where y increases upwards) or
+        * 'screen' (where y increases downwards, this is the default)
+        */
       coordinateSystem?: 'cartesian' | 'screen';
   }): 'clockwise' | 'counter-clockwise' | null;
   /**
@@ -130,6 +154,13 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Calculate the convex hull of a polygon
     */
   export function polygonConvexHull(polygon: Polygon, options?: {
+      /**
+        * Whether or not the convex hull should keep the same winding order as the
+        * original polygon. Default value is true
+        *
+        * If this is false, the convex hull will always be returned in
+        * counter-clockwise winding order
+        */
       keepWindingOrder?: boolean;
   }): Polygon | null;
   /**
@@ -144,47 +175,79 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns null if the polygon is invalid or cannot be decomposed
     */
   export function decomposePolygon(polygon: Polygon, options?: {
+      /**
+        * The mode of decomposition: 'fast' uses a quick decomposition
+        * algorithm that may not always produce the optimal result, while 'optimal'
+        * uses a more complex algorithm that guarantees the best result
+        * but is slower. Default is 'fast'
+        */
       mode?: 'fast' | 'optimal';
+      /**
+        * Whether or not the convex polygons should keep the same winding
+        * order as the original polygon. Default value is true
+        *
+        * If this is false, the convex polygons will be returned in whichever
+        * winding order the decomposition algorithm produces (generally this is
+        * clockwise, but it's not guaranteed; it could return a mixture of
+        * clockwise and counter-clockwise winding orders)
+        */
       keepWindingOrder?: boolean;
   }): Polygon[] | null;
   /**
     * Check if a point is on a ray
-    *
-    * Also returns the closest point on the ray and the distance to it
     */
   export function pointOnRay(point: Point, ray: Ray): {
+      /**
+        * Whether the point is on the ray
+        */
       intersects: boolean;
+      /**
+        * The closest point on the ray to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the ray
+        */
       distance: number;
   };
   /**
     * Check if a point intersects a line segment
-    *
-    * Also returns the closest point on the line segment and the distance to it
     */
   export function pointOnLine(point: Point, line: Line): {
+      /**
+        * Whether the point intersects the line segment
+        */
       intersects: boolean;
+      /**
+        * The closest point on the line segment to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the line segment
+        */
       distance: number;
   };
   /**
     * Check if a point is inside a circle
-    *
-    * Also returns the closest point on the circle edge and the distance to it
-    *
-    * If the point is inside the circle, the distance will be negative
     */
   export function pointInCircle(point: Point, circle: Circle): {
+      /**
+        * Whether the point is inside the circle
+        */
       intersects: boolean;
+      /**
+        * The closest point on the circle edge to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the circle edge
+        *
+        * If the point is inside the circle, this will be negative
+        */
       distance: number;
   };
   /**
     * Check if a point is inside a rectangle
-    *
-    * Also returns the closest point on the rectangle edge and the distance to it
-    *
-    * If the point is inside the rectangle, the distance will be negative
     *
     * In cases where the closest point is ambiguous (e.g. corners), the first edge
     * encountered with a closest point will be returned after evaluating edges in
@@ -192,22 +255,40 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * top, right, bottom, left (before applying the rectangle's rotation)
     */
   export function pointInRectangle(point: Point, rectangle: Rectangle): {
+      /**
+        * Whether the point is inside the rectangle
+        */
       intersects: boolean;
+      /**
+        * The closest point on the rectangle edge to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the rectangle edge
+        *
+        * If the point is inside the rectangle, this will be negative
+        */
       distance: number;
   };
   /**
     * Check if a point is inside a polygon
     *
     * Returns null if the polygon is invalid
-    *
-    * Also returns the closest point on the polygon edge and the distance to it
-    *
-    * If the point is inside the polygon, the distance will be negative
     */
   export function pointInPolygon(point: Point, polygon: Polygon): {
+      /**
+        * Whether the point is inside the polygon
+        */
       intersects: boolean;
+      /**
+        * The closest point on the polygon edge to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the polygon edge
+        *
+        * If the point is inside the polygon, this will be negative
+        */
       distance: number;
   } | null;
   /**
@@ -227,28 +308,52 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Check if two rays intersect
     */
   export function rayIntersectsRay(rayA: Ray, rayB: Ray): {
+      /**
+        * Whether the rays intersect
+        */
       intersects: boolean;
+      /**
+        * The intersection point if the rays intersect
+        */
       intersectionPoint?: Point;
   };
   /**
     * Check if a ray intersects a line segment
     */
   export function rayIntersectsLine(ray: Ray, line: Line): {
+      /**
+        * Whether the ray intersects the line segment
+        */
       intersects: boolean;
+      /**
+        * The intersection point if the ray intersects the line segment
+        */
       intersectionPoint?: Point;
   };
   /**
     * Check if a ray intersects a circle
     */
   export function rayIntersectsCircle(ray: Ray, circle: Circle): {
+      /**
+        * Whether the ray intersects the circle
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the ray intersects the circle
+        */
       intersectionPoints?: Point[];
   };
   /**
     * Check if a ray intersects a rectangle
     */
   export function rayIntersectsRectangle(ray: Ray, rectangle: Rectangle): {
+      /**
+        * Whether the ray intersects the rectangle
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the ray intersects the rectangle
+        */
       intersectionPoints?: Point[];
   };
   /**
@@ -257,35 +362,65 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns null if the polygon is invalid
     */
   export function rayIntersectsPolygon(ray: Ray, polygon: Polygon): {
+      /**
+        * Whether the ray intersects the polygon
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the ray intersects the polygon
+        */
       intersectionPoints?: Point[];
   } | null;
   /**
     * Check if a line segment intersects a ray
     */
   export function lineIntersectsRay(line: Line, ray: Ray): {
+      /**
+        * Whether the line segment intersects the ray
+        */
       intersects: boolean;
+      /**
+        * The intersection point if the line segment intersects the ray
+        */
       intersectionPoint?: Point;
   };
   /**
     * Check if two line segments intersect
     */
   export function lineIntersectsLine(lineA: Line, lineB: Line): {
+      /**
+        * Whether the line segments intersect
+        */
       intersects: boolean;
+      /**
+        * The intersection point if the line segments intersect
+        */
       intersectionPoint?: Point;
   };
   /**
     * Check if a line segment intersects a circle
     */
   export function lineIntersectsCircle(line: Line, circle: Circle): {
+      /**
+        * Whether the line segment intersects the circle
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the line segment intersects the circle
+        */
       intersectionPoints?: Point[];
   };
   /**
     * Check if a line segment intersects a rectangle
     */
   export function lineIntersectsRectangle(line: Line, rectangle: Rectangle): {
+      /**
+        * Whether the line segment intersects the rectangle
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the line segment intersects the rectangle
+        */
       intersectionPoints?: Point[];
   };
   /**
@@ -294,23 +429,50 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns null if the polygon is invalid
     */
   export function lineIntersectsPolygon(line: Line, polygon: Polygon): {
+      /**
+        * Whether the line segment intersects the polygon
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the line segment intersects the polygon
+        */
       intersectionPoints?: Point[];
   } | null;
   /**
     * Check if two circles intersect
     */
   export function circleIntersectsCircle(circleA: Circle, circleB: Circle): {
+      /**
+        * Whether the circles intersect
+        */
       intersects: boolean;
+      /**
+        * The intersection points on each circle's circumference if the circles
+        * intersect
+        */
       intersectionPoints?: Point[];
+      /**
+        * The minimum separation vector between the circles if they intersect
+        */
       minimumSeparation?: vec2;
   };
   /**
     * Check if a circle intersects a rectangle
     */
   export function circleIntersectsRectangle(circle: Circle, rectangle: Rectangle): {
+      /**
+        * Whether the circle intersects the rectangle
+        */
       intersects: boolean;
+      /**
+        * The intersection points on the rectangle's edges if the circle intersects
+        * the rectangle
+        */
       intersectionPoints?: Point[];
+      /**
+        * The minimum separation vector between the circle and rectangle if they
+        * intersect
+        */
       minimumSeparation?: vec2;
   };
   /**
@@ -319,18 +481,42 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns null if the polygon is invalid
     */
   export function circleIntersectsPolygon(circle: Circle, polygon: Polygon, options?: {
+      /**
+        * Whether to find the minimum separation vector between the circle and
+        * polygon if they intersect. Default is false
+        */
       findMinimumSeparation?: boolean;
   }): {
+      /**
+        * Whether the circle intersects the polygon
+        */
       intersects: boolean;
+      /**
+        * The intersection points on the polygon's edges if the circle intersects
+        * the polygon
+        */
       intersectionPoints?: Point[];
+      /**
+        * The minimum separation vector between the circle and polygon if they
+        * intersect and `findMinimumSeparation` is true
+        */
       minimumSeparation?: vec2;
   } | null;
   /**
     * Check if two rectangles intersect
     */
   export function rectangleIntersectsRectangle(rectangleA: Rectangle, rectangleB: Rectangle): {
+      /**
+        * Whether the rectangles intersect
+        */
       intersects: boolean;
+      /**
+        * The intersection points on the edges of the rectangles if they intersect
+        */
       intersectionPoints?: Point[];
+      /**
+        * The minimum separation vector between the rectangles if they intersect
+        */
       minimumSeparation?: vec2;
   };
   /**
@@ -339,7 +525,14 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns null if the polygon is invalid
     */
   export function rectangleIntersectsPolygon(rectangle: Rectangle, polygon: Polygon): {
+      /**
+        * Whether the rectangle intersects the polygon
+        */
       intersects: boolean;
+      /**
+        * The intersection points on the polygon's edges if the rectangle intersects
+        * the polygon
+        */
       intersectionPoints?: Point[];
   } | null;
   /**
@@ -348,7 +541,13 @@ declare module '@basementuniverse/intersection-helpers/src/2d' {
     * Returns null if either polygon is invalid
     */
   export function polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon): {
+      /**
+        * Whether the polygons intersect
+        */
       intersects: boolean;
+      /**
+        * The intersection points on the edges of the polygons if they intersect
+        */
       intersectionPoints?: Point[];
   } | null;
 }
@@ -372,6 +571,10 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     */
   export function angleBetween(a: Line | Ray, b: Line | Ray): number;
   /**
+    * Check if three points in 3D space are collinear
+    */
+  export function pointsAreCollinear(a: Point, b: Point, c: Point): boolean;
+  /**
     * Convert a line segment to a ray
     */
   export function lineToRay(line: Line): Ray;
@@ -388,11 +591,39 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     */
   export function aabbToCuboid(aabb: AABB): Cuboid;
   /**
-    * Check if two AABBs overlap and return the overlapping area if they do
+    * Check if two AABBs overlap and return the overlapping volume if they do
     */
   export function aabbsOverlap(a: AABB, b: AABB): {
+      /**
+        * Whether the two AABBs overlap
+        */
       intersects: boolean;
+      /**
+        * The overlapping volume as an AABB
+        */
       overlap?: AABB;
+  };
+  /**
+    * Check if a point is inside an AABB
+    *
+    * This should be a bit faster than pointInRectangle since we don't need to
+    * worry about rotation
+    */
+  export function pointInAABB(point: Point, aabb: AABB): {
+      /**
+        * Whether the point is inside the AABB
+        */
+      intersects: boolean;
+      /**
+        * The closest point on the AABB surface to the given point
+        */
+      closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the AABB
+        *
+        * If the point is inside the AABB, this will be negative
+        */
+      distance: number;
   };
   /**
     * Check if a cuboid is rotated
@@ -415,11 +646,40 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     */
   export function cuboidVertices(cuboid: Cuboid): Point[];
   /**
+    * Convert a list of vertices to a list of edges
+    */
+  export function verticesToEdges(vertices: Point[]): Line[];
+  /**
     * Check if a polygon is valid
     *
     * A polygon is valid if it has exactly 3 vertices
     */
   export function polygonIsValid(polygon: Polygon): boolean;
+  /**
+    * Determine the winding order of a polygon's vertices
+    *
+    * Returns 'clockwise' or 'counter-clockwise'
+    *
+    * By default uses the right-hand rule: if the vertices are ordered
+    * counter-clockwise, the normal points towards the viewer
+    *
+    * Returns null if the polygon is invalid or degenerate
+    */
+  export function polygonWindingOrder(polygon: Polygon, options?: {
+      /**
+        * Which hand rule to use for determining winding order
+        * - 'right' (default): Counter-clockwise vertices create a normal pointing
+        *   towards viewer
+        * - 'left': Clockwise vertices create a normal pointing towards viewer
+        */
+      handedness?: 'right' | 'left';
+      /**
+        * Optional normal vector to use as reference
+        *
+        * If provided, winding order will be determined relative to this vector
+        */
+      normal?: Point;
+  }): 'clockwise' | 'counter-clockwise' | null;
   /**
     * Calculate the 2D area of a polygon in 3D space
     *
@@ -464,8 +724,17 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * Also returns the closest point on the ray and the distance to it
     */
   export function pointOnRay(point: Point, ray: Ray): {
+      /**
+        * Whether the point is on the ray
+        */
       intersects: boolean;
+      /**
+        * The closest point on the ray to the given point
+        */
       closestPoint?: Point;
+      /**
+        * The distance from the point to the closest point on the ray
+        */
       distance: number;
   };
   /**
@@ -474,8 +743,17 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * Also returns the closest point on the line segment and the distance to it
     */
   export function pointOnLine(point: Point, line: Line): {
+      /**
+        * Whether the point is on the line segment
+        */
       intersects: boolean;
+      /**
+        * The closest point on the line segment to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the line segment
+        */
       distance: number;
   };
   /**
@@ -486,31 +764,298 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * If the point is inside the sphere, the distance will be negative
     */
   export function pointInSphere(point: Point, sphere: Sphere): {
+      /**
+        * Whether the point is in the sphere
+        */
       intersects: boolean;
+      /**
+        * The closest point on the sphere surface to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the sphere
+        *
+        * If the point is inside the sphere, this will be negative
+        */
       distance: number;
   };
   /**
     * Check if a point is inside a cuboid
     */
   export function pointInCuboid(point: Point, cuboid: Cuboid): {
+      /**
+        * Whether the point is inside the cuboid
+        */
       intersects: boolean;
+      /**
+        * The closest point on the cuboid surface to the given point
+        */
       closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the cuboid
+        *
+        * If the point is inside the cuboid, this will be negative
+        */
       distance: number;
+  };
+  export function pointOnPolygon(point: Point, polygon: Polygon): {
+      /**
+        * Whether the point intersects the polygon
+        */
+      intersects: boolean;
+      /**
+        * The closest point on the polygon to the given point
+        */
+      closestPoint: Point;
+      /**
+        * The distance from the point to the closest point on the polygon
+        */
+      distance: number;
+  } | null;
+  /**
+    * Check which grid cells a ray traverses
+    *
+    * Based on "A Fast Voxel Traversal Algorithm for Ray Tracing" by Amanatides
+    * and Woo
+    *
+    * We can optionally limit the number of cells traversed by the ray, or set
+    * maxCells to -1 to continue traversing until the ray exits the grid (or until
+    * we hit the hard limit of 10000 cells).
+    */
+  export function rayTraverseGrid(ray: Ray, cellSize: number, gridTopLeftFront: vec3, gridBottomRightBack: vec3, maxCells?: number): {
+      cells: Point[];
+  };
+  /**
+    * Check if two rays intersect
+    */
+  export function rayIntersectsRay(rayA: Ray, rayB: Ray): {
+      /**
+        * Whether the rays intersect
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the rays intersect
+        */
+      intersectionPoint?: Point;
+  };
+  /**
+    * Check if a ray intersects a line segment
+    */
+  export function rayIntersectsLine(ray: Ray, line: Line): {
+      /**
+        * Whether the ray intersects the line segment
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the ray intersects the line segment
+        */
+      intersectionPoint?: Point;
   };
   /**
     * Check if a ray intersects a sphere
     */
   export function rayIntersectsSphere(ray: Ray, sphere: Sphere): {
+      /**
+        * Whether the ray intersects the sphere
+        */
       intersects: boolean;
+      /**
+        * The intersection points if the ray intersects the sphere
+        */
       intersectionPoints?: Point[];
   };
   /**
     * Check if a ray intersects a plane
     */
   export function rayIntersectsPlane(ray: Ray, plane: Plane): {
+      /**
+        * Whether the ray intersects the plane
+        */
       intersects: boolean;
+      /**
+        * The intersection point if the ray intersects the plane
+        */
       intersectionPoint?: Point;
+  };
+  /**
+    * Check if a ray intersects a cuboid
+    */
+  export function rayIntersectsCuboid(ray: Ray, cuboid: Cuboid): {
+      /**
+        * Whether the ray intersects the cuboid
+        */
+      intersects: boolean;
+      /**
+        * The intersection points if the ray intersects the cuboid
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if a ray intersects a polygon
+    */
+  export function rayIntersectsPolygon(ray: Ray, polygon: Polygon): {
+      /**
+        * Whether the ray intersects the polygon
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the ray intersects the polygon
+        */
+      intersectionPoint?: Point;
+  } | null;
+  /**
+    * Check if a ray intersects any of the polygons in a mesh
+    */
+  export function rayIntersectsMesh(ray: Ray, mesh: Mesh): {
+      /**
+        * Whether the ray intersects any polygon in the mesh
+        */
+      intersects: boolean;
+      /**
+        * The intersection points if the ray intersects any polygon in the mesh
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if a line segment intersects a ray
+    */
+  export function lineIntersectsRay(line: Line, ray: Ray): {
+      /**
+        * Whether the line segment intersects the ray
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the line segment intersects the ray
+        */
+      intersectionPoint?: Point;
+  };
+  /**
+    * Check if two line segments intersect
+    */
+  export function lineIntersectsLine(lineA: Line, lineB: Line): {
+      /**
+        * Whether the two line segments intersect
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the line segments intersect
+        */
+      intersectionPoint?: Point;
+  };
+  /**
+    * Check if a line segments intersects a sphere
+    */
+  export function lineIntersectsSphere(line: Line, sphere: Sphere): {
+      /**
+        * Whether the line segment intersects the sphere
+        */
+      intersects: boolean;
+      /**
+        * The intersection points if the line segment intersects the sphere
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if a line segments intersects a plane
+    */
+  export function lineIntersectsPlane(line: Line, plane: Plane): {
+      /**
+        * Whether the line segment intersects the plane
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the line segment intersects the plane
+        */
+      intersectionPoint?: Point;
+  };
+  /**
+    * Check if a line segment intersects a cuboid
+    */
+  export function lineIntersectsCuboid(line: Line, cuboid: Cuboid): {
+      /**
+        * Whether the line segment intersects the cuboid
+        */
+      intersects: boolean;
+      /**
+        * The intersection points if the line segment intersects the cuboid
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if a line segment intersects a polygon
+    */
+  export function lineIntersectsPolygon(line: Line, polygon: Polygon): {
+      /**
+        * Whether the line segment intersects the polygon
+        */
+      intersects: boolean;
+      /**
+        * The intersection point if the line segment intersects the polygon
+        */
+      intersectionPoint?: Point;
+  };
+  /**
+    * Check if a line segment intersects a cuboid
+    */
+  export function lineIntersectsMesh(line: Line, mesh: Mesh): {
+      /**
+        * Whether the line segment intersects any polygon in the mesh
+        */
+      intersects: boolean;
+      /**
+        * The intersection points if the line segment intersects any polygon in the
+        * mesh
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if two spheres intersect
+    */
+  export function sphereIntersectsSphere(sphereA: Sphere, sphereB: Sphere): {
+      /**
+        * Whether the spheres intersect
+        */
+      intersects: boolean;
+      /**
+        * The point at the center of the intersection volume
+        */
+      intersectionPoint?: Point;
+      /**
+        * How deeply the spheres are intersecting
+        */
+      penetrationDepth?: number;
+      /**
+        * Unit vector pointing from sphere A to sphere B
+        */
+      normal?: Point;
+      /**
+        * The closest points on each sphere's surface along the intersection axis
+        */
+      contactPoints?: {
+          sphereA: Point;
+          sphereB: Point;
+      };
+  };
+  /**
+    * Check if a sphere intersects a plane
+    */
+  export function sphereIntersectsPlane(sphere: Sphere, plane: Plane): {
+      /**
+        * Whether the sphere intersects the plane
+        */
+      intersects: boolean;
+      /**
+        * The point at the center of the intersection volume
+        */
+      intersectionPoint?: Point;
+      /**
+        * How deeply the spheres are intersecting
+        */
+      penetrationDepth?: number;
+      /**
+        * The radius of the intersection volume
+        */
+      intersectionRadius?: number;
   };
 }
 

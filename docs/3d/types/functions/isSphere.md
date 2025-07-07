@@ -8,7 +8,7 @@
 
 > **isSphere**(`value`): `value is Sphere`
 
-Defined in: [3d/types.ts:71](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L71)
+Defined in: [3d/types.ts:71](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/types.ts#L71)
 
 Check if a value is a Sphere
 

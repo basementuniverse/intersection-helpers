@@ -8,7 +8,7 @@
 
 > **aabbToCuboid**(`aabb`): [`Cuboid`](../types/type-aliases/Cuboid.md)
 
-Defined in: [3d/index.ts:165](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L165)
+Defined in: [3d/index.ts:274](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L274)
 
 Convert an AABB to a cuboid
 

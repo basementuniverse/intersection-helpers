@@ -8,7 +8,7 @@
 
 > **polygonConvexHull**(`polygon`, `options?`): `null` \| [`Polygon`](../types/type-aliases/Polygon.md)
 
-Defined in: [2d/index.ts:514](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L514)
+Defined in: [2d/index.ts:615](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L615)
 
 Calculate the convex hull of a polygon
 
@@ -23,6 +23,12 @@ Calculate the convex hull of a polygon
 #### keepWindingOrder?
 
 `boolean`
+
+Whether or not the convex hull should keep the same winding order as the
+original polygon. Default value is true
+
+If this is false, the convex hull will always be returned in
+counter-clockwise winding order
 
 ## Returns
 

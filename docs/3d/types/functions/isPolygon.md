@@ -8,7 +8,7 @@
 
 > **isPolygon**(`value`): `value is Polygon`
 
-Defined in: [3d/types.ts:165](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/types.ts#L165)
+Defined in: [3d/types.ts:165](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/types.ts#L165)
 
 Check if a value is a Polygon
 

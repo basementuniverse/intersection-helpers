@@ -8,7 +8,7 @@
 
 > **rayIntersectsPlane**(`ray`, `plane`): `object`
 
-Defined in: [3d/index.ts:778](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/3d/index.ts#L778)
+Defined in: [3d/index.ts:1505](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L1505)
 
 Check if a ray intersects a plane
 
@@ -24,12 +24,14 @@ Check if a ray intersects a plane
 
 ## Returns
 
-`object`
-
 ### intersectionPoint?
 
 > `optional` **intersectionPoint**: `vec3`
 
+The intersection point if the ray intersects the plane
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the ray intersects the plane

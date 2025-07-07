@@ -8,7 +8,7 @@
 
 > **angle**(`a`, `b`): `number`
 
-Defined in: [2d/index.ts:43](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L43)
+Defined in: [2d/index.ts:121](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L121)
 
 Calculate the clockwise angle from point a to point b
 

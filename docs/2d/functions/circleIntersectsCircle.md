@@ -8,7 +8,7 @@
 
 > **circleIntersectsCircle**(`circleA`, `circleB`): `object`
 
-Defined in: [2d/index.ts:1802](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L1802)
+Defined in: [2d/index.ts:2056](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L2056)
 
 Check if two circles intersect
 
@@ -24,16 +24,21 @@ Check if two circles intersect
 
 ## Returns
 
-`object`
-
 ### intersectionPoints?
 
 > `optional` **intersectionPoints**: `vec2`[]
+
+The intersection points on each circle's circumference if the circles
+intersect
 
 ### intersects
 
 > **intersects**: `boolean`
 
+Whether the circles intersect
+
 ### minimumSeparation?
 
 > `optional` **minimumSeparation**: `vec2`
+
+The minimum separation vector between the circles if they intersect

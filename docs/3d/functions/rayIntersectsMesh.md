@@ -1,0 +1,37 @@
+[**@basementuniverse/intersection-helpers**](../../README.md)
+
+***
+
+[@basementuniverse/intersection-helpers](../../README.md) / [3d](../README.md) / rayIntersectsMesh
+
+# Function: rayIntersectsMesh()
+
+> **rayIntersectsMesh**(`ray`, `mesh`): `object`
+
+Defined in: [3d/index.ts:1695](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L1695)
+
+Check if a ray intersects any of the polygons in a mesh
+
+## Parameters
+
+### ray
+
+[`Ray`](../types/type-aliases/Ray.md)
+
+### mesh
+
+[`Mesh`](../types/type-aliases/Mesh.md)
+
+## Returns
+
+### intersectionPoints?
+
+> `optional` **intersectionPoints**: `vec3`[]
+
+The intersection points if the ray intersects any polygon in the mesh
+
+### intersects
+
+> **intersects**: `boolean`
+
+Whether the ray intersects any polygon in the mesh

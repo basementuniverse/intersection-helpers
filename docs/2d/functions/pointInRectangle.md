@@ -8,13 +8,9 @@
 
 > **pointInRectangle**(`point`, `rectangle`): `object`
 
-Defined in: [2d/index.ts:863](https://github.com/basementuniverse/intersection-helpers/blob/ede9ecb18a1386abf90747a70ee9f16c34ce6207/src/2d/index.ts#L863)
+Defined in: [2d/index.ts:1010](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L1010)
 
 Check if a point is inside a rectangle
-
-Also returns the closest point on the rectangle edge and the distance to it
-
-If the point is inside the rectangle, the distance will be negative
 
 In cases where the closest point is ambiguous (e.g. corners), the first edge
 encountered with a closest point will be returned after evaluating edges in
@@ -33,16 +29,22 @@ top, right, bottom, left (before applying the rectangle's rotation)
 
 ## Returns
 
-`object`
-
 ### closestPoint
 
 > **closestPoint**: `vec2`
+
+The closest point on the rectangle edge to the given point
 
 ### distance
 
 > **distance**: `number`
 
+The distance from the point to the closest point on the rectangle edge
+
+If the point is inside the rectangle, this will be negative
+
 ### intersects
 
 > **intersects**: `boolean`
+
+Whether the point is inside the rectangle
