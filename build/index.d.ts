@@ -646,6 +646,18 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     */
   export function cuboidVertices(cuboid: Cuboid): Point[];
   /**
+    * Convert a cuboid to a list of polygons representing its faces
+    *
+    * Polygons will be returned in the following order:
+    * - Upper face (top)
+    * - Lower face (bottom)
+    * - Front face
+    * - Back face
+    * - Left face
+    * - Right face
+    */
+  export function cuboidToPolygons(cuboid: Cuboid): Polygon[];
+  /**
     * Convert a list of vertices to a list of edges
     */
   export function verticesToEdges(vertices: Point[]): Line[];
@@ -692,6 +704,10 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
     * Returns null if the polygon is invalid
     */
   export function polygonCentroid(polygon: Polygon): Point | null;
+  /**
+    * Convert a polygon to a plane
+    */
+  export function polygonToPlane(polygon: Polygon): Plane | null;
   /**
     * Convert a list of polygons to a mesh
     *
@@ -874,6 +890,9 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
       intersects: boolean;
       /**
         * The intersection point if the ray intersects the plane
+        *
+        * If the ray lies in the plane, this will be undefined since there are
+        * infinite intersection points
         */
       intersectionPoint?: Point;
   };
@@ -965,6 +984,9 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
       intersects: boolean;
       /**
         * The intersection point if the line segment intersects the plane
+        *
+        * If the line segment lies in the plane, this will be undefined since there
+        * are infinite intersection points
         */
       intersectionPoint?: Point;
   };
@@ -1056,6 +1078,288 @@ declare module '@basementuniverse/intersection-helpers/src/3d' {
         * The radius of the intersection volume
         */
       intersectionRadius?: number;
+  };
+  /**
+    * Check if a sphere intersects a cuboid
+    */
+  export function sphereIntersectsCuboid(sphere: Sphere, cuboid: Cuboid): {
+      /**
+        * Whether the sphere intersects the cuboid
+        */
+      intersects: boolean;
+      /**
+        * The point at the center of the intersection volume
+        */
+      intersectionPoint?: Point;
+      /**
+        * How deeply the sphere penetrates the cuboid
+        */
+      penetrationDepth?: number;
+      /**
+        * Direction of minimum separation (unit vector)
+        * Points from cuboid center towards sphere center
+        */
+      normal?: Point;
+      /**
+        * Closest point on cuboid surface to sphere center
+        */
+      contactPoint?: Point;
+  };
+  /**
+    * Check if a sphere intersects a polygon
+    */
+  export function sphereIntersectsPolygon(sphere: Sphere, polygon: Polygon): {
+      /**
+        * Whether the sphere intersects the polygon
+        */
+      intersects: boolean;
+      /**
+        * The point at the center of the intersection volume
+        */
+      intersectionPoint?: Point;
+      /**
+        * How deeply the sphere is intersecting
+        */
+      penetrationDepth?: number;
+      /**
+        * Points where the sphere surface intersects the polygon edges, if any
+        */
+      polygonIntersectionPoints?: Point[];
+  } | null;
+  /**
+    * Check if a sphere intersects any polygon in a mesh
+    */
+  export function sphereIntersectsMesh(sphere: Sphere, mesh: Mesh): {
+      /**
+        * Whether the sphere intersects any polygon in the mesh
+        */
+      intersects: boolean;
+      /**
+        * The intersection points if the sphere intersects any polygon in the mesh
+        */
+      intersectionPoints?: Point[];
+      /**
+        * The intersection points on the polygons if any
+        */
+      polygonIntersectionPoints?: Point[];
+  };
+  /**
+    * Check if two planes intersect
+    *
+    * Based on the algorithm described in "Real-Time Collision Detection" by
+    * Christer Ericson
+    */
+  export function planeIntersectsPlane(planeA: Plane, planeB: Plane): {
+      /**
+        * Whether the planes intersect
+        *
+        * Will be false only if the planes are parallel with a gap between them
+        */
+      intersects: boolean;
+      /**
+        * The line where the planes intersect
+        *
+        * Will be undefined if:
+        * - The planes don't intersect (parallel with gap)
+        * - The planes are coincident (infinite intersection)
+        */
+      intersectionLine?: Line;
+  };
+  /**
+    * Check if a plane intersects one or more polygons in a mesh
+    */
+  export function planeIntersectsMesh(plane: Plane, mesh: Mesh): {
+      /**
+        * Whether any polygon in the mesh intersects the plane
+        */
+      intersects: boolean;
+      /**
+        * The points where the mesh's edges intersect the plane
+        *
+        * Will be undefined if:
+        * - The mesh doesn't intersect the plane
+        * - The mesh lies entirely in the plane
+        */
+      intersectionPoints?: Point[];
+      /**
+        * How deeply the mesh penetrates the plane in the direction opposite to
+        * the plane's normal
+        */
+      penetrationDepth?: number;
+  };
+  /**
+    * Check if two cuboids intersect using the Separating Axis Theorem
+    */
+  export function cuboidIntersectsCuboid(cuboidA: Cuboid, cuboidB: Cuboid): {
+      /**
+        * Whether the cuboids intersect
+        */
+      intersects: boolean;
+      /**
+        * The approximate point at the center of the intersection volume
+        */
+      intersectionPoint?: Point;
+      /**
+        * How deeply the cuboids are intersecting along the minimum separation axis
+        */
+      penetrationDepth?: number;
+      /**
+        * Direction of minimum separation (unit vector)
+        * Points from cuboid A to cuboid B
+        */
+      normal?: Point;
+      /**
+        * The closest points on each cuboid's surface along the separation axis
+        */
+      contactPoints?: {
+          cuboidA: Point;
+          cuboidB: Point;
+      };
+  };
+  /**
+    * Check if a cuboid intersects a plane
+    */
+  export function cuboidIntersectsPlane(cuboid: Cuboid, plane: Plane): {
+      /**
+        * Whether the cuboid intersects the plane
+        */
+      intersects: boolean;
+      /**
+        * The points where the cuboid's edges intersect the plane
+        */
+      intersectionPoints?: Point[];
+      /**
+        * How deeply the cuboid penetrates the plane in the direction opposite to
+        * the plane's normal
+        */
+      penetrationDepth?: number;
+  };
+  /**
+    * Check if a cuboid intersects a polygon
+    */
+  export function cuboidIntersectsPolygon(cuboid: Cuboid, polygon: Polygon): {
+      /**
+        * Whether the cuboid intersects the polygon
+        */
+      intersects: boolean;
+      /**
+        * The points where the cuboid's edges intersect the polygon
+        *
+        * Will be undefined if:
+        * - The polygon is entirely inside the cuboid
+        * - The polygon is coincident with a cuboid face
+        * - There are no intersections
+        */
+      intersectionPoints?: Point[];
+  } | null;
+  /**
+    * Check if a cuboid intersects any polygon in a mesh
+    */
+  export function cuboidIntersectsMesh(cuboid: Cuboid, mesh: Mesh): {
+      /**
+        * Whether the cuboid intersects any polygon in the mesh
+        */
+      intersects: boolean;
+      /**
+        * The points where the cuboid intersects the mesh's polygons
+        *
+        * Will be undefined if:
+        * - There are no intersections
+        * - A polygon is entirely inside the cuboid
+        * - A polygon is coincident with a cuboid face
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if two polygons intersect
+    */
+  export function polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon): {
+      /**
+        * Whether the polygons intersect
+        */
+      intersects: boolean;
+      /**
+        * The points where the polygons intersect
+        *
+        * Will be undefined if:
+        * - The polygons don't intersect
+        * - The polygons are coplanar and overlapping (infinite intersection points)
+        */
+      intersectionPoints?: Point[];
+  } | null;
+  /**
+    * Check if a polygon intersects a plane
+    */
+  export function polygonIntersectsPlane(polygon: Polygon, plane: Plane): {
+      /**
+        * Whether the polygon intersects the plane
+        *
+        * Will be true if:
+        * - The polygon intersects the plane at one or more points
+        * - The polygon lies entirely in the plane
+        */
+      intersects: boolean;
+      /**
+        * The points where the polygon's edges intersect the plane
+        *
+        * Will be undefined if:
+        * - The polygon doesn't intersect the plane
+        * - The polygon lies entirely in the plane (infinite intersection points)
+        */
+      intersectionPoints?: Point[];
+  } | null;
+  /**
+    * Check if a polygon intersects any polygon in a mesh
+    */
+  export function polygonIntersectsMesh(polygon: Polygon, mesh: Mesh): {
+      /**
+        * Whether the polygon intersects any polygon in the mesh
+        */
+      intersects: boolean;
+      /**
+        * The points where the polygon intersects the mesh's polygons
+        *
+        * Will be undefined if:
+        * - There are no intersections
+        * - The polygons are coplanar and overlapping
+        */
+      intersectionPoints?: Point[];
+  } | null;
+  /**
+    * Check if two meshes intersect using their polygons
+    */
+  export function meshIntersectsMesh(meshA: Mesh, meshB: Mesh): {
+      /**
+        * Whether any polygons in either mesh intersect with polygons from the other
+        * mesh
+        */
+      intersects: boolean;
+      /**
+        * The points where the polygons intersect
+        */
+      intersectionPoints?: Point[];
+  };
+  /**
+    * Check if any polygons in a mesh intersect a plane
+    */
+  export function meshIntersectsPlane(mesh: Mesh, plane: Plane): {
+      /**
+        * Whether any polygon in the mesh intersects the plane
+        */
+      intersects: boolean;
+      /**
+        * The points where the mesh's edges intersect the plane
+        *
+        * Will be undefined if:
+        * - The mesh doesn't intersect the plane
+        * - The mesh lies entirely in the plane
+        */
+      intersectionPoints?: Point[];
+      /**
+        * How deeply the mesh penetrates the plane in the direction opposite to
+        * the plane's normal
+        */
+      penetrationDepth?: number;
   };
 }
 

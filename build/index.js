@@ -4249,11 +4249,13 @@ exports.aabbsOverlap = aabbsOverlap;
 exports.pointInAABB = pointInAABB;
 exports.cuboidIsRotated = cuboidIsRotated;
 exports.cuboidVertices = cuboidVertices;
+exports.cuboidToPolygons = cuboidToPolygons;
 exports.verticesToEdges = verticesToEdges;
 exports.polygonIsValid = polygonIsValid;
 exports.polygonWindingOrder = polygonWindingOrder;
 exports.polygonArea = polygonArea;
 exports.polygonCentroid = polygonCentroid;
+exports.polygonToPlane = polygonToPlane;
 exports.polygonsToMesh = polygonsToMesh;
 exports.meshToPolygons = meshToPolygons;
 exports.meshToEdges = meshToEdges;
@@ -4281,6 +4283,20 @@ exports.lineIntersectsPolygon = lineIntersectsPolygon;
 exports.lineIntersectsMesh = lineIntersectsMesh;
 exports.sphereIntersectsSphere = sphereIntersectsSphere;
 exports.sphereIntersectsPlane = sphereIntersectsPlane;
+exports.sphereIntersectsCuboid = sphereIntersectsCuboid;
+exports.sphereIntersectsPolygon = sphereIntersectsPolygon;
+exports.sphereIntersectsMesh = sphereIntersectsMesh;
+exports.planeIntersectsPlane = planeIntersectsPlane;
+exports.planeIntersectsMesh = planeIntersectsMesh;
+exports.cuboidIntersectsCuboid = cuboidIntersectsCuboid;
+exports.cuboidIntersectsPlane = cuboidIntersectsPlane;
+exports.cuboidIntersectsPolygon = cuboidIntersectsPolygon;
+exports.cuboidIntersectsMesh = cuboidIntersectsMesh;
+exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
+exports.polygonIntersectsPlane = polygonIntersectsPlane;
+exports.polygonIntersectsMesh = polygonIntersectsMesh;
+exports.meshIntersectsMesh = meshIntersectsMesh;
+exports.meshIntersectsPlane = meshIntersectsPlane;
 const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
 const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
 const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
@@ -4309,6 +4325,7 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
  * Cuboid utilities
  * @see cuboidIsRotated
  * @see cuboidVertices
+ * @see cuboidToPolygons
  *
  * Polygon utilities
  * @see verticesToEdges
@@ -4316,6 +4333,7 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
  * @see polygonWindingOrder
  * @see polygonArea
  * @see polygonCentroid
+ * @see polygonToPlane
  *
  * Mesh utilities
  * @see polygonsToMesh
@@ -4353,28 +4371,28 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
  * Spheres
  * @see sphereIntersectsSphere
  * @see sphereIntersectsPlane
- * @see sphereIntersectsCuboid // TODO
- * @see sphereIntersectsPolygon // TODO
- * @see sphereIntersectsMesh // TODO
+ * @see sphereIntersectsCuboid
+ * @see sphereIntersectsPolygon
+ * @see sphereIntersectsMesh
  *
  * Planes
- * @see planeIntersectsPlane // TODO
- * @see planeIntersectsMesh // TODO
+ * @see planeIntersectsPlane
+ * @see planeIntersectsMesh
  *
  * Cuboids
- * @see cuboidIntersectsCuboid // TODO
- * @see cuboidIntersectsPlane // TODO
- * @see cuboidIntersectsPolygon // TODO
- * @see cuboidIntersectsMesh // TODO
+ * @see cuboidIntersectsCuboid
+ * @see cuboidIntersectsPlane
+ * @see cuboidIntersectsPolygon
+ * @see cuboidIntersectsMesh
  *
  * Polygons
- * @see polygonIntersectsPolygon // TODO
- * @see polygonIntersectsPlane // TODO
- * @see polygonIntersectsMesh // TODO
+ * @see polygonIntersectsPolygon
+ * @see polygonIntersectsPlane
+ * @see polygonIntersectsMesh
  *
  * Meshes
- * @see meshIntersectsMesh // TODO
- * @see meshIntersectsPlane // TODO
+ * @see meshIntersectsMesh
+ * @see meshIntersectsPlane
  */
 /**
  * Calculate the distance between two points in 3D space
@@ -4617,6 +4635,44 @@ function cuboidVertices(cuboid) {
     ];
 }
 /**
+ * Convert a cuboid to a list of polygons representing its faces
+ *
+ * Polygons will be returned in the following order:
+ * - Upper face (top)
+ * - Lower face (bottom)
+ * - Front face
+ * - Back face
+ * - Left face
+ * - Right face
+ */
+function cuboidToPolygons(cuboid) {
+    const vertices = cuboidVertices(cuboid);
+    if (vertices.length !== 8) {
+        throw new Error('Cuboid must have exactly 8 vertices');
+    }
+    // Create polygons for each face of the cuboid
+    return [
+        // Upper face
+        { vertices: [vertices[0], vertices[1], vertices[2]] },
+        { vertices: [vertices[0], vertices[2], vertices[3]] },
+        // Lower face
+        { vertices: [vertices[4], vertices[5], vertices[6]] },
+        { vertices: [vertices[4], vertices[6], vertices[7]] },
+        // Front face
+        { vertices: [vertices[0], vertices[1], vertices[5]] },
+        { vertices: [vertices[0], vertices[5], vertices[4]] },
+        // Back face
+        { vertices: [vertices[2], vertices[3], vertices[7]] },
+        { vertices: [vertices[2], vertices[7], vertices[6]] },
+        // Left face
+        { vertices: [vertices[0], vertices[3], vertices[7]] },
+        { vertices: [vertices[0], vertices[7], vertices[4]] },
+        // Right face
+        { vertices: [vertices[1], vertices[2], vertices[6]] },
+        { vertices: [vertices[1], vertices[6], vertices[5]] },
+    ];
+}
+/**
  * Convert a list of vertices to a list of edges
  */
 function verticesToEdges(vertices) {
@@ -4713,6 +4769,25 @@ function polygonCentroid(polygon) {
         return null;
     }
     return vec_1.vec3.div(vec_1.vec3.add(polygon.vertices[0], vec_1.vec3.add(polygon.vertices[1], polygon.vertices[2])), 3);
+}
+/**
+ * Convert a polygon to a plane
+ */
+function polygonToPlane(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Calculate the normal vector
+    const [a, b, c] = polygon.vertices;
+    const ab = vec_1.vec3.sub(b, a);
+    const ac = vec_1.vec3.sub(c, a);
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(ab, ac));
+    // Calculate the plane's position as the centroid of the polygon
+    const point = polygonCentroid(polygon);
+    return {
+        point,
+        normal,
+    };
 }
 /**
  * Convert a list of polygons to a mesh
@@ -5322,6 +5397,13 @@ function rayIntersectsPlane(ray, plane) {
     const denominator = vec_1.vec3.dot(rayDir, planeNormal);
     // If denominator is close to 0, ray is parallel to plane
     if (Math.abs(denominator) < constants.EPSILON) {
+        // Check if the ray lies in the plane (origin is on the plane)
+        const distanceToPlane = vec_1.vec3.dot(vec_1.vec3.sub(ray.origin, plane.point), planeNormal);
+        if (Math.abs(distanceToPlane) < constants.EPSILON) {
+            // Ray lies in the plane: infinite intersection points
+            return { intersects: true };
+        }
+        // Ray is parallel and not on the plane
         return { intersects: false };
     }
     // Calculate distance from ray origin to plane
@@ -5593,6 +5675,13 @@ function lineIntersectsPlane(line, plane) {
     const denominator = vec_1.vec3.dot(normDir, plane.normal);
     // If denominator is close to 0, line is parallel to plane
     if (Math.abs(denominator) < constants.EPSILON) {
+        // Check if the line start is on the plane
+        const distanceToPlane = vec_1.vec3.dot(vec_1.vec3.sub(line.start, plane.point), plane.normal);
+        if (Math.abs(distanceToPlane) < constants.EPSILON) {
+            // Line lies in the plane: infinite intersection points
+            return { intersects: true };
+        }
+        // Line is parallel and not on the plane
         return { intersects: false };
     }
     // Calculate distance from line start to plane
@@ -5796,6 +5885,761 @@ function sphereIntersectsPlane(sphere, plane) {
         intersectionPoint,
         penetrationDepth,
         intersectionRadius,
+    };
+}
+/**
+ * Check if a sphere intersects a cuboid
+ */
+function sphereIntersectsCuboid(sphere, cuboid) {
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Transform sphere center to cuboid's local space
+    let localSphereCenter = vec_1.vec3.sub(sphere.position, position);
+    if (cuboidIsRotated(cuboid)) {
+        localSphereCenter = vec_1.vec3.rota(localSphereCenter, vec_1.vec3.mul(rotation, -1));
+    }
+    // Find the closest point on the cuboid to the sphere center
+    const closestLocalPoint = (0, vec_1.vec3)((0, utils_1.clamp)(localSphereCenter.x, -halfSize.x, halfSize.x), (0, utils_1.clamp)(localSphereCenter.y, -halfSize.y, halfSize.y), (0, utils_1.clamp)(localSphereCenter.z, -halfSize.z, halfSize.z));
+    // Transform closest point back to world space
+    let closestPoint = closestLocalPoint;
+    if (cuboidIsRotated(cuboid)) {
+        closestPoint = vec_1.vec3.rota(closestPoint, rotation);
+    }
+    closestPoint = vec_1.vec3.add(closestPoint, position);
+    // Calculate vector from closest point to sphere center
+    const separationVector = vec_1.vec3.sub(sphere.position, closestPoint);
+    const distance = vec_1.vec3.len(separationVector);
+    // If distance is greater than sphere radius, no intersection
+    if (distance > sphere.radius) {
+        return { intersects: false };
+    }
+    // Handle case where sphere center is exactly on cuboid surface
+    if (distance < constants.EPSILON) {
+        // Use vector from cuboid center to sphere center as normal
+        let normal = vec_1.vec3.nor(vec_1.vec3.sub(sphere.position, position));
+        const penetrationDepth = sphere.radius;
+        return {
+            intersects: true,
+            intersectionPoint: sphere.position,
+            penetrationDepth,
+            normal,
+            contactPoint: closestPoint,
+        };
+    }
+    // Calculate normal and penetration depth
+    const normal = vec_1.vec3.nor(separationVector);
+    const penetrationDepth = sphere.radius - distance;
+    // Calculate intersection point at center of intersection volume
+    const intersectionPoint = vec_1.vec3.add(closestPoint, vec_1.vec3.mul(normal, penetrationDepth / 2));
+    return {
+        intersects: true,
+        intersectionPoint,
+        penetrationDepth,
+        normal,
+        contactPoint: closestPoint,
+    };
+}
+/**
+ * Check if a sphere intersects a polygon
+ */
+function sphereIntersectsPolygon(sphere, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const [v1, v2, v3] = polygon.vertices;
+    // Calculate polygon plane
+    const edge1 = vec_1.vec3.sub(v2, v1);
+    const edge2 = vec_1.vec3.sub(v3, v1);
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(edge1, edge2));
+    // Create plane from polygon
+    const plane = {
+        point: v1,
+        normal,
+    };
+    // Check sphere-plane intersection first
+    const planeIntersection = sphereIntersectsPlane(sphere, plane);
+    if (!planeIntersection.intersects) {
+        return { intersects: false };
+    }
+    // Check each vertex distance from sphere center
+    const vertexDistances = polygon.vertices.map(vertex => vec_1.vec3.len(vec_1.vec3.sub(vertex, sphere.position)));
+    // If all vertices are inside sphere, polygon is contained
+    if (vertexDistances.every(dist => dist <= sphere.radius)) {
+        return {
+            intersects: true,
+            intersectionPoint: planeIntersection.intersectionPoint,
+            penetrationDepth: sphere.radius,
+        };
+    }
+    // Create polygon edges
+    const edges = [
+        { start: v1, end: v2 },
+        { start: v2, end: v3 },
+        { start: v3, end: v1 },
+    ];
+    // Check each edge for intersection with sphere
+    const polygonIntersectionPoints = [];
+    edges.forEach(edge => {
+        const lineIntersection = lineIntersectsSphere(edge, sphere);
+        if (lineIntersection.intersects && lineIntersection.intersectionPoints) {
+            // Only add points that lie on the polygon edges
+            lineIntersection.intersectionPoints.forEach(point => {
+                const onLine = pointOnLine(point, edge);
+                if (onLine.intersects) {
+                    polygonIntersectionPoints.push(point);
+                }
+            });
+        }
+    });
+    // Check if sphere center projects onto polygon
+    const projectedCenter = pointOnPolygon(sphere.position, polygon);
+    if (projectedCenter && projectedCenter.intersects) {
+        const distance = vec_1.vec3.len(vec_1.vec3.sub(sphere.position, projectedCenter.closestPoint));
+        if (distance <= sphere.radius) {
+            return {
+                intersects: true,
+                intersectionPoint: projectedCenter.closestPoint,
+                penetrationDepth: sphere.radius - distance,
+                polygonIntersectionPoints: polygonIntersectionPoints.length > 0
+                    ? polygonIntersectionPoints
+                    : undefined,
+            };
+        }
+    }
+    // If we have intersection points but no center projection,
+    // use the midpoint of intersection points as intersection point
+    if (polygonIntersectionPoints.length > 0) {
+        const midPoint = vec_1.vec3.div(polygonIntersectionPoints.reduce((sum, p) => vec_1.vec3.add(sum, p), (0, vec_1.vec3)()), polygonIntersectionPoints.length);
+        return {
+            intersects: true,
+            intersectionPoint: midPoint,
+            penetrationDepth: sphere.radius - vec_1.vec3.len(vec_1.vec3.sub(midPoint, sphere.position)),
+            polygonIntersectionPoints: polygonIntersectionPoints,
+        };
+    }
+    // No intersection found
+    return { intersects: false };
+}
+/**
+ * Check if a sphere intersects any polygon in a mesh
+ */
+function sphereIntersectsMesh(sphere, mesh) {
+    const polygons = meshToPolygons(mesh);
+    let intersects = false;
+    const intersectionPoints = [];
+    const polygonIntersectionPoints = [];
+    polygons.forEach(polygon => {
+        const intersection = sphereIntersectsPolygon(sphere, polygon);
+        if (intersection && intersection.intersects) {
+            intersects = true;
+            intersectionPoints.push(intersection.intersectionPoint);
+            if (intersection.polygonIntersectionPoints) {
+                polygonIntersectionPoints.push(...intersection.polygonIntersectionPoints);
+            }
+        }
+    });
+    return {
+        intersects,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+        polygonIntersectionPoints: polygonIntersectionPoints.length > 0
+            ? polygonIntersectionPoints
+            : undefined,
+    };
+}
+/**
+ * Check if two planes intersect
+ *
+ * Based on the algorithm described in "Real-Time Collision Detection" by
+ * Christer Ericson
+ */
+function planeIntersectsPlane(planeA, planeB) {
+    // Normalize plane normals
+    const normalA = vec_1.vec3.nor(planeA.normal);
+    const normalB = vec_1.vec3.nor(planeB.normal);
+    // Calculate direction of intersection line using cross product
+    const direction = vec_1.vec3.cross(normalA, normalB);
+    const directionLengthSq = vec_1.vec3.dot(direction, direction);
+    // If direction length is almost zero, planes are parallel
+    if (directionLengthSq < constants.EPSILON) {
+        // Check if planes are coincident by comparing distance from one plane's point to other plane
+        const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(planeB.point, planeA.point), normalA);
+        // If distance is effectively zero, planes are coincident
+        if (Math.abs(signedDistance) < constants.EPSILON) {
+            return {
+                intersects: true, // Coincident planes have infinite intersection
+            };
+        }
+        // Planes are parallel with gap between them
+        return {
+            intersects: false,
+        };
+    }
+    // Planes intersect along a line
+    // Calculate a point on the intersection line using:
+    // point = (b₂n₁ - b₁n₂) × (n₁ × n₂) / |n₁ × n₂|²
+    // where b₁, b₂ are the plane constants (d in ax + by + cz + d = 0 form)
+    // and n₁, n₂ are the plane normals
+    const b1 = -vec_1.vec3.dot(normalA, planeA.point);
+    const b2 = -vec_1.vec3.dot(normalB, planeB.point);
+    const point = vec_1.vec3.div(vec_1.vec3.cross(vec_1.vec3.sub(vec_1.vec3.mul(normalA, b2), vec_1.vec3.mul(normalB, b1)), direction), directionLengthSq);
+    return {
+        intersects: true,
+        intersectionLine: {
+            start: point,
+            end: vec_1.vec3.add(point, direction),
+        },
+    };
+}
+/**
+ * Check if a plane intersects one or more polygons in a mesh
+ */
+function planeIntersectsMesh(plane, mesh) {
+    return meshIntersectsPlane(mesh, plane);
+}
+/**
+ * Check if two cuboids intersect using the Separating Axis Theorem
+ */
+function cuboidIntersectsCuboid(cuboidA, cuboidB) {
+    // Extract properties with default rotations
+    const { position: posA, size: sizeA, rotation: rotationA = (0, vec_1.vec3)() } = cuboidA;
+    const { position: posB, size: sizeB, rotation: rotationB = (0, vec_1.vec3)() } = cuboidB;
+    // Calculate half-sizes
+    const halfSizeA = vec_1.vec3.div(sizeA, 2);
+    const halfSizeB = vec_1.vec3.div(sizeB, 2);
+    // Get rotation matrices for both cuboids
+    const rotMatA = cuboidIsRotated(cuboidA)
+        ? getRotationMatrix(rotationA)
+        : null;
+    const rotMatB = cuboidIsRotated(cuboidB)
+        ? getRotationMatrix(rotationB)
+        : null;
+    // Get cuboid axes (face normals)
+    const axesA = getRotatedAxes(rotMatA);
+    const axesB = getRotatedAxes(rotMatB);
+    // Vector between cuboid centers
+    const centerDiff = vec_1.vec3.sub(posB, posA);
+    // Test all 15 potential separating axes:
+    // - 3 from cuboid A's face normals
+    // - 3 from cuboid B's face normals
+    // - 9 from cross products of edges (3x3)
+    const axes = [...axesA, ...axesB, ...getCrossProductAxes(axesA, axesB)];
+    let minPenetration = Infinity;
+    let separationAxis = null;
+    // Test each axis
+    for (const axis of axes) {
+        const axisLength = vec_1.vec3.len(axis);
+        if (axisLength < constants.EPSILON)
+            continue;
+        // Normalize axis
+        const normAxis = vec_1.vec3.div(axis, axisLength);
+        // Project center-to-center vector onto axis
+        const centerProj = vec_1.vec3.dot(centerDiff, normAxis);
+        // Project both cuboids onto axis
+        const projA = projectCuboid(halfSizeA, rotMatA, normAxis);
+        const projB = projectCuboid(halfSizeB, rotMatB, normAxis);
+        // Calculate penetration depth along this axis
+        const penetration = projA + projB - Math.abs(centerProj);
+        // If there's a gap, cuboids are separated
+        if (penetration <= 0) {
+            return { intersects: false };
+        }
+        // Track minimum penetration and its axis
+        if (penetration < minPenetration) {
+            minPenetration = penetration;
+            separationAxis = normAxis;
+        }
+    }
+    // If we get here, no separating axis was found - cuboids intersect
+    if (!separationAxis) {
+        return { intersects: true };
+    }
+    // Ensure normal points from A to B
+    const normal = vec_1.vec3.dot(centerDiff, separationAxis) < 0
+        ? vec_1.vec3.mul(separationAxis, -1)
+        : separationAxis;
+    // Calculate contact points on each cuboid's surface
+    const contactA = getContactPoint(cuboidA, normal);
+    const contactB = getContactPoint(cuboidB, vec_1.vec3.mul(normal, -1));
+    // Calculate intersection point halfway between contacts
+    const intersectionPoint = vec_1.vec3.add(contactA, vec_1.vec3.mul(vec_1.vec3.sub(contactB, contactA), 0.5));
+    return {
+        intersects: true,
+        intersectionPoint,
+        penetrationDepth: minPenetration,
+        normal,
+        contactPoints: {
+            cuboidA: contactA,
+            cuboidB: contactB,
+        },
+    };
+}
+/**
+ * Helper function to create a rotation matrix from Euler angles
+ */
+function getRotationMatrix(rotation) {
+    const cx = Math.cos(rotation.x);
+    const cy = Math.cos(rotation.y);
+    const cz = Math.cos(rotation.z);
+    const sx = Math.sin(rotation.x);
+    const sy = Math.sin(rotation.y);
+    const sz = Math.sin(rotation.z);
+    return [
+        (0, vec_1.vec3)(cy * cz, cy * sz, -sy),
+        (0, vec_1.vec3)(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy),
+        (0, vec_1.vec3)(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy),
+    ];
+}
+/**
+ * Helper function to get rotated axes for a cuboid
+ */
+function getRotatedAxes(rotationMatrix) {
+    if (!rotationMatrix) {
+        return [(0, vec_1.vec3)(1, 0, 0), (0, vec_1.vec3)(0, 1, 0), (0, vec_1.vec3)(0, 0, 1)];
+    }
+    return rotationMatrix;
+}
+/**
+ * Helper function to generate cross product axes
+ */
+function getCrossProductAxes(axesA, axesB) {
+    const crossAxes = [];
+    for (const axisA of axesA) {
+        for (const axisB of axesB) {
+            crossAxes.push(vec_1.vec3.cross(axisA, axisB));
+        }
+    }
+    return crossAxes;
+}
+/**
+ * Helper function to project cuboid onto axis
+ */
+function projectCuboid(halfSize, rotationMatrix, axis) {
+    let projection = 0;
+    if (!rotationMatrix) {
+        // Unrotated cuboid - just sum up the components
+        projection =
+            Math.abs(halfSize.x * axis.x) +
+                Math.abs(halfSize.y * axis.y) +
+                Math.abs(halfSize.z * axis.z);
+    }
+    else {
+        // Rotated cuboid - need to account for rotation
+        projection =
+            Math.abs(vec_1.vec3.dot(vec_1.vec3.mul(rotationMatrix[0], halfSize.x), axis)) +
+                Math.abs(vec_1.vec3.dot(vec_1.vec3.mul(rotationMatrix[1], halfSize.y), axis)) +
+                Math.abs(vec_1.vec3.dot(vec_1.vec3.mul(rotationMatrix[2], halfSize.z), axis));
+    }
+    return projection;
+}
+/**
+ * Helper function to get contact point on cuboid surface
+ */
+function getContactPoint(cuboid, normal) {
+    const vertices = cuboidVertices(cuboid);
+    let maxProj = -Infinity;
+    let contactPoint = vertices[0];
+    // Find vertex with maximum projection along normal
+    for (const vertex of vertices) {
+        const proj = vec_1.vec3.dot(vertex, normal);
+        if (proj > maxProj) {
+            maxProj = proj;
+            contactPoint = vertex;
+        }
+    }
+    return contactPoint;
+}
+/**
+ * Check if a cuboid intersects a plane
+ */
+function cuboidIntersectsPlane(cuboid, plane) {
+    // Get cuboid faces as triangles
+    const polygons = cuboidToPolygons(cuboid);
+    const allIntersectionPoints = [];
+    // Track vertices on each side of the plane for penetration depth calculation
+    const normalizedPlaneNormal = vec_1.vec3.nor(plane.normal);
+    let maxPenetration = -Infinity;
+    let minPenetration = Infinity;
+    // Check each vertex's signed distance to plane
+    const vertices = cuboidVertices(cuboid);
+    vertices.forEach(vertex => {
+        const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(vertex, plane.point), normalizedPlaneNormal);
+        maxPenetration = Math.max(maxPenetration, signedDistance);
+        minPenetration = Math.min(minPenetration, signedDistance);
+    });
+    // Check each polygon for intersection
+    for (const polygon of polygons) {
+        const intersection = polygonIntersectsPlane(polygon, plane);
+        if (intersection === null || intersection === void 0 ? void 0 : intersection.intersects) {
+            // If polygon has specific intersection points, add them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = allIntersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, point)) < constants.EPSILON);
+                    if (!isDuplicate) {
+                        allIntersectionPoints.push(point);
+                    }
+                });
+            }
+        }
+    }
+    // Calculate penetration depth
+    // If min and max penetrations have different signs, cuboid straddles the
+    // plane. Otherwise, penetration is the minimum absolute distance to plane
+    let penetrationDepth;
+    if (minPenetration * maxPenetration <= 0) {
+        // Cuboid straddles plane - penetration is the larger absolute value
+        penetrationDepth = Math.max(Math.abs(minPenetration), Math.abs(maxPenetration));
+    }
+    else if (Math.abs(maxPenetration) < Math.abs(minPenetration)) {
+        // All vertices on positive side of plane
+        penetrationDepth = Math.abs(maxPenetration);
+    }
+    else {
+        // All vertices on negative side of plane
+        penetrationDepth = Math.abs(minPenetration);
+    }
+    return {
+        intersects: allIntersectionPoints.length > 0,
+        intersectionPoints: allIntersectionPoints.length > 0 ? allIntersectionPoints : undefined,
+        penetrationDepth: penetrationDepth,
+    };
+}
+/**
+ * Check if a cuboid intersects a polygon
+ */
+function cuboidIntersectsPolygon(cuboid, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Check if any polygon vertex is inside the cuboid
+    const verticesInside = polygon.vertices.map(v => pointInCuboid(v, cuboid));
+    if (verticesInside.every(result => result.intersects)) {
+        // Polygon is entirely contained within cuboid
+        return { intersects: true };
+    }
+    // Get cuboid vertices and check if any are on the polygon
+    const cuboidVerticesArray = cuboidVertices(cuboid);
+    const verticesOnPolygon = cuboidVerticesArray.map(v => pointOnPolygon(v, polygon));
+    if (verticesOnPolygon.some(result => result === null || result === void 0 ? void 0 : result.intersects)) {
+        // At least one cuboid vertex lies on the polygon
+        // This likely means the polygon is coincident with a cuboid face
+        return { intersects: true };
+    }
+    // Get cuboid edges
+    const cuboidEdges = verticesToEdges(cuboidVerticesArray);
+    const intersectionPoints = [];
+    // Check each cuboid edge for intersection with the polygon
+    for (const edge of cuboidEdges) {
+        const intersection = lineIntersectsPolygon(edge, polygon);
+        if (intersection &&
+            intersection.intersects &&
+            intersection.intersectionPoint) {
+            // Check if this point is already in our list (within epsilon)
+            const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, intersection.intersectionPoint));
+            if (!isDuplicate) {
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+        }
+    }
+    // Get polygon edges and check against cuboid faces
+    const polygonEdges = verticesToEdges(polygon.vertices);
+    const cuboidPolygons = cuboidToPolygons(cuboid);
+    // Check each polygon edge against each cuboid face
+    for (const edge of polygonEdges) {
+        for (const face of cuboidPolygons) {
+            const intersection = lineIntersectsPolygon(edge, face);
+            if (intersection &&
+                intersection.intersects &&
+                intersection.intersectionPoint) {
+                // Check if this point is already in our list (within epsilon)
+                const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, intersection.intersectionPoint));
+                if (!isDuplicate) {
+                    intersectionPoints.push(intersection.intersectionPoint);
+                }
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0 ||
+            verticesInside.some(result => result.intersects) ||
+            verticesOnPolygon.some(result => result === null || result === void 0 ? void 0 : result.intersects),
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a cuboid intersects any polygon in a mesh
+ */
+function cuboidIntersectsMesh(cuboid, mesh) {
+    const polygons = meshToPolygons(mesh);
+    const intersectionPoints = [];
+    // Check each polygon in the mesh against the cuboid
+    for (const polygon of polygons) {
+        const intersection = cuboidIntersectsPolygon(cuboid, polygon);
+        if (intersection && intersection.intersects) {
+            // If we have specific intersection points, add them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, point));
+                    if (!isDuplicate) {
+                        intersectionPoints.push(point);
+                    }
+                });
+            }
+            else {
+                // If we don't have intersection points but we know there's an
+                // intersection, we can early return since we know they intersect
+                // (this happens when a polygon is inside the cuboid or coincident
+                // with a face)
+                return {
+                    intersects: true,
+                };
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if two polygons intersect
+ */
+function polygonIntersectsPolygon(polygonA, polygonB) {
+    // First validate both polygons
+    if (!polygonIsValid(polygonA) || !polygonIsValid(polygonB)) {
+        return null;
+    }
+    // Create planes from both polygons
+    const planeA = {
+        point: polygonA.vertices[0],
+        normal: vec_1.vec3.nor(vec_1.vec3.cross(vec_1.vec3.sub(polygonA.vertices[1], polygonA.vertices[0]), vec_1.vec3.sub(polygonA.vertices[2], polygonA.vertices[0]))),
+    };
+    const planeB = {
+        point: polygonB.vertices[0],
+        normal: vec_1.vec3.nor(vec_1.vec3.cross(vec_1.vec3.sub(polygonB.vertices[1], polygonB.vertices[0]), vec_1.vec3.sub(polygonB.vertices[2], polygonB.vertices[0]))),
+    };
+    // Check if planes intersect
+    const planeIntersection = planeIntersectsPlane(planeA, planeB);
+    // If planes don't intersect, polygons can't intersect
+    if (!planeIntersection.intersects) {
+        return { intersects: false };
+    }
+    // If planes are coincident, we need to check for polygon overlap
+    if (!planeIntersection.intersectionLine) {
+        // First check if any vertex of polygon A lies inside polygon B
+        for (const vertex of polygonA.vertices) {
+            const pointCheck = pointOnPolygon(vertex, polygonB);
+            if (pointCheck === null || pointCheck === void 0 ? void 0 : pointCheck.intersects) {
+                return { intersects: true }; // Coplanar overlap
+            }
+        }
+        // Then check if any vertex of polygon B lies inside polygon A
+        for (const vertex of polygonB.vertices) {
+            const pointCheck = pointOnPolygon(vertex, polygonA);
+            if (pointCheck === null || pointCheck === void 0 ? void 0 : pointCheck.intersects) {
+                return { intersects: true }; // Coplanar overlap
+            }
+        }
+        // No overlap found
+        return { intersects: false };
+    }
+    // Get edges from both polygons
+    const edgesA = verticesToEdges(polygonA.vertices);
+    const edgesB = verticesToEdges(polygonB.vertices);
+    const intersectionPoints = [];
+    // Check each edge of polygon A against each edge of polygon B
+    for (const edgeA of edgesA) {
+        for (const edgeB of edgesB) {
+            const intersection = lineIntersectsLine(edgeA, edgeB);
+            if (intersection.intersects && intersection.intersectionPoint) {
+                // Verify the intersection point lies on both edges
+                const onEdgeA = pointOnLine(intersection.intersectionPoint, edgeA);
+                const onEdgeB = pointOnLine(intersection.intersectionPoint, edgeB);
+                if (onEdgeA.intersects && onEdgeB.intersects) {
+                    // Check if this point is already in our list (within epsilon)
+                    const isDuplicate = intersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, intersection.intersectionPoint)) <
+                        constants.EPSILON);
+                    if (!isDuplicate) {
+                        intersectionPoints.push(intersection.intersectionPoint);
+                    }
+                }
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a polygon intersects a plane
+ */
+function polygonIntersectsPlane(polygon, plane) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Convert polygon vertices to edges
+    const edges = verticesToEdges(polygon.vertices);
+    const intersectionPoints = [];
+    let edgeInPlane = false;
+    // Check each edge for intersection with the plane
+    for (const edge of edges) {
+        const intersection = lineIntersectsPlane(edge, plane);
+        if (intersection.intersects) {
+            if (intersection.intersectionPoint) {
+                // Edge intersects plane at a point
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+            else {
+                // Edge lies in the plane
+                edgeInPlane = true;
+                break; // Early exit as polygon must lie in plane
+            }
+        }
+    }
+    // If any edge lies in the plane, the whole polygon must lie in the plane
+    // (since we've verified it's a valid triangle)
+    if (edgeInPlane) {
+        return {
+            intersects: true,
+        };
+    }
+    // Remove duplicate intersection points (within epsilon)
+    const uniquePoints = intersectionPoints.filter((point, index) => {
+        return !intersectionPoints.some((p, i) => i < index && vec_1.vec3.len(vec_1.vec3.sub(p, point)) < constants.EPSILON);
+    });
+    return {
+        intersects: uniquePoints.length > 0,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+    };
+}
+/**
+ * Check if a polygon intersects any polygon in a mesh
+ */
+function polygonIntersectsMesh(polygon, mesh) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const meshPolygons = meshToPolygons(mesh);
+    const intersectionPoints = [];
+    // Check the polygon against each mesh polygon
+    for (const meshPolygon of meshPolygons) {
+        const intersection = polygonIntersectsPolygon(polygon, meshPolygon);
+        if (intersection && intersection.intersects) {
+            // If we have intersection points, collect them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, point));
+                    if (!isDuplicate) {
+                        intersectionPoints.push(point);
+                    }
+                });
+            }
+            else {
+                // If we have an intersection but no points, it means we have
+                // coplanar overlapping polygons - we can return early
+                return {
+                    intersects: true,
+                };
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if two meshes intersect using their polygons
+ */
+function meshIntersectsMesh(meshA, meshB) {
+    const polygonsA = meshToPolygons(meshA);
+    const polygonsB = meshToPolygons(meshB);
+    const intersectionPoints = [];
+    // Check each polygon in mesh A against each polygon in mesh B
+    for (const polygonA of polygonsA) {
+        for (const polygonB of polygonsB) {
+            const intersection = polygonIntersectsPolygon(polygonA, polygonB);
+            if (intersection && intersection.intersects) {
+                if (intersection.intersectionPoints) {
+                    intersection.intersectionPoints.forEach(point => {
+                        // Check if point is already in list (within epsilon)
+                        const isDuplicate = intersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, point)) < constants.EPSILON);
+                        if (!isDuplicate) {
+                            intersectionPoints.push(point);
+                        }
+                    });
+                }
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if any polygons in a mesh intersect a plane
+ */
+function meshIntersectsPlane(mesh, plane) {
+    // Convert mesh to polygons
+    const polygons = meshToPolygons(mesh);
+    const allIntersectionPoints = [];
+    // Track maximum penetration depth
+    let maxPenetration = -Infinity;
+    let minPenetration = Infinity;
+    // Normalize plane normal for consistent signed distance calculations
+    const normalizedPlaneNormal = vec_1.vec3.nor(plane.normal);
+    // Check each vertex's signed distance to plane
+    mesh.vertices.forEach(vertex => {
+        const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(vertex, plane.point), normalizedPlaneNormal);
+        maxPenetration = Math.max(maxPenetration, signedDistance);
+        minPenetration = Math.min(minPenetration, signedDistance);
+    });
+    // Check each polygon for intersection
+    let hasIntersection = false;
+    for (const polygon of polygons) {
+        const intersection = polygonIntersectsPlane(polygon, plane);
+        if (intersection === null || intersection === void 0 ? void 0 : intersection.intersects) {
+            hasIntersection = true;
+            // If polygon has specific intersection points, add them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = allIntersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, point)) < constants.EPSILON);
+                    if (!isDuplicate) {
+                        allIntersectionPoints.push(point);
+                    }
+                });
+            }
+        }
+    }
+    // Calculate penetration depth
+    // If min and max penetrations have different signs, mesh straddles the plane
+    // Otherwise, penetration is the minimum absolute distance to plane
+    let penetrationDepth;
+    if (minPenetration * maxPenetration <= 0) {
+        // Mesh straddles plane - penetration is the larger absolute value
+        penetrationDepth = Math.max(Math.abs(minPenetration), Math.abs(maxPenetration));
+    }
+    else if (Math.abs(maxPenetration) < Math.abs(minPenetration)) {
+        // All vertices on positive side of plane
+        penetrationDepth = Math.abs(maxPenetration);
+    }
+    else {
+        // All vertices on negative side of plane
+        penetrationDepth = Math.abs(minPenetration);
+    }
+    return {
+        intersects: hasIntersection,
+        intersectionPoints: allIntersectionPoints.length > 0 ? allIntersectionPoints : undefined,
+        penetrationDepth: penetrationDepth,
     };
 }
 
