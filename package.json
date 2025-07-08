@@ -1,6 +1,6 @@
 {
   "name": "@basementuniverse/intersection-helpers",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A collection of helpers for detecting intersections in 2D and 3D",
   "main": "build/index.js",
   "types": "build/index.d.ts",
