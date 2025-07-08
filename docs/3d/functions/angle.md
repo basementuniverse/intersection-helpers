@@ -8,7 +8,7 @@
 
 > **angle**(`a`, `b`): `vec3`
 
-Defined in: [3d/index.ts:130](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L130)
+Defined in: [3d/index.ts:132](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L132)
 
 Calculate the Euler angle from point a to point b
 

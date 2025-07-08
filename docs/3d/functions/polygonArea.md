@@ -8,7 +8,7 @@
 
 > **polygonArea**(`polygon`): `null` \| `number`
 
-Defined in: [3d/index.ts:566](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L566)
+Defined in: [3d/index.ts:608](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L608)
 
 Calculate the 2D area of a polygon in 3D space
 

@@ -8,7 +8,7 @@
 
 > **lineIntersectsPlane**(`line`, `plane`): `object`
 
-Defined in: [3d/index.ts:1936](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L1936)
+Defined in: [3d/index.ts:2014](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L2014)
 
 Check if a line segments intersects a plane
 
@@ -29,6 +29,9 @@ Check if a line segments intersects a plane
 > `optional` **intersectionPoint**: `vec3`
 
 The intersection point if the line segment intersects the plane
+
+If the line segment lies in the plane, this will be undefined since there
+are infinite intersection points
 
 ### intersects
 

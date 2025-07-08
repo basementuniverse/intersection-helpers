@@ -8,7 +8,7 @@
 
 > **isCircle**(`value`): `value is Circle`
 
-Defined in: [2d/types.ts:71](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/types.ts#L71)
+Defined in: [2d/types.ts:71](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/2d/types.ts#L71)
 
 Check if a value is a Circle
 

@@ -8,7 +8,7 @@
 
 > **rectangleVertices**(`rectangle`): `vec2`[]
 
-Defined in: [2d/index.ts:375](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/2d/index.ts#L375)
+Defined in: [2d/index.ts:375](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/2d/index.ts#L375)
 
 Get the vertices of a rectangle
 

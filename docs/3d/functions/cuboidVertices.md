@@ -8,7 +8,7 @@
 
 > **cuboidVertices**(`cuboid`): `vec3`[]
 
-Defined in: [3d/index.ts:423](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L423)
+Defined in: [3d/index.ts:425](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L425)
 
 Get the vertices of a cuboid
 

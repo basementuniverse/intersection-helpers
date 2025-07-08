@@ -8,7 +8,7 @@
 
 > **pointOnPolygon**(`point`, `polygon`): `null` \| \{ `closestPoint`: `vec3`; `distance`: `number`; `intersects`: `boolean`; \}
 
-Defined in: [3d/index.ts:971](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L971)
+Defined in: [3d/index.ts:1036](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L1036)
 
 ## Parameters
 

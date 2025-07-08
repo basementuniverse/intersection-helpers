@@ -8,7 +8,7 @@
 
 > **pointInAABB**(`point`, `aabb`): `object`
 
-Defined in: [3d/index.ts:336](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L336)
+Defined in: [3d/index.ts:338](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L338)
 
 Check if a point is inside an AABB
 

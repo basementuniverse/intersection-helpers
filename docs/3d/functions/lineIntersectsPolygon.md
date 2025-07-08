@@ -8,7 +8,7 @@
 
 > **lineIntersectsPolygon**(`line`, `polygon`): `object`
 
-Defined in: [3d/index.ts:2097](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L2097)
+Defined in: [3d/index.ts:2188](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L2188)
 
 Check if a line segment intersects a polygon
 

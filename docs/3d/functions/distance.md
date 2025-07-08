@@ -8,7 +8,7 @@
 
 > **distance**(`a`, `b`): `number`
 
-Defined in: [3d/index.ts:123](https://github.com/basementuniverse/intersection-helpers/blob/f22d1cffe16ecb68b4b29b8331edc08e3635d16c/src/3d/index.ts#L123)
+Defined in: [3d/index.ts:125](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L125)
 
 Calculate the distance between two points in 3D space
 
