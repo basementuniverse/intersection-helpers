@@ -1,6 +1,6 @@
 # Intersection Helpers
 
-> This project is a work in progress! The 2D namespace is mostly complete, but the 3D namespace is still under development.
+> **This project is a work in progress.** The 2D namespace is complete and has comprehensive tests, but the 3D namespace is almost entirely untested. It most likely has some bugs, so use with caution! Bug reports, issues, feature requests and PRs are very welcome :)
 
 A collection of helper functions for detecting intersections between various geometric shapes in 2D and 3D.
 
@@ -71,6 +71,6 @@ Examples can be found [here](/examples/index.html).
 
 ## Notes
 
-In the 2D namespace, this library uses the "screen" coordinate system where positive Y is pointing downwards. In places where this makes a difference (specifically in the `polygonWindingOrder` function), we can optionally specify whether to use the "screen" (Y+ is down) or "cartesian" (Y+ is up) coordinate system.
+In the 2D namespace we use the "screen" coordinate system where positive Y is pointing downwards. In places where this makes a difference (specifically in the `polygonWindingOrder` function), we can optionally specify whether to use the "screen" (Y+ is down) or "cartesian" (Y+ is up) coordinate system.
 
 In places where the `polygonWindingOrder` function is called as part of another function, we assume the default "screen" coordinate system.
