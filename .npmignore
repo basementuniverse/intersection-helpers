@@ -1,5 +1,10 @@
+docs
+examples
+src
+tests
 .editorconfig
 .gitignore
-index.ts
+.prettierrc
 tsconfig.json
+typedoc.json
 webpack.config.js
