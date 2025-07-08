@@ -49,6 +49,7 @@ export * from './types';
  * Cuboid utilities
  * @see cuboidIsRotated
  * @see cuboidVertices
+ * @see cuboidToPolygons
  *
  * Polygon utilities
  * @see verticesToEdges
@@ -93,9 +94,9 @@ export * from './types';
  * Spheres
  * @see sphereIntersectsSphere
  * @see sphereIntersectsPlane
- * @see sphereIntersectsCuboid // TODO
- * @see sphereIntersectsPolygon // TODO
- * @see sphereIntersectsMesh // TODO
+ * @see sphereIntersectsCuboid
+ * @see sphereIntersectsPolygon
+ * @see sphereIntersectsMesh
  *
  * Planes
  * @see planeIntersectsPlane // TODO
@@ -456,6 +457,46 @@ export function cuboidVertices(cuboid: Cuboid): Point[] {
     vec3.add(position, lowerTopRightOffset),
     vec3.add(position, lowerBottomRightOffset),
     vec3.add(position, lowerBottomLeftOffset),
+  ];
+}
+
+/**
+ * Convert a cuboid to a list of polygons representing its faces
+ *
+ * Polygons will be returned in the following order:
+ * - Upper face (top)
+ * - Lower face (bottom)
+ * - Front face
+ * - Back face
+ * - Left face
+ * - Right face
+ */
+export function cuboidToPolygons(cuboid: Cuboid): Polygon[] {
+  const vertices = cuboidVertices(cuboid);
+  if (vertices.length !== 8) {
+    throw new Error('Cuboid must have exactly 8 vertices');
+  }
+
+  // Create polygons for each face of the cuboid
+  return [
+    // Upper face
+    { vertices: [vertices[0], vertices[1], vertices[2]] },
+    { vertices: [vertices[0], vertices[2], vertices[3]] },
+    // Lower face
+    { vertices: [vertices[4], vertices[5], vertices[6]] },
+    { vertices: [vertices[4], vertices[6], vertices[7]] },
+    // Front face
+    { vertices: [vertices[0], vertices[1], vertices[5]] },
+    { vertices: [vertices[0], vertices[5], vertices[4]] },
+    // Back face
+    { vertices: [vertices[2], vertices[3], vertices[7]] },
+    { vertices: [vertices[2], vertices[7], vertices[6]] },
+    // Left face
+    { vertices: [vertices[0], vertices[3], vertices[7]] },
+    { vertices: [vertices[0], vertices[7], vertices[4]] },
+    // Right face
+    { vertices: [vertices[1], vertices[2], vertices[6]] },
+    { vertices: [vertices[1], vertices[6], vertices[5]] },
   ];
 }
 
@@ -2330,5 +2371,282 @@ export function sphereIntersectsPlane(
     intersectionPoint,
     penetrationDepth,
     intersectionRadius,
+  };
+}
+
+/**
+ * Check if a sphere intersects a cuboid
+ */
+export function sphereIntersectsCuboid(
+  sphere: Sphere,
+  cuboid: Cuboid
+): {
+  /**
+   * Whether the sphere intersects the cuboid
+   */
+  intersects: boolean;
+
+  /**
+   * The point at the center of the intersection volume
+   */
+  intersectionPoint?: Point;
+
+  /**
+   * How deeply the sphere penetrates the cuboid
+   */
+  penetrationDepth?: number;
+
+  /**
+   * Direction of minimum separation (unit vector)
+   * Points from cuboid center towards sphere center
+   */
+  normal?: Point;
+
+  /**
+   * Closest point on cuboid surface to sphere center
+   */
+  contactPoint?: Point;
+} {
+  const { position, size, rotation = vec3() } = cuboid;
+  const halfSize = vec3.div(size, 2);
+
+  // Transform sphere center to cuboid's local space
+  let localSphereCenter = vec3.sub(sphere.position, position);
+  if (cuboidIsRotated(cuboid)) {
+    localSphereCenter = vec3.rota(localSphereCenter, vec3.mul(rotation, -1));
+  }
+
+  // Find the closest point on the cuboid to the sphere center
+  const closestLocalPoint = vec3(
+    clamp(localSphereCenter.x, -halfSize.x, halfSize.x),
+    clamp(localSphereCenter.y, -halfSize.y, halfSize.y),
+    clamp(localSphereCenter.z, -halfSize.z, halfSize.z)
+  );
+
+  // Transform closest point back to world space
+  let closestPoint = closestLocalPoint;
+  if (cuboidIsRotated(cuboid)) {
+    closestPoint = vec3.rota(closestPoint, rotation);
+  }
+  closestPoint = vec3.add(closestPoint, position);
+
+  // Calculate vector from closest point to sphere center
+  const separationVector = vec3.sub(sphere.position, closestPoint);
+  const distance = vec3.len(separationVector);
+
+  // If distance is greater than sphere radius, no intersection
+  if (distance > sphere.radius) {
+    return { intersects: false };
+  }
+
+  // Handle case where sphere center is exactly on cuboid surface
+  if (distance < constants.EPSILON) {
+    // Use vector from cuboid center to sphere center as normal
+    let normal = vec3.nor(vec3.sub(sphere.position, position));
+    const penetrationDepth = sphere.radius;
+
+    return {
+      intersects: true,
+      intersectionPoint: sphere.position,
+      penetrationDepth,
+      normal,
+      contactPoint: closestPoint,
+    };
+  }
+
+  // Calculate normal and penetration depth
+  const normal = vec3.nor(separationVector);
+  const penetrationDepth = sphere.radius - distance;
+
+  // Calculate intersection point at center of intersection volume
+  const intersectionPoint = vec3.add(
+    closestPoint,
+    vec3.mul(normal, penetrationDepth / 2)
+  );
+
+  return {
+    intersects: true,
+    intersectionPoint,
+    penetrationDepth,
+    normal,
+    contactPoint: closestPoint,
+  };
+}
+
+/**
+ * Check if a sphere intersects a polygon
+ */
+export function sphereIntersectsPolygon(
+  sphere: Sphere,
+  polygon: Polygon
+): {
+  /**
+   * Whether the sphere intersects the polygon
+   */
+  intersects: boolean;
+
+  /**
+   * The point at the center of the intersection volume
+   */
+  intersectionPoint?: Point;
+
+  /**
+   * How deeply the sphere is intersecting
+   */
+  penetrationDepth?: number;
+
+  /**
+   * Points where the sphere surface intersects the polygon edges, if any
+   */
+  polygonIntersectionPoints?: Point[];
+} | null {
+  // First validate the polygon
+  if (!polygonIsValid(polygon)) {
+    return null;
+  }
+
+  const [v1, v2, v3] = polygon.vertices;
+
+  // Calculate polygon plane
+  const edge1 = vec3.sub(v2, v1);
+  const edge2 = vec3.sub(v3, v1);
+  const normal = vec3.nor(vec3.cross(edge1, edge2));
+
+  // Create plane from polygon
+  const plane: Plane = {
+    point: v1,
+    normal,
+  };
+
+  // Check sphere-plane intersection first
+  const planeIntersection = sphereIntersectsPlane(sphere, plane);
+  if (!planeIntersection.intersects) {
+    return { intersects: false };
+  }
+
+  // Check each vertex distance from sphere center
+  const vertexDistances = polygon.vertices.map(vertex =>
+    vec3.len(vec3.sub(vertex, sphere.position))
+  );
+
+  // If all vertices are inside sphere, polygon is contained
+  if (vertexDistances.every(dist => dist <= sphere.radius)) {
+    return {
+      intersects: true,
+      intersectionPoint: planeIntersection.intersectionPoint,
+      penetrationDepth: sphere.radius,
+    };
+  }
+
+  // Create polygon edges
+  const edges: Line[] = [
+    { start: v1, end: v2 },
+    { start: v2, end: v3 },
+    { start: v3, end: v1 },
+  ];
+
+  // Check each edge for intersection with sphere
+  const polygonIntersectionPoints: Point[] = [];
+  edges.forEach(edge => {
+    const lineIntersection = lineIntersectsSphere(edge, sphere);
+    if (lineIntersection.intersects && lineIntersection.intersectionPoints) {
+      // Only add points that lie on the polygon edges
+      lineIntersection.intersectionPoints.forEach(point => {
+        const onLine = pointOnLine(point, edge);
+        if (onLine.intersects) {
+          polygonIntersectionPoints.push(point);
+        }
+      });
+    }
+  });
+
+  // Check if sphere center projects onto polygon
+  const projectedCenter = pointOnPolygon(sphere.position, polygon);
+  if (projectedCenter && projectedCenter.intersects) {
+    const distance = vec3.len(
+      vec3.sub(sphere.position, projectedCenter.closestPoint)
+    );
+    if (distance <= sphere.radius) {
+      return {
+        intersects: true,
+        intersectionPoint: projectedCenter.closestPoint,
+        penetrationDepth: sphere.radius - distance,
+        polygonIntersectionPoints:
+          polygonIntersectionPoints.length > 0
+            ? polygonIntersectionPoints
+            : undefined,
+      };
+    }
+  }
+
+  // If we have intersection points but no center projection,
+  // use the midpoint of intersection points as intersection point
+  if (polygonIntersectionPoints.length > 0) {
+    const midPoint = vec3.div(
+      polygonIntersectionPoints.reduce((sum, p) => vec3.add(sum, p), vec3()),
+      polygonIntersectionPoints.length
+    );
+
+    return {
+      intersects: true,
+      intersectionPoint: midPoint,
+      penetrationDepth:
+        sphere.radius - vec3.len(vec3.sub(midPoint, sphere.position)),
+      polygonIntersectionPoints: polygonIntersectionPoints,
+    };
+  }
+
+  // No intersection found
+  return { intersects: false };
+}
+
+/**
+ * Check if a sphere intersects any polygon in a mesh
+ */
+export function sphereIntersectsMesh(
+  sphere: Sphere,
+  mesh: Mesh
+): {
+  /**
+   * Whether the sphere intersects any polygon in the mesh
+   */
+  intersects: boolean;
+
+  /**
+   * The intersection points if the sphere intersects any polygon in the mesh
+   */
+  intersectionPoints?: Point[];
+
+  /**
+   * The intersection points on the polygons if any
+   */
+  polygonIntersectionPoints?: Point[];
+} {
+  const polygons = meshToPolygons(mesh);
+  let intersects = false;
+  const intersectionPoints: Point[] = [];
+  const polygonIntersectionPoints: Point[] = [];
+
+  polygons.forEach(polygon => {
+    const intersection = sphereIntersectsPolygon(sphere, polygon);
+    if (intersection && intersection.intersects) {
+      intersects = true;
+      intersectionPoints.push(intersection.intersectionPoint!);
+      if (intersection.polygonIntersectionPoints) {
+        polygonIntersectionPoints.push(
+          ...intersection.polygonIntersectionPoints
+        );
+      }
+    }
+  });
+
+  return {
+    intersects,
+    intersectionPoints:
+      intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    polygonIntersectionPoints:
+      polygonIntersectionPoints.length > 0
+        ? polygonIntersectionPoints
+        : undefined,
   };
 }
