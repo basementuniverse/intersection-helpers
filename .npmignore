@@ -1,7 +1,8 @@
-docs
-examples
-src
-tests
+/.vscode
+/docs
+/examples
+/src
+/tests
 .editorconfig
 .gitignore
 .prettierrc
