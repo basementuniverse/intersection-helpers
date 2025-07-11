@@ -1,11 +1,14 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const DtsBundleWebpack = require('dts-bundle-webpack');
 
 module.exports = {
   devtool: false,
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.ts',
+  entry: {
+    'index': './src/index.ts',
+    '2d/index': './src/2d/index.ts',
+    '3d/index': './src/3d/index.ts',
+    'utilities/index': './src/utilities/index.ts',
+  },
   watchOptions: {
     aggregateTimeout: 500,
     ignored: [
@@ -25,10 +28,10 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'build'),
     libraryTarget: 'umd',
     publicPath: '/build/',
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'build'),
     globalObject: 'this',
   },
   performance: {
@@ -37,15 +40,5 @@ module.exports = {
     maxAssetSize: 512000,
   },
   externals: [],
-  plugins: [
-    new CleanWebpackPlugin(),
-    new DtsBundleWebpack({
-      name: '@basementuniverse/intersection-helpers',
-      main: 'build/src/index.d.ts',
-      baseDir: 'build',
-      out: 'index.d.ts',
-      removeSource: true,
-      indent: '  ',
-    }),
-  ],
+  plugins: [],
 };

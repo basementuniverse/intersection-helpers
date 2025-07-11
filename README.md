@@ -23,11 +23,7 @@ npm install @basementuniverse/intersection-helpers
 ### Node
 
 ```js
-import * as intersections from '@basementuniverse/intersection-helpers';
-
-const {
-  distance,
-} = intersections.default.intersection2d;
+const { distance } = require('@basementuniverse/intersection-helpers/2d');
 
 const pointA = { x: 1, y: 2 };
 const pointB = { x: 4, y: 2 };
@@ -37,21 +33,17 @@ console.log(distance(pointA, pointB));
 ### Node (TypeScript)
 
 ```ts
-import * as intersections from '@basementuniverse/intersection-helpers';
+import { distance, Point } from '@basementuniverse/intersection-helpers/2d';
 
-const {
-  distance,
-} = intersections.intersection2d;
-
-const pointA = { x: 1, y: 2 };
-const pointB = { x: 4, y: 2 };
+const pointA: Point = { x: 1, y: 2 };
+const pointB: Point = { x: 4, y: 2 };
 console.log(distance(pointA, pointB));
 ```
 
 ### Browser
 
 ```html
-<script src="node_modules/@basementuniverse/intersection-helpers/build/index.js"></script>
+<script src="intersection-helpers/build/index.js"></script>
 <script>
 
 const pointA = { x: 1, y: 2 };

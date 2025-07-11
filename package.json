@@ -3,13 +3,35 @@
   "version": "0.1.1",
   "description": "A collection of helpers for detecting intersections in 2D and 3D",
   "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "types": "build/src/index.d.ts",
   "scripts": {
-    "clean": "rm -rf build/src",
-    "build": "webpack && npm run clean",
+    "build": "webpack",
+    "build:prod": "webpack --mode production",
     "test": "jest",
     "test:only": "jest --t \"@only\"",
     "docs": "typedoc"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "types": "./build/src/index.d.ts"
+    },
+    "./2d": {
+      "import": "./build/2d/index.js",
+      "require": "./build/2d/index.js",
+      "types": "./build/src/2d/index.d.ts"
+    },
+    "./3d": {
+      "import": "./build/3d/index.js",
+      "require": "./build/3d/index.js",
+      "types": "./build/src/3d/index.d.ts"
+    },
+    "./utilities": {
+      "import": "./build/utilities/index.js",
+      "require": "./build/utilities/index.js",
+      "types": "./build/src/utilities/index.d.ts"
+    }
   },
   "author": "Gordon Larrigan <gordonlarrigan@gmail.com> (https://gordonlarrigan.com)",
   "license": "MIT",
@@ -17,6 +39,26 @@
     "type": "git",
     "url": "git+https://github.com/basementuniverse/intersection-helpers.git"
   },
+  "keywords": [
+    "intersection",
+    "collision",
+    "geometry",
+    "2d",
+    "3d",
+    "helpers",
+    "utilities",
+    "math",
+    "vector",
+    "polygon",
+    "line",
+    "ray",
+    "circle",
+    "sphere",
+    "rectangle",
+    "box",
+    "aabb",
+    "obb"
+  ],
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node"
@@ -29,8 +71,6 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^24.0.4",
-    "clean-webpack-plugin": "^4.0.0-alpha.0",
-    "dts-bundle-webpack": "^1.0.2",
     "jest": "^30.0.0",
     "ts-jest": "^29.4.0",
     "ts-loader": "^8.0.7",
