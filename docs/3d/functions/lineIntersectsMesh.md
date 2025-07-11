@@ -8,7 +8,7 @@
 
 > **lineIntersectsMesh**(`line`, `mesh`): `object`
 
-Defined in: [3d/index.ts:2240](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L2240)
+Defined in: [3d/index.ts:2240](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/3d/index.ts#L2240)
 
 Check if a line segment intersects a cuboid
 

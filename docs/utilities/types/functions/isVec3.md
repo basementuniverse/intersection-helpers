@@ -8,7 +8,7 @@
 
 > **isVec3**(`value`): `value is vec3`
 
-Defined in: [utilities/types.ts:31](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/utilities/types.ts#L31)
+Defined in: [utilities/types.ts:31](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/utilities/types.ts#L31)
 
 Check if a value is a vec3
 

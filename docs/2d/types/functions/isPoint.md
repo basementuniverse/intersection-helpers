@@ -8,7 +8,7 @@
 
 > **isPoint**(`value`): `value is vec2`
 
-Defined in: [2d/types.ts:12](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/2d/types.ts#L12)
+Defined in: [2d/types.ts:12](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L12)
 
 Type guard to check if a value is a Point
 

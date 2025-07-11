@@ -8,7 +8,7 @@
 
 > **cuboidIntersectsPolygon**(`cuboid`, `polygon`): `null` \| \{ `intersectionPoints?`: `vec3`[]; `intersects`: `boolean`; \}
 
-Defined in: [3d/index.ts:3124](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/3d/index.ts#L3124)
+Defined in: [3d/index.ts:3124](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/3d/index.ts#L3124)
 
 Check if a cuboid intersects a polygon
 

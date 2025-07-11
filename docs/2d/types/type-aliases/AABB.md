@@ -8,7 +8,7 @@
 
 > **AABB** = `object`
 
-Defined in: [2d/types.ts:86](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/2d/types.ts#L86)
+Defined in: [2d/types.ts:86](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L86)
 
 An axis-aligned bounding box (AABB) defined by the position of its top-left
 corner and its width and height
@@ -19,7 +19,7 @@ corner and its width and height
 
 > **position**: [`Point`](Point.md)
 
-Defined in: [2d/types.ts:87](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/2d/types.ts#L87)
+Defined in: [2d/types.ts:87](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L87)
 
 ***
 
@@ -27,4 +27,4 @@ Defined in: [2d/types.ts:87](https://github.com/basementuniverse/intersection-he
 
 > **size**: `vec2`
 
-Defined in: [2d/types.ts:88](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/2d/types.ts#L88)
+Defined in: [2d/types.ts:88](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L88)

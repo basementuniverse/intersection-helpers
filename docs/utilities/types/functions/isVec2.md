@@ -8,7 +8,7 @@
 
 > **isVec2**(`value`): `value is vec2`
 
-Defined in: [utilities/types.ts:16](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/utilities/types.ts#L16)
+Defined in: [utilities/types.ts:16](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/utilities/types.ts#L16)
 
 Check if a value is a vec2
 

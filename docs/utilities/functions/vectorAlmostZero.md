@@ -10,7 +10,7 @@
 
 > **vectorAlmostZero**(`v`): `boolean`
 
-Defined in: [utilities/index.ts:10](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/utilities/index.ts#L10)
+Defined in: [utilities/index.ts:10](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/utilities/index.ts#L10)
 
 Check if a vector is almost zero
 
@@ -28,7 +28,7 @@ Check if a vector is almost zero
 
 > **vectorAlmostZero**(`v`): `boolean`
 
-Defined in: [utilities/index.ts:11](https://github.com/basementuniverse/intersection-helpers/blob/3a364a58f0714fe52065b40529091d774e3a1a50/src/utilities/index.ts#L11)
+Defined in: [utilities/index.ts:11](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/utilities/index.ts#L11)
 
 Check if a vector is almost zero
 
