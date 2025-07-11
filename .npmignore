@@ -1,6 +1,7 @@
 /.vscode
 /docs
 /examples
+/resources
 /src
 /tests
 .editorconfig
