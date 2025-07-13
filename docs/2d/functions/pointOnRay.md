@@ -8,7 +8,7 @@
 
 > **pointOnRay**(`point`, `ray`): `object`
 
-Defined in: [2d/index.ts:849](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/index.ts#L849)
+Defined in: [2d/index.ts:877](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/index.ts#L877)
 
 Check if a point is on a ray
 
@@ -41,3 +41,12 @@ The distance from the point to the closest point on the ray
 > **intersects**: `boolean`
 
 Whether the point is on the ray
+
+### normal?
+
+> `optional` **normal**: `vec2`
+
+The intersection normal - a unit vector perpendicular to the ray,
+pointing towards the side that the test point is on
+
+If the point is on the ray, this will be undefined

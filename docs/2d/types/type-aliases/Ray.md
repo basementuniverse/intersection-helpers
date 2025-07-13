@@ -8,7 +8,7 @@
 
 > **Ray** = `object`
 
-Defined in: [2d/types.ts:19](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L19)
+Defined in: [2d/types.ts:19](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/types.ts#L19)
 
 A ray that extends infinitely in one direction
 
@@ -18,7 +18,7 @@ A ray that extends infinitely in one direction
 
 > **direction**: `vec2`
 
-Defined in: [2d/types.ts:21](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L21)
+Defined in: [2d/types.ts:21](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/types.ts#L21)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [2d/types.ts:21](https://github.com/basementuniverse/intersection-he
 
 > **origin**: [`Point`](Point.md)
 
-Defined in: [2d/types.ts:20](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/types.ts#L20)
+Defined in: [2d/types.ts:20](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/types.ts#L20)

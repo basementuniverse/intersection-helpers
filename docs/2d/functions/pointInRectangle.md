@@ -8,7 +8,7 @@
 
 > **pointInRectangle**(`point`, `rectangle`): `object`
 
-Defined in: [2d/index.ts:1010](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/index.ts#L1010)
+Defined in: [2d/index.ts:1104](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/index.ts#L1104)
 
 Check if a point is inside a rectangle
 
@@ -48,3 +48,13 @@ If the point is inside the rectangle, this will be negative
 > **intersects**: `boolean`
 
 Whether the point is inside the rectangle
+
+### normal?
+
+> `optional` **normal**: `vec2`
+
+The intersection normal, if there is an intersection
+
+This will be a normal to the surface on which the closest point lies
+
+This will be undefined if the rectangle has zero-size

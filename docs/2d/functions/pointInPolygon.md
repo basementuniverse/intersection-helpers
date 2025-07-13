@@ -6,9 +6,9 @@
 
 # Function: pointInPolygon()
 
-> **pointInPolygon**(`point`, `polygon`): `null` \| \{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; \}
+> **pointInPolygon**(`point`, `polygon`): `null` \| \{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; `normal?`: `vec2`; \}
 
-Defined in: [2d/index.ts:1062](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/index.ts#L1062)
+Defined in: [2d/index.ts:1165](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/index.ts#L1165)
 
 Check if a point is inside a polygon
 
@@ -28,7 +28,7 @@ Returns null if the polygon is invalid
 
 `null`
 
-\{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; \}
+\{ `closestPoint`: `vec2`; `distance`: `number`; `intersects`: `boolean`; `normal?`: `vec2`; \}
 
 ### closestPoint
 
@@ -49,3 +49,11 @@ If the point is inside the polygon, this will be negative
 > **intersects**: `boolean`
 
 Whether the point is inside the polygon
+
+### normal?
+
+> `optional` **normal**: `vec2`
+
+The intersection normal, if there is an intersection
+
+This will be a normal to the surface on which the closest point lies

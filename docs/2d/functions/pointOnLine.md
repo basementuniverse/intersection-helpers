@@ -8,7 +8,7 @@
 
 > **pointOnLine**(`point`, `line`): `object`
 
-Defined in: [2d/index.ts:897](https://github.com/basementuniverse/intersection-helpers/blob/d942e5cf9ee51dc3854d6fbfe1d84a7ecd83c1ca/src/2d/index.ts#L897)
+Defined in: [2d/index.ts:952](https://github.com/basementuniverse/intersection-helpers/blob/a748c1cf3d5365b189253eb2878888a254b5c3a1/src/2d/index.ts#L952)
 
 Check if a point intersects a line segment
 
@@ -41,3 +41,12 @@ The distance from the point to the closest point on the line segment
 > **intersects**: `boolean`
 
 Whether the point intersects the line segment
+
+### normal?
+
+> `optional` **normal**: `vec2`
+
+The intersection normal - a unit vector perpendicular to the line,
+pointing towards the side that the test point is on
+
+If the point is on the line, this will be undefined
