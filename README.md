@@ -66,3 +66,9 @@ Examples can be found [here](/examples/index.html).
 In the 2D namespace we use the "screen" coordinate system where positive Y is pointing downwards. In places where this makes a difference (specifically in the `polygonWindingOrder` function), we can optionally specify whether to use the "screen" (Y+ is down) or "cartesian" (Y+ is up) coordinate system.
 
 In places where the `polygonWindingOrder` function is called as part of another function, we assume the default "screen" coordinate system.
+
+## Todo
+
+- [ ] Add intersection normals to point functions in 3D namespace
+- [ ] Write tests for 3D namespace
+- [ ] Add demos for functions in 3D namespace
