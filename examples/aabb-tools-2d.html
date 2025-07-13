@@ -220,6 +220,35 @@ function update() {
   context.lineTo(pointInAABBResult.closestPoint.x + 5, pointInAABBResult.closestPoint.y - 5);
   context.stroke();
 
+  // Draw normal vector if it exists
+  if (pointInAABBResult.normal) {
+    const normalLength = 20;
+    const startX = pointInAABBResult.closestPoint.x;
+    const startY = pointInAABBResult.closestPoint.y;
+    const endX = startX + pointInAABBResult.normal.x * normalLength;
+    const endY = startY + pointInAABBResult.normal.y * normalLength;
+
+    // Draw arrow line
+    context.beginPath();
+    context.moveTo(startX, startY);
+    context.lineTo(endX, endY);
+
+    // Draw arrow head
+    const headLength = 8;
+    const angle = Math.atan2(endY - startY, endX - startX);
+    context.lineTo(
+      endX - headLength * Math.cos(angle - Math.PI / 6),
+      endY - headLength * Math.sin(angle - Math.PI / 6)
+    );
+    context.moveTo(endX, endY);
+    context.lineTo(
+      endX - headLength * Math.cos(angle + Math.PI / 6),
+      endY - headLength * Math.sin(angle + Math.PI / 6)
+    );
+
+    context.stroke();
+  }
+
   // Draw circle AABB
   context.strokeStyle = 'blue';
   context.setLineDash([5, 5]);

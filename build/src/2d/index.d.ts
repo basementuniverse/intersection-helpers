@@ -150,6 +150,10 @@ export declare function pointInAABB(point: Point, aabb: AABB): {
      * If the point is inside the AABB, this will be negative
      */
     distance: number;
+    /**
+     * The intersecting surface normal, if there is an intersection
+     */
+    normal?: vec2;
 };
 /**
  * Check if a rectangle is rotated
@@ -275,6 +279,13 @@ export declare function pointOnRay(point: Point, ray: Ray): {
      * The distance from the point to the closest point on the ray
      */
     distance: number;
+    /**
+     * The intersection normal - a unit vector perpendicular to the ray,
+     * pointing towards the side that the test point is on
+     *
+     * If the point is on the ray, this will be undefined
+     */
+    normal?: vec2;
 };
 /**
  * Check if a point intersects a line segment
@@ -292,6 +303,13 @@ export declare function pointOnLine(point: Point, line: Line): {
      * The distance from the point to the closest point on the line segment
      */
     distance: number;
+    /**
+     * The intersection normal - a unit vector perpendicular to the line,
+     * pointing towards the side that the test point is on
+     *
+     * If the point is on the line, this will be undefined
+     */
+    normal?: vec2;
 };
 /**
  * Check if a point is inside a circle
@@ -311,6 +329,13 @@ export declare function pointInCircle(point: Point, circle: Circle): {
      * If the point is inside the circle, this will be negative
      */
     distance: number;
+    /**
+     * The intersection normal, if there is an intersection
+     *
+     * This will be normal to the tangent line at the closest point on the
+     * circle edge
+     */
+    normal?: vec2;
 };
 /**
  * Check if a point is inside a rectangle
@@ -335,6 +360,14 @@ export declare function pointInRectangle(point: Point, rectangle: Rectangle): {
      * If the point is inside the rectangle, this will be negative
      */
     distance: number;
+    /**
+     * The intersection normal, if there is an intersection
+     *
+     * This will be a normal to the surface on which the closest point lies
+     *
+     * This will be undefined if the rectangle has zero-size
+     */
+    normal?: vec2;
 };
 /**
  * Check if a point is inside a polygon
@@ -356,6 +389,12 @@ export declare function pointInPolygon(point: Point, polygon: Polygon): {
      * If the point is inside the polygon, this will be negative
      */
     distance: number;
+    /**
+     * The intersection normal, if there is an intersection
+     *
+     * This will be a normal to the surface on which the closest point lies
+     */
+    normal?: vec2;
 } | null;
 /**
  * Check which grid cells a ray traverses

@@ -1,1 +1,7078 @@
-!function(t,e){if("object"==typeof exports&&"object"==typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var n=e();for(var s in n)("object"==typeof exports?exports:t)[s]=n[s]}}(this,(()=>{return t={395:t=>{const e=(t,e=0,n=1)=>t<e?e:t>n?n:t,n=t=>t>=0?t-Math.floor(t):t-Math.ceil(t),s=(t,e,n)=>t+(e-t)*n,r=(t=.5,e=.5,n=2)=>{let s=0;for(let t=n;t--;)s+=Math.random();return t+(s-n/2)/(n/2)*e},i=t=>{let e=1;for(let n=2;n<=t;n++)e*=n;return e},o=(t,e)=>1===e?t.map((t=>[t])):t.reduce(((n,s,r)=>[...n,...o(t.slice(0,r).concat(t.slice(r+1)),e-1).map((t=>[s,...t]))]),[]),c=(t,e)=>1===e?t.map((t=>[t])):t.reduce(((n,s,r)=>[...n,...c(t.slice(r+1),e-1).map((t=>[s,...t]))]),[]),a=(t,e)=>Array(e).fill(0).map(((e,n)=>t(n))),u=(t,e=".")=>Object.keys(t).reduce(((n,s)=>{if(t[s]instanceof Date)return{...n,[s]:t[s].toISOString()};if("object"!=typeof t[s]||!t[s])return{...n,[s]:t[s]};const r=u(t[s],e);return{...n,...Object.keys(r).reduce(((t,n)=>({...t,[`${s}${e}${n}`]:r[n]})),{})}}),{});t.exports={memoize:t=>{var e={};return function(...n){return e[n]??(e[n]=t.apply(this,n))}},floatEquals:(t,e,n=Number.EPSILON)=>Math.abs(t-e)<n,clamp:e,frac:n,round:(t,e=0)=>{const n=Math.pow(10,e);return Math.round(t*n+Number.EPSILON)/n},lerp:s,unlerp:(t,e,n)=>(n-t)/(e-t),blerp:(t,e,n,r,i,o)=>s(s(t,e,i),s(n,r,i),o),remap:(t,e,n,s,r)=>s+(t-e)*(r-s)/(n-e),smoothstep:(t,e,n)=>s(t,e,3*Math.pow(n,2)-2*Math.pow(n,3)),radians:t=>Math.PI/180*t,degrees:t=>180/Math.PI*t,randomBetween:(t,e)=>Math.random()*(e-t)+t,randomIntBetween:(t,e)=>Math.floor(Math.random()*(e-t+1))+t,cltRandom:r,cltRandomInt:(t,e)=>Math.floor(t+r(.5,.5,2)*(e+1-t)),weightedRandom:t=>{let e=t.reduce(((t,e)=>t+e),0),n=0;const s=Math.random()*e;for(;e>s;)e-=t[n++];return n-1},lerpArray:(t,r,i=s)=>{const o=r*(t.length-1),c=e(Math.trunc(o),0,t.length-1);return i(t[c]||0,t[c+1]||0,n(o))},dot:(t,e)=>t.reduce(((t,n,s)=>t+n*e[s]),0),factorial:i,npr:(t,e)=>i(t)/i(t-e),ncr:(t,e)=>i(t)/(i(e)*i(t-e)),permutations:o,combinations:c,cartesian:(...t)=>t.reduce(((t,e)=>t.flatMap((t=>e.map((e=>[...t,e]))))),[[]]),times:a,range:t=>a((t=>t),t),zip:(...t)=>a((e=>t.map((t=>t[e]))),Math.max(...t.map((t=>t.length)))),at:(t,e)=>t[e<0?t.length-Math.abs(e+1)%t.length-1:e%t.length],peek:t=>{if(t.length)return t[t.length-1]},ind:(t,e,n)=>t+e*n,pos:(t,e)=>[t%e,Math.floor(t/e)],chunk:(t,e)=>a((n=>t.slice(n*e,n*e+e)),Math.ceil(t.length/e)),shuffle:t=>t.slice().sort((()=>Math.random()-.5)),flat:u,unflat:(t,e=".")=>{let n,s,r,i,o={};for(r in t){for(s=r.split(e),n=o,i=0;i<s.length-1;i++)s[i]in n||(isFinite(s[i+1])?n[s[i]]=[]:n[s[i]]={}),n=n[s[i]];n[s[s.length-1]]=t[r]}return o},split:(t,e)=>{const n=[];let s=[];for(const r of t)e(r)?(s.length&&n.push(s),s=[r]):s.push(r);return n.push(s),n},pluck:(t,...e)=>e.reduce(((e,n)=>Object.assign(e,{[n]:t[n]})),{}),exclude:(t,...e)=>Object.fromEntries(Object.entries(t).filter((([t])=>!e.includes(t))))}},430:t=>{const e=(t,e)=>Array(e).fill(0).map(((e,n)=>t(n))),n=(t,e)=>t.reduce(((t,n,s)=>t+n*e[s]),0),s=t=>"object"==typeof t&&"x"in t&&"y"in t,r=t=>"object"==typeof t&&"x"in t&&"y"in t&&"z"in t,i=(t,e)=>t||e?s(t)?{x:t.x||0,y:t.y||0}:{x:t,y:e??t}:{x:0,y:0};i.components=t=>[t.x,t.y],i.fromComponents=t=>i(...t.slice(0,2)),i.ux=()=>i(1,0),i.uy=()=>i(0,1),i.add=(t,e)=>({x:t.x+(e.x??e),y:t.y+(e.y??e)}),i.sub=(t,e)=>({x:t.x-(e.x??e),y:t.y-(e.y??e)}),i.mul=(t,e)=>({x:t.x*(e.x??e),y:t.y*(e.y??e)}),i.scale=(t,e)=>i.mul(t,e),i.div=(t,e)=>({x:t.x/(e.x??e),y:t.y/(e.y??e)}),i.len=t=>Math.sqrt(t.x*t.x+t.y*t.y),i.manhattan=t=>Math.abs(t.x)+Math.abs(t.y),i.nor=t=>{let e=i.len(t);return e?{x:t.x/e,y:t.y/e}:i()},i.dot=(t,e)=>t.x*e.x+t.y*e.y,i.rot=(t,e)=>{let n=Math.sin(e),s=Math.cos(e);return{x:s*t.x-n*t.y,y:n*t.x+s*t.y}},i.rotf=(t,e)=>{switch(e){case 1:return i(t.y,-t.x);case-1:return i(-t.y,t.x);case 2:case-2:return i(-t.x,-t.y);default:return t}},i.cross=(t,e)=>t.x*e.y-t.y*e.x,i.eq=(t,e)=>t.x===e.x&&t.y===e.y,i.rad=t=>Math.atan2(t.y,t.x),i.cpy=t=>i(t),i.map=(t,e)=>({x:e(t.x,"x"),y:e(t.y,"y")}),i.str=(t,e=", ")=>`${t.x}${e}${t.y}`,i.swiz=(t,e="..")=>{const n=[];return e.split("").forEach(((e,s)=>{switch(e){case"x":case"u":n.push(t.x);break;case"y":case"v":n.push(t.y);break;case"X":case"U":n.push(-t.x);break;case"Y":case"V":n.push(-t.y);break;case"0":default:n.push(0);break;case"1":n.push(1);break;case".":n.push([t.x,t.y][s]??0)}})),n},i.polar=t=>({r:i.len(t),theta:Math.atan2(t.y,t.x)}),i.fromPolar=(t,e)=>i(t*Math.cos(e),t*Math.sin(e));const o=(t,e,n)=>t||e||n?r(t)?{x:t.x||0,y:t.y||0,z:t.z||0}:s(t)?{x:t.x||0,y:t.y||0,z:e||0}:{x:t,y:e??t,z:n??t}:{x:0,y:0,z:0};o.components=t=>[t.x,t.y,t.z],o.fromComponents=t=>o(...t.slice(0,3)),o.ux=()=>o(1,0,0),o.uy=()=>o(0,1,0),o.uz=()=>o(0,0,1),o.add=(t,e)=>({x:t.x+(e.x??e),y:t.y+(e.y??e),z:t.z+(e.z??e)}),o.sub=(t,e)=>({x:t.x-(e.x??e),y:t.y-(e.y??e),z:t.z-(e.z??e)}),o.mul=(t,e)=>({x:t.x*(e.x??e),y:t.y*(e.y??e),z:t.z*(e.z??e)}),o.scale=(t,e)=>o.mul(t,e),o.div=(t,e)=>({x:t.x/(e.x??e),y:t.y/(e.y??e),z:t.z/(e.z??e)}),o.len=t=>Math.sqrt(t.x*t.x+t.y*t.y+t.z*t.z),o.manhattan=t=>Math.abs(t.x)+Math.abs(t.y)+Math.abs(t.z),o.nor=t=>{let e=o.len(t);return e?{x:t.x/e,y:t.y/e,z:t.z/e}:o()},o.dot=(t,e)=>t.x*e.x+t.y*e.y+t.z*e.z,o.rot=(t,e)=>o(o.dot(o.fromComponents(c.row(e,1)),t),o.dot(o.fromComponents(c.row(e,2)),t),o.dot(o.fromComponents(c.row(e,3)),t)),o.rotx=(t,e)=>o(t.x,t.y*Math.cos(e)-t.z*Math.sin(e),t.y*Math.sin(e)+t.z*Math.cos(e)),o.roty=(t,e)=>o(t.x*Math.cos(e)+t.z*Math.sin(e),t.y,-t.x*Math.sin(e)+t.z*Math.cos(e)),o.rotz=(t,e)=>o(t.x*Math.cos(e)-t.y*Math.sin(e),t.x*Math.sin(e)+t.y*Math.cos(e),t.z),o.rotq=(t,e)=>{if(4!==e.length)return o();const n=Math.sqrt(e[0]*e[0]+e[1]*e[1]+e[2]*e[2]+e[3]*e[3]);if(0===n)return o();const s=[e[0]/n,e[1]/n,e[2]/n,e[3]/n],r=o(...s.slice(0,3)),i=s[3];return o.add(o.add(o.mul(r,2*o.dot(r,t)),o.mul(t,i*i-o.dot(r,r))),o.mul(o.cross(r,t),2*i))},o.rota=(t,e)=>o.rotz(o.roty(o.rotx(t,e.x),e.y),e.z),o.cross=(t,e)=>o(t.y*e.z-t.z*e.y,t.z*e.x-t.x*e.z,t.x*e.y-t.y*e.x),o.eq=(t,e)=>t.x===e.x&&t.y===e.y&&t.z===e.z,o.radx=t=>Math.atan2(t.z,t.y),o.rady=t=>Math.atan2(t.x,t.y),o.radz=t=>Math.atan2(t.y,t.z),o.cpy=t=>o(t),o.map=(t,e)=>({x:e(t.x,"x"),y:e(t.y,"y"),z:e(t.z,"z")}),o.str=(t,e=", ")=>`${t.x}${e}${t.y}${e}${t.z}`,o.swiz=(t,e="...")=>{const n=[];return e.split("").forEach(((e,s)=>{switch(e){case"x":case"u":case"r":n.push(t.x);break;case"y":case"v":case"g":n.push(t.y);break;case"z":case"w":case"b":n.push(t.z);break;case"X":case"U":case"R":n.push(-t.x);break;case"Y":case"V":case"G":n.push(-t.y);break;case"Z":case"W":case"B":n.push(-t.z);break;case"0":default:n.push(0);break;case"1":n.push(1);break;case".":n.push([t.x,t.y,t.z][s]??0)}})),n},o.polar=t=>{let e=o.len(t);return{r:e,theta:Math.acos(t.y/e),phi:Math.atan2(t.z,t.x)}},o.fromPolar=(t,e,n)=>{const s=Math.sin(e);return o(t*s*Math.cos(n),t*Math.cos(e),t*s*Math.sin(n))};const c=(t=4,e=4,n=[])=>({m:t,n:e,entries:n.concat(Array(t*e).fill(0)).slice(0,t*e)});c.identity=t=>c(t,t,Array(t*t).fill(0).map(((e,n)=>+(Math.floor(n/t)===n%t)))),c.get=(t,e,n)=>t.entries[n-1+(e-1)*t.n],c.set=(t,e,n,s)=>{t.entries[n-1+(e-1)*t.n]=s},c.row=(t,e)=>{const n=(e-1)*t.n;return t.entries.slice(n,n+t.n)},c.col=(t,n)=>e((e=>c.get(t,e+1,n)),t.m),c.add=(t,e)=>t.m===e.m&&t.n===e.n&&c.map(t,((t,n)=>t+e.entries[n])),c.sub=(t,e)=>t.m===e.m&&t.n===e.n&&c.map(t,((t,n)=>t-e.entries[n])),c.mul=(t,e)=>{if(t.n!==e.m)return!1;const s=c(t.m,e.n);for(let r=1;r<=t.m;r++)for(let i=1;i<=e.n;i++)c.set(s,r,i,n(c.row(t,r),c.col(e,i)));return s},c.mulv=(t,e)=>{let a,u,v;if(r(e)?(u=o.components(e),a=3,v=o.fromComponents):s(e)?(u=i.components(e),a=2,v=i.fromComponents):(u=e,a=e.length??0,v=t=>t),t.n!==a)return!1;const l=[];for(let e=1;e<=t.m;e++)l.push(n(c.row(t,e),u));return v(l)},c.scale=(t,e)=>c.map(t,(t=>t*e)),c.trans=t=>c(t.n,t.m,e((e=>c.col(t,e+1)),t.n).flat()),c.minor=(t,e,n)=>{if(t.m!==t.n)return!1;const s=[];for(let r=1;r<=t.m;r++)if(r!==e)for(let e=1;e<=t.n;e++)e!==n&&s.push(c.get(t,r,e));return c(t.m-1,t.n-1,s)},c.det=t=>{if(t.m!==t.n)return!1;if(1===t.m)return t.entries[0];if(2===t.m)return t.entries[0]*t.entries[3]-t.entries[1]*t.entries[2];let e=0,n=1;for(let s=1;s<=t.n;s++)e+=n*t.entries[s-1]*c.det(c.minor(t,1,s)),n*=-1;return e},c.nor=t=>{if(t.m!==t.n)return!1;const e=c.det(t);return c.map(t,(t=>t*e))},c.adj=t=>{const e=c(t.m,t.n);for(let n=1;n<=t.m;n++)for(let s=1;s<=t.n;s++)c.set(e,n,s,c.det(c.minor(t,n,s)));const n=c.map(e,((t,e)=>t*(e%2?-1:1)));return c.trans(n)},c.inv=t=>{if(t.m!==t.n)return!1;const e=c.det(t);return 0!==e&&c.scale(c.adj(t),1/e)},c.eq=(t,e)=>t.m===e.m&&t.n===e.n&&c.str(t)===c.str(e),c.cpy=t=>c(t.m,t.n,[...t.entries]),c.map=(t,e)=>c(t.m,t.n,t.entries.map(e)),c.str=(t,n=", ",s="\n")=>((t,n)=>e((e=>t.slice(e*n,e*n+n)),Math.ceil(t.length/n)))(t.entries,t.n).map((t=>t.join(n))).join(s),t.exports={vec2:i,vec3:o,mat:c}},513:t=>{function e(t,e,n){n=n||0;var s,r,i,o,c,a,u,v=[0,0];return s=t[1][1]-t[0][1],r=t[0][0]-t[1][0],i=s*t[0][0]+r*t[0][1],o=e[1][1]-e[0][1],c=e[0][0]-e[1][0],a=o*e[0][0]+c*e[0][1],z(u=s*c-o*r,0,n)||(v[0]=(c*i-r*a)/u,v[1]=(s*a-o*i)/u),v}function n(t,e,n,s){var r=e[0]-t[0],i=e[1]-t[1],o=s[0]-n[0],c=s[1]-n[1];if(o*i-c*r==0)return!1;var a=(r*(n[1]-t[1])+i*(t[0]-n[0]))/(o*i-c*r),u=(o*(t[1]-n[1])+c*(n[0]-t[0]))/(c*r-o*i);return a>=0&&a<=1&&u>=0&&u<=1}function s(t,e,n){return(e[0]-t[0])*(n[1]-t[1])-(n[0]-t[0])*(e[1]-t[1])}function r(t,e,n){return s(t,e,n)>0}function i(t,e,n){return s(t,e,n)>=0}function o(t,e,n){return s(t,e,n)<0}function c(t,e,n){return s(t,e,n)<=0}t.exports={decomp:function(t){var e=g(t);return e.length>0?M(t,e):[t]},quickDecomp:function t(e,n,s,a,u,v,m){v=v||100,m=m||0,u=u||25,n=void 0!==n?n:[],s=s||[],a=a||[];var p=[0,0],y=[0,0],x=[0,0],g=0,M=0,z=0,I=0,O=0,E=0,S=0,L=[],N=[],w=e,A=e;if(A.length<3)return n;if(++m>v)return console.warn("quickDecomp: max level ("+v+") reached."),n;for(var j=0;j<e.length;++j)if(h(w,j)){s.push(w[j]),g=M=Number.MAX_VALUE;for(var _=0;_<e.length;++_)r(d(w,j-1),d(w,j),d(w,_))&&c(d(w,j-1),d(w,j),d(w,_-1))&&(x=P(d(w,j-1),d(w,j),d(w,_),d(w,_-1)),o(d(w,j+1),d(w,j),x)&&(z=l(w[j],x))<M&&(M=z,y=x,E=_)),r(d(w,j+1),d(w,j),d(w,_+1))&&c(d(w,j+1),d(w,j),d(w,_))&&(x=P(d(w,j+1),d(w,j),d(w,_),d(w,_+1)),r(d(w,j-1),d(w,j),x)&&(z=l(w[j],x))<g&&(g=z,p=x,O=_));if(E===(O+1)%e.length)x[0]=(y[0]+p[0])/2,x[1]=(y[1]+p[1])/2,a.push(x),j<O?(f(L,w,j,O+1),L.push(x),N.push(x),0!==E&&f(N,w,E,w.length),f(N,w,0,j+1)):(0!==j&&f(L,w,j,w.length),f(L,w,0,O+1),L.push(x),N.push(x),f(N,w,E,j+1));else{if(E>O&&(O+=e.length),I=Number.MAX_VALUE,O<E)return n;for(_=E;_<=O;++_)i(d(w,j-1),d(w,j),d(w,_))&&c(d(w,j+1),d(w,j),d(w,_))&&(z=l(d(w,j),d(w,_)))<I&&b(w,j,_)&&(I=z,S=_%e.length);j<S?(f(L,w,j,S+1),0!==S&&f(N,w,S,A.length),f(N,w,0,j+1)):(0!==j&&f(L,w,j,A.length),f(L,w,0,S+1),f(N,w,S,j+1))}return L.length<N.length?(t(L,n,s,a,u,v,m),t(N,n,s,a,u,v,m)):(t(N,n,s,a,u,v,m),t(L,n,s,a,u,v,m)),n}return n.push(e),n},isSimple:function(t){var e,s=t;for(e=0;e<s.length-1;e++)for(var r=0;r<e-1;r++)if(n(s[e],s[e+1],s[r],s[r+1]))return!1;for(e=1;e<s.length-2;e++)if(n(s[0],s[s.length-1],s[e],s[e+1]))return!1;return!0},removeCollinearPoints:function(t,e){for(var n=0,s=t.length-1;t.length>3&&s>=0;--s)v(d(t,s-1),d(t,s),d(t,s+1),e)&&(t.splice(s%t.length,1),n++);return n},removeDuplicatePoints:function(t,e){for(var n=t.length-1;n>=1;--n)for(var s=t[n],r=n-1;r>=0;--r)I(s,t[r],e)&&t.splice(n,1)},makeCCW:function(t){for(var e=0,n=t,s=1;s<t.length;++s)(n[s][1]<n[e][1]||n[s][1]===n[e][1]&&n[s][0]>n[e][0])&&(e=s);return!r(d(t,e-1),d(t,e),d(t,e+1))&&(function(t){for(var e=[],n=t.length,s=0;s!==n;s++)e.push(t.pop());for(s=0;s!==n;s++)t[s]=e[s]}(t),!0)}};var a=[],u=[];function v(t,e,n,r){if(r){var i=a,o=u;i[0]=e[0]-t[0],i[1]=e[1]-t[1],o[0]=n[0]-e[0],o[1]=n[1]-e[1];var c=i[0]*o[0]+i[1]*o[1],v=Math.sqrt(i[0]*i[0]+i[1]*i[1]),l=Math.sqrt(o[0]*o[0]+o[1]*o[1]);return Math.acos(c/(v*l))<r}return 0===s(t,e,n)}function l(t,e){var n=e[0]-t[0],s=e[1]-t[1];return n*n+s*s}function d(t,e){var n=t.length;return t[e<0?e%n+n:e%n]}function f(t,e,n,s){for(var r=n;r<s;r++)t.push(e[r])}function h(t,e){return o(d(t,e-1),d(t,e),d(t,e+1))}var m=[],p=[];function y(t,n,s){var r,o,a=m,u=p;if(i(d(t,n+1),d(t,n),d(t,s))&&c(d(t,n-1),d(t,n),d(t,s)))return!1;o=l(d(t,n),d(t,s));for(var v=0;v!==t.length;++v)if((v+1)%t.length!==n&&v!==n&&i(d(t,n),d(t,s),d(t,v+1))&&c(d(t,n),d(t,s),d(t,v))&&(a[0]=d(t,n),a[1]=d(t,s),u[0]=d(t,v),u[1]=d(t,v+1),r=e(a,u),l(d(t,n),r)<o))return!1;return!0}function b(t,e,s){for(var r=0;r!==t.length;++r)if(r!==e&&r!==s&&(r+1)%t.length!==e&&(r+1)%t.length!==s&&n(d(t,e),d(t,s),d(t,r),d(t,r+1)))return!1;return!0}function x(t,e,n,s){var r=s||[];if(function(t){t.length=0}(r),e<n)for(var i=e;i<=n;i++)r.push(t[i]);else{for(i=0;i<=n;i++)r.push(t[i]);for(i=e;i<t.length;i++)r.push(t[i])}return r}function g(t){for(var e=[],n=[],s=[],r=[],i=Number.MAX_VALUE,o=0;o<t.length;++o)if(h(t,o))for(var c=0;c<t.length;++c)if(y(t,o,c)){n=g(x(t,o,c,r)),s=g(x(t,c,o,r));for(var a=0;a<s.length;a++)n.push(s[a]);n.length<i&&(e=n,i=n.length,e.push([d(t,o),d(t,c)]))}return e}function M(t,e){if(0===e.length)return[t];if(e instanceof Array&&e.length&&e[0]instanceof Array&&2===e[0].length&&e[0][0]instanceof Array){for(var n=[t],s=0;s<e.length;s++)for(var r=e[s],i=0;i<n.length;i++){var o=M(n[i],r);if(o){n.splice(i,1),n.push(o[0],o[1]);break}}return n}return r=e,s=t.indexOf(r[0]),i=t.indexOf(r[1]),-1!==s&&-1!==i&&[x(t,s,i),x(t,i,s)]}function P(t,e,n,s,r){r=r||0;var i=e[1]-t[1],o=t[0]-e[0],c=i*t[0]+o*t[1],a=s[1]-n[1],u=n[0]-s[0],v=a*n[0]+u*n[1],l=i*u-a*o;return z(l,0,r)?[0,0]:[(u*c-o*v)/l,(i*v-a*c)/l]}function z(t,e,n){return n=n||0,Math.abs(t-e)<=n}function I(t,e,n){return z(t[0],e[0],n)&&z(t[1],e[1],n)}},674:function(t,e,n){"use strict";var s,r=this&&this.__createBinding||(Object.create?function(t,e,n,s){void 0===s&&(s=n);var r=Object.getOwnPropertyDescriptor(e,n);r&&!("get"in r?!e.__esModule:r.writable||r.configurable)||(r={enumerable:!0,get:function(){return e[n]}}),Object.defineProperty(t,s,r)}:function(t,e,n,s){void 0===s&&(s=n),t[s]=e[n]}),i=this&&this.__setModuleDefault||(Object.create?function(t,e){Object.defineProperty(t,"default",{enumerable:!0,value:e})}:function(t,e){t.default=e}),o=this&&this.__importStar||(s=function(t){return s=Object.getOwnPropertyNames||function(t){var e=[];for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&(e[e.length]=n);return e},s(t)},function(t){if(t&&t.__esModule)return t;var e={};if(null!=t)for(var n=s(t),o=0;o<n.length;o++)"default"!==n[o]&&r(e,t,n[o]);return i(e,t),e}),c=this&&this.__exportStar||function(t,e){for(var n in t)"default"===n||Object.prototype.hasOwnProperty.call(e,n)||r(e,t,n)};Object.defineProperty(e,"__esModule",{value:!0}),e.distance=function(t,e){return u.vec2.len(u.vec2.sub(t,e))},e.angle=function(t,e){if((0,l.vectorsAlmostEqual)(t,e))return 0;const n=u.vec2.rad(u.vec2.sub(e,t))%(2*Math.PI);return n<0?n+2*Math.PI:n},e.angleBetween=function(t,e){let n=(0,f.isRay)(t)?m(t,1):t,s=(0,f.isRay)(e)?m(e,1):e;if((0,l.vectorAlmostZero)(u.vec2.sub(n.end,n.start))||(0,l.vectorAlmostZero)(u.vec2.sub(s.end,s.start)))return 0;const r=u.vec2.nor(u.vec2.sub(n.end,n.start)),i=u.vec2.nor(u.vec2.sub(s.end,s.start)),o=(0,a.clamp)(u.vec2.dot(r,i),-1,1),c=u.vec2.cross(r,i),v=Math.atan2(c,o);return v<0?v+2*Math.PI:v},e.pointsAreCollinear=h,e.lineToRay=function(t){return{origin:t.start,direction:u.vec2.nor(u.vec2.sub(t.end,t.start))}},e.rayToLine=m,e.aabb=function(t){if((0,f.isLine)(t))return{position:(0,u.vec2)(Math.min(t.start.x,t.end.x),Math.min(t.start.y,t.end.y)),size:(0,u.vec2)(Math.abs(t.end.x-t.start.x),Math.abs(t.end.y-t.start.y))};if((0,f.isRectangle)(t)){const e=y(t),n=(0,u.vec2)(Math.min(...e.map((t=>t.x))),Math.min(...e.map((t=>t.y))));return{position:n,size:(0,u.vec2)(Math.max(...e.map((t=>t.x)))-n.x,Math.max(...e.map((t=>t.y)))-n.y)}}if((0,f.isCircle)(t))return{position:u.vec2.sub(t.position,(0,u.vec2)(t.radius,t.radius)),size:(0,u.vec2)(2*t.radius)};if((0,f.isPolygon)(t)){const e=(0,u.vec2)(Math.min(...t.vertices.map((t=>t.x))),Math.min(...t.vertices.map((t=>t.y))));return{position:e,size:(0,u.vec2)(Math.max(...t.vertices.map((t=>t.x)))-e.x,Math.max(...t.vertices.map((t=>t.y)))-e.y)}}return null},e.aabbToRectangle=function(t){return{position:u.vec2.add(t.position,u.vec2.div(t.size,2)),size:t.size,rotation:0}},e.aabbsOverlap=function(t,e){const n=(0,l.overlapInterval)({min:t.position.x,max:t.position.x+t.size.x},{min:e.position.x,max:e.position.x+e.size.x}),s=(0,l.overlapInterval)({min:t.position.y,max:t.position.y+t.size.y},{min:e.position.y,max:e.position.y+e.size.y});return n&&s?{intersects:!0,overlap:{position:(0,u.vec2)(n.min,s.min),size:(0,u.vec2)(n.max-n.min,s.max-s.min)}}:{intersects:!1}},e.pointInAABB=function(t,e){const{position:n,size:s}=e,r=n,i=u.vec2.add(n,s),o=(0,l.valueInInterval)(t.x,{min:r.x,max:i.x})&&(0,l.valueInInterval)(t.y,{min:r.y,max:i.y});let c;if(o){const e=[{x:r.x,y:t.y,d:Math.abs(t.x-r.x)},{x:i.x,y:t.y,d:Math.abs(t.x-i.x)},{x:t.x,y:r.y,d:Math.abs(t.y-r.y)},{x:t.x,y:i.y,d:Math.abs(t.y-i.y)}].reduce(((t,e)=>t.d<e.d?t:e));c=(0,u.vec2)(e.x,e.y)}else c=(0,u.vec2)((0,a.clamp)(t.x,r.x,i.x),(0,a.clamp)(t.y,r.y,i.y));const v=u.vec2.len(u.vec2.sub(t,c));return{intersects:o,closestPoint:c,distance:o?-v:v}},e.rectangleIsRotated=p,e.rectangleVertices=y,e.verticesToEdges=b,e.polygonIsConvex=g,e.polygonSelfIntersects=M,e.polygonIsValid=P,e.polygonWindingOrder=z,e.polygonArea=function(t){if(!P(t))return null;let e=0;for(let n=0;n<t.vertices.length;n++){const s=t.vertices[n],r=(0,a.at)(t.vertices,n+1);e+=u.vec2.cross(s,r)}return Math.abs(e)/2},e.polygonCentroid=I,e.polygonConvexHull=function(t,e){var n;if(!P(t))return null;if(g(t))return t;const s=null===(n=null==e?void 0:e.keepWindingOrder)||void 0===n||n,r=z(t),i=[...t.vertices].sort(((t,e)=>t.x!==e.x?t.x-e.x:t.y-e.y)),o=[];for(const t of i){for(;o.length>=2&&u.vec2.cross(u.vec2.sub(o[o.length-1],o[o.length-2]),u.vec2.sub(t,o[o.length-1]))<=0;)o.pop();o.push(t)}const c=[];for(let t=i.length-1;t>=0;--t){const e=i[t];for(;c.length>=2&&u.vec2.cross(u.vec2.sub(c[c.length-1],c[c.length-2]),u.vec2.sub(e,c[c.length-1]))<=0;)c.pop();c.push(e)}o.pop(),c.pop();const a=o.concat(c);return a.length<3?null:(s&&z({vertices:a})!==r&&a.reverse(),{vertices:O(a)})},e.optimisePolygon=function(t){if(t.vertices.length<3)return null;const e=function(t){const e=[],n=t.length;for(let s=0;s<n;s++){const n=(0,a.at)(t,s-1),r=t[s];h(n,r,(0,a.at)(t,s+1))||e.push(r)}return e}(function(t){const e=[],n=t.length;for(let s=0;s<n;s++){const n=t[s],r=(0,a.at)(t,s+1);(0,l.vectorsAlmostEqual)(n,r)||e.push(n)}return e}(t.vertices));return e.length<3?null:{vertices:e}},e.decomposePolygon=E,e.pointOnRay=function(t,e){const n=u.vec2.sub(t,e.origin),s=u.vec2.nor(e.direction),r=u.vec2.dot(n,s),i=u.vec2.add(e.origin,u.vec2.mul(s,Math.max(0,r))),o=u.vec2.len(u.vec2.sub(t,i));return{intersects:o<d.EPSILON&&r>=0,closestPoint:i,distance:o}},e.pointOnLine=S,e.pointInCircle=L,e.pointInRectangle=N,e.pointInPolygon=w,e.rayTraverseGrid=function(t,e,n,s,r=-1){if(e<=0)return{cells:[]};if((r=(0,a.clamp)(-1===r?1e4:r,0,1e4))<=0)return{cells:[]};n=u.vec2.map(n,Math.floor),s=u.vec2.map(s,Math.ceil);const i=u.vec2.nor(t.direction);if((0,l.vectorAlmostZero)(i))return{cells:[]};const o=[];let c=u.vec2.map(u.vec2.div(u.vec2.sub(t.origin,n),e),Math.floor);const v=u.vec2.sub(s,n);if(c.x<0||c.x>=v.x||c.y<0||c.y>=v.y){const r=j(t,{position:u.vec2.add(n,u.vec2.div(u.vec2.sub(s,n),2)),size:u.vec2.sub(s,n)});if(!r.intersects||!r.intersectionPoints)return{cells:o};const i=r.intersectionPoints[0];if(c=u.vec2.map(u.vec2.div(u.vec2.sub(i,n),e),Math.floor),c.x<0||c.x>=v.x||c.y<0||c.y>=v.y)return{cells:o}}const f=Math.sign(i.x),h=Math.sign(i.y),m={x:0!==i.x?Math.abs(e/i.x):1/0,y:0!==i.y?Math.abs(e/i.y):1/0},p=(0,u.vec2)(n.x+(c.x+(f>0?1:0))*e,n.y+(c.y+(h>0?1:0))*e),y={x:0!==i.x?Math.abs((p.x-t.origin.x)/i.x):1/0,y:0!==i.y?Math.abs((p.y-t.origin.y)/i.y):1/0};Math.abs(t.origin.x-p.x)<d.EPSILON&&(y.x=m.x),Math.abs(t.origin.y-p.y)<d.EPSILON&&(y.y=m.y),o.push((0,u.vec2)(c.x,c.y));let b=1;for(;b<r&&c.x>=0&&c.x<v.x&&c.y>=0&&c.y<v.y&&(y.x<y.y?(y.x+=m.x,c.x+=f):(y.y+=m.y,c.y+=h),!(c.x<0||c.x>=v.x||c.y<0||c.y>=v.y));)o.push((0,u.vec2)(c.x,c.y)),b++;return{cells:o}},e.rayIntersectsRay=function(t,e){const n=u.vec2.nor(t.direction),s=u.vec2.nor(e.direction);if((0,l.vectorAlmostZero)(n)||(0,l.vectorAlmostZero)(s))return{intersects:!1};const r=u.vec2.cross(n,s),i=u.vec2.sub(e.origin,t.origin);if(Math.abs(r)<d.EPSILON){if(Math.abs(u.vec2.cross(i,n))<d.EPSILON){const t=u.vec2.dot(i,n);if((t<=0||t>=0)&&u.vec2.dot(n,s)>1-d.EPSILON)return{intersects:!0}}return{intersects:!1}}const o=u.vec2.cross(i,s)/r,c=u.vec2.cross(i,n)/r;return o>=0&&c>=0?{intersects:!0,intersectionPoint:u.vec2.add(t.origin,u.vec2.mul(n,o))}:{intersects:!1}},e.rayIntersectsLine=A,e.rayIntersectsCircle=function(t,e){const n=u.vec2.nor(t.direction),s=u.vec2.sub(e.position,t.origin),r=u.vec2.dot(n,n),i=2*u.vec2.dot(n,u.vec2.mul(s,-1)),o=i*i-4*r*(u.vec2.dot(s,s)-e.radius*e.radius);if(o<-d.EPSILON)return{intersects:!1};if(Math.abs(o)<d.EPSILON){const e=-i/(2*r);return e>=0?{intersects:!0,intersectionPoints:[u.vec2.add(t.origin,u.vec2.mul(n,e))]}:{intersects:!1}}const c=Math.sqrt(o),a=(-i-c)/(2*r),v=(-i+c)/(2*r);if(v<0)return{intersects:!1};let l=[];return a>=0&&l.push(u.vec2.add(t.origin,u.vec2.mul(n,a))),v>=0&&l.push(u.vec2.add(t.origin,u.vec2.mul(n,v))),l=O(l),{intersects:l.length>0,intersectionPoints:l.length>0?l:void 0}},e.rayIntersectsRectangle=j,e.rayIntersectsPolygon=function(t,e){if(!P(e))return null;if(!g(e)){const n=E(e);return n?_(t,x(n)):null}return _(t,b(e.vertices))},e.lineIntersectsRay=function(t,e){return A(e,t)},e.lineIntersectsLine=C,e.lineIntersectsCircle=k,e.lineIntersectsRectangle=function(t,e){if((0,l.vectorAlmostZero)(e.size))return{intersects:!1};const n=y(e);if(N(t.start,e).intersects&&N(t.end,e).intersects)return{intersects:!0};let s=[];const r=b(n);for(const e of r){const n=C(t,e);n.intersects&&n.intersectionPoint&&s.push(n.intersectionPoint)}return s=O(s),s.length>1&&s.sort(((e,n)=>u.vec2.len(u.vec2.sub(e,t.start))-u.vec2.len(u.vec2.sub(n,t.start)))),{intersects:s.length>0,intersectionPoints:s.length>0?s:void 0}},e.lineIntersectsPolygon=function(t,e){if(!P(e))return null;if(!g(e)){const n=E(e);return n?q(t,e,x(n)):null}return q(t,e,b(e.vertices))},e.circleIntersectsCircle=function(t,e){const n=u.vec2.sub(e.position,t.position),s=u.vec2.len(n),r=t.radius+e.radius;if(s>r+d.EPSILON)return{intersects:!1};if(s<d.EPSILON&&Math.abs(t.radius-e.radius)<d.EPSILON)return{intersects:!0,minimumSeparation:u.vec2.mul(u.vec2.ux(),2*t.radius)};if(s<Math.abs(t.radius-e.radius)-d.EPSILON)return{intersects:!0,minimumSeparation:u.vec2.mul(u.vec2.nor(n),t.radius-s+e.radius)};const i=(t.radius*t.radius-e.radius*e.radius+s*s)/(2*s),o=Math.sqrt(Math.max(0,t.radius*t.radius-i*i)),c=u.vec2.add(t.position,u.vec2.mul(u.vec2.nor(n),i));if(Math.abs(s-r)<d.EPSILON)return{intersects:!0,intersectionPoints:[c],minimumSeparation:(0,u.vec2)()};const a=u.vec2.mul((0,u.vec2)({x:-n.y,y:n.x}),o/s);return{intersects:!0,intersectionPoints:[u.vec2.add(c,a),u.vec2.sub(c,a)],minimumSeparation:u.vec2.mul(u.vec2.nor(n),r-s)}},e.circleIntersectsRectangle=function(t,e){const n=b(y(e)),s=N(t.position,e),r=s.intersects,i=L(e.position,t).intersects,o=[];for(const e of n){const n=k(e,t);n.intersects&&n.intersectionPoints&&o.push(...n.intersectionPoints)}let c;if(c=Math.abs(s.distance)<d.EPSILON?(0,u.vec2)():s.distance<0?u.vec2.mul(u.vec2.nor(u.vec2.sub(s.closestPoint,t.position)),t.radius+Math.abs(s.distance)):u.vec2.mul(u.vec2.nor(u.vec2.sub(t.position,s.closestPoint)),t.radius-s.distance),(r||i)&&0===o.length)return{intersects:!0,minimumSeparation:c};const a=O(o);return a.length>0?{intersects:!0,intersectionPoints:a,minimumSeparation:c}:{intersects:!1}},e.circleIntersectsPolygon=function t(e,n,s){var r,i,o,c,a,v;if(!P(n))return null;const f=null!==(r=null==s?void 0:s.findMinimumSeparation)&&void 0!==r&&r,h=w(e.position,n),m=null!==(i=null==h?void 0:h.intersects)&&void 0!==i&&i;if(!g(n)){const r=E(n);if(!r)return null;const i=r.every((t=>{var n;const s=I(t);return!!s&&null!==(n=L(s,e).intersects)&&void 0!==n&&n})),v=x(r),h=R(e,v,m,i);if(h.intersects&&f){let i=0,v=null,f=(0,u.vec2)(),m=!0;for(;m&&(null===v||!(0,l.vectorsAlmostEqual)(v,f))&&++i<10;){let i=[],l=u.vec2.add(e.position,f);for(const t of r){const n=w(l,t);if(!n)continue;let s;s=Math.abs(n.distance)<d.EPSILON?(0,u.vec2)():n.distance<0?u.vec2.mul(u.vec2.nor(u.vec2.sub(n.closestPoint,l)),e.radius+Math.abs(n.distance)):u.vec2.mul(u.vec2.nor(u.vec2.sub(l,n.closestPoint)),e.radius-n.distance),i.push({separation:s,distance:Math.abs(n.distance)})}i=i.sort(((t,e)=>t.distance-e.distance)),v=u.vec2.cpy(f),f=u.vec2.add(f,(null===(o=i[0])||void 0===o?void 0:o.separation)||(0,u.vec2)()),m=null!==(a=null===(c=t({...e,position:u.vec2.add(e.position,u.vec2.mul(f,1.01))},n,{...s,findMinimumSeparation:!1}))||void 0===c?void 0:c.intersects)&&void 0!==a&&a}return{...h,minimumSeparation:f}}return h}const p=null!==(v=L(I(n),e).intersects)&&void 0!==v&&v,y=b(n.vertices),M=R(e,y,m,p);if(M.intersects&&f){let t;return t=Math.abs(h.distance)<d.EPSILON?(0,u.vec2)():h.distance<0?u.vec2.mul(u.vec2.nor(u.vec2.sub(h.closestPoint,e.position)),e.radius+Math.abs(h.distance)):u.vec2.mul(u.vec2.nor(u.vec2.sub(e.position,h.closestPoint)),e.radius-h.distance),{...M,minimumSeparation:t}}return M},e.rectangleIntersectsRectangle=function(t,e){if((0,l.vectorAlmostZero)(t.size)||(0,l.vectorAlmostZero)(e.size))return{intersects:!1};const n=y(t),s=y(e),r=b(n),i=b(s),o=[];for(const t of[...r,...i]){const e=u.vec2.sub(t.end,t.start),n=u.vec2.nor(u.vec2.rotf(e,-1));o.some((t=>Math.abs(u.vec2.dot(t,n))>1-d.EPSILON))||o.push(n)}let c=1/0,a=(0,u.vec2)();for(const t of o){const e=V(n,t),r=V(s,t);if(e.max<r.min||r.max<e.min)return{intersects:!1};const i=Math.min(e.max-r.min,r.max-e.min);i<c&&(c=i,a=t)}const v=[];for(const t of r)for(const e of i){const n=C(t,e);n.intersects&&n.intersectionPoint&&v.push(n.intersectionPoint)}const f=O(v),h=t.position,m=e.position,p=u.vec2.sub(m,h);u.vec2.dot(a,p)<0&&(a=u.vec2.mul(a,-1));const x=u.vec2.mul(a,c);return{intersects:!0,intersectionPoints:f.length>0?f:void 0,minimumSeparation:x}},e.rectangleIntersectsPolygon=function(t,e){if(!P(e))return null;if((0,l.vectorAlmostZero)(t.size))return{intersects:!1};return Z({vertices:y(t)},e)},e.polygonIntersectsPolygon=Z;const a=n(395),u=n(430),v=o(n(513)),l=n(955),d=o(n(388)),f=n(233);function h(t,e,n){const s=.5*Math.abs(t.x*(e.y-n.y)+e.x*(n.y-t.y)+n.x*(t.y-e.y));return Math.abs(s)<d.EPSILON}function m(t,e=1){return{start:t.origin,end:u.vec2.add(t.origin,u.vec2.mul(t.direction,e))}}function p(t){return void 0!==t.rotation&&Math.abs(t.rotation)>d.EPSILON}function y(t){const{position:e,size:n,rotation:s=0}=t,r=u.vec2.div(n,2);let i=u.vec2.fromComponents(u.vec2.swiz(r,"XY")),o=u.vec2.fromComponents(u.vec2.swiz(r,"xY")),c=u.vec2.fromComponents(u.vec2.swiz(r,"xy")),a=u.vec2.fromComponents(u.vec2.swiz(r,"Xy"));return p(t)&&(i=u.vec2.rot(i,s),o=u.vec2.rot(o,s),c=u.vec2.rot(c,s),a=u.vec2.rot(a,s)),[u.vec2.add(e,i),u.vec2.add(e,o),u.vec2.add(e,c),u.vec2.add(e,a)]}function b(t){const e=[];for(let n=0;n<t.length;n++){const s=t[n],r=(0,a.at)(t,n+1);e.push({start:s,end:r})}return e}function x(t){const e=t.flatMap((t=>b(t.vertices))),n=(t,e)=>{const n=C(t,e);return!(!n.intersects||n.intersectionPoint||(0,l.vectorsAlmostEqual)(t.end,e.start)&&!(0,l.vectorsAlmostEqual)(t.start,e.end)||(0,l.vectorsAlmostEqual)(t.start,e.end)&&!(0,l.vectorsAlmostEqual)(t.end,e.start))},s=[];for(const t of e)s.some((e=>n(e,t)))||e.some((e=>e!==t&&n(e,t)))||s.push(t);return s}function g(t){if(!P(t))return null;let e=0;for(let n=0;n<t.vertices.length;n++){const s=t.vertices[n],r=(0,a.at)(t.vertices,n+1),i=(0,a.at)(t.vertices,n+2),o=(r.x-s.x)*(i.y-s.y)-(r.y-s.y)*(i.x-s.x);if(0!==o)if(0===e)e=Math.sign(o);else if(Math.sign(o)!==e)return!1}return!0}function M(t){if(t.vertices.length<3)return!1;const e=t.vertices.length;for(let n=0;n<e;n++){const s=t.vertices[n],r=(0,a.at)(t.vertices,n+1);for(let i=n+2;i<e;i++){const o=t.vertices[i],c=(0,a.at)(t.vertices,i+1);if(0===n&&i===e-1)continue;const{intersects:u}=C({start:s,end:r},{start:o,end:c});if(u)return!0}}return!1}function P(t){return t.vertices.length>=3&&!M(t)}function z(t,e){if(!P(t))return null;let n=0;for(let e=0;e<t.vertices.length;e++){const s=t.vertices[e],r=(0,a.at)(t.vertices,e+1);n+=(r.x-s.x)*(r.y+s.y)}switch((null==e?void 0:e.coordinateSystem)||"screen"){case"cartesian":return n>0?"clockwise":"counter-clockwise";case"screen":return n>0?"counter-clockwise":"clockwise";default:return null}}function I(t){return P(t)?t.vertices.every(((t,e,n)=>h(t,(0,a.at)(n,e+1),(0,a.at)(n,e+2))))?null:u.vec2.div([...t.vertices].reduce(((t,e)=>u.vec2.add(t,e)),(0,u.vec2)()),t.vertices.length):null}function O(t){const e=[],n=t.length;for(let s=0;s<n;s++){const n=t[s];e.some((t=>(0,l.vectorsAlmostEqual)(n,t)))||e.push(n)}return e}function E(t,e){var n;if(!P(t))return null;if(g(t))return[t];const s=(null==e?void 0:e.mode)||"fast",r=null===(n=null==e?void 0:e.keepWindingOrder)||void 0===n||n,i=z(t),o=t.vertices.map((t=>[t.x,t.y]));"counter-clockwise"===i&&o.reverse();let c=[];switch(s){case"fast":c=v.quickDecomp(o);break;case"optimal":c=v.decomp(o)}const a=[];for(const t of c)a.push({vertices:t.map((t=>(0,u.vec2)(t[0],t[1])))});if(r)for(const t of a)z(t)!==i&&t.vertices.reverse();return a.length>0?a:null}function S(t,e){const n=u.vec2.sub(e.end,e.start),s=u.vec2.nor(n),r=u.vec2.sub(t,e.start),i=u.vec2.dot(r,s),o=u.vec2.len(n),c=Math.max(0,Math.min(o,i)),a=u.vec2.add(e.start,u.vec2.mul(s,c)),v=u.vec2.len(u.vec2.sub(t,a));return{intersects:v<d.EPSILON,closestPoint:a,distance:v}}function L(t,e){const n=u.vec2.sub(t,e.position),s=u.vec2.len(n),r=s<=e.radius,i=r?-(e.radius-s):s-e.radius;return{intersects:r,closestPoint:u.vec2.add(e.position,u.vec2.mul(u.vec2.nor(n),e.radius)),distance:i}}function N(t,e){if((0,l.vectorAlmostZero)(e.size)){const n=(0,l.vectorsAlmostEqual)(t,e.position);return{intersects:n,closestPoint:e.position,distance:n?0:u.vec2.len(u.vec2.sub(t,e.position))}}const n=w(t,{vertices:y(e)});if(!n)throw new Error("Invalid rectangle vertices");return n}function w(t,e){if(!P(e))return null;let n=!1;const s=e.vertices;let r=1/0,i=t;for(let e=0;e<s.length;e++){const o=(e+1)%s.length,c=s[e],a=s[o];c.y>t.y!=a.y>t.y&&t.x<(a.x-c.x)*(t.y-c.y)/(a.y-c.y)+c.x&&(n=!n);const u={start:c,end:a},{closestPoint:v,distance:l}=S(t,u),d=l*l;d<r&&(r=d,i=v)}const o=Math.sqrt(r);return{intersects:n,closestPoint:i,distance:n?-o:o}}function A(t,e){const n=u.vec2.sub(e.end,e.start),s=u.vec2.nor(t.direction);if((0,l.vectorAlmostZero)(n)||(0,l.vectorAlmostZero)(s))return{intersects:!1};const r=u.vec2.cross(s,n),i=u.vec2.sub(e.start,t.origin);if(Math.abs(r)<d.EPSILON){if(Math.abs(u.vec2.cross(i,s))<d.EPSILON){const r=u.vec2.dot(u.vec2.sub(e.start,t.origin),s),i=u.vec2.dot(u.vec2.sub(e.end,t.origin),s);if((r>=0||i>=0)&&Math.min(r,i)<=u.vec2.len(n))return{intersects:!0}}return{intersects:!1}}const o=u.vec2.cross(i,n)/r,c=u.vec2.cross(i,s)/r;return o>=0&&c>=0&&c<=1?{intersects:!0,intersectionPoint:u.vec2.add(t.origin,u.vec2.mul(s,o))}:{intersects:!1}}function j(t,e){let n=[];const s=b(y(e));for(const e of s){const s=A(t,e);s.intersects&&s.intersectionPoint&&n.push(s.intersectionPoint)}if(n=O(n),n.length>1){const e=u.vec2.nor(t.direction);n.sort(((n,s)=>u.vec2.dot(u.vec2.sub(n,t.origin),e)-u.vec2.dot(u.vec2.sub(s,t.origin),e)))}return{intersects:n.length>0,intersectionPoints:n.length>0?n:void 0}}function _(t,e){let n=[];for(const s of e){const e=A(t,s);e.intersects&&e.intersectionPoint&&n.push(e.intersectionPoint)}if(n=O(n),n.length>1){const e=u.vec2.nor(t.direction);n.sort(((n,s)=>u.vec2.dot(u.vec2.sub(n,t.origin),e)-u.vec2.dot(u.vec2.sub(s,t.origin),e)))}return{intersects:n.length>0,intersectionPoints:n.length>0?n:void 0}}function C(t,e){const n=u.vec2.sub(t.end,t.start),s=u.vec2.sub(e.end,e.start);if((0,l.vectorAlmostZero)(n)||(0,l.vectorAlmostZero)(s))return{intersects:!1};const r=u.vec2.cross(n,s),i=u.vec2.sub(e.start,t.start);if(Math.abs(r)<d.EPSILON){if(Math.abs(u.vec2.cross(i,n))<d.EPSILON){const t=u.vec2.dot(i,n)/u.vec2.dot(n,n),e=t+u.vec2.dot(s,n)/u.vec2.dot(n,n),r=Math.min(t,e),o=Math.max(t,e);if(r<=1&&o>=0)return{intersects:!0}}return{intersects:!1}}const o=u.vec2.cross(i,s)/r,c=u.vec2.cross(i,n)/r;return o>=0&&o<=1&&c>=0&&c<=1?{intersects:!0,intersectionPoint:u.vec2.add(t.start,u.vec2.mul(n,o))}:{intersects:!1}}function k(t,e){const n=u.vec2.sub(t.end,t.start),s=u.vec2.dot(n,n);if(s<d.EPSILON)return{intersects:!1};if(L(t.start,e).intersects&&L(t.end,e).intersects)return{intersects:!0};const r=u.vec2.sub(e.position,t.start),i=s,o=2*u.vec2.dot(n,u.vec2.mul(r,-1)),c=o*o-4*i*(u.vec2.dot(r,r)-e.radius*e.radius);if(c<-d.EPSILON)return{intersects:!1};if(Math.abs(c)<d.EPSILON){const e=-o/(2*i);return e>=0&&e<=1?{intersects:!0,intersectionPoints:[u.vec2.add(t.start,u.vec2.mul(n,e))]}:{intersects:!1}}const a=Math.sqrt(c),v=(-o-a)/(2*i),l=(-o+a)/(2*i);let f=[];return l<0||v>1?{intersects:!1}:(v>=0&&v<=1&&f.push(u.vec2.add(t.start,u.vec2.mul(n,v))),l>=0&&l<=1&&f.push(u.vec2.add(t.start,u.vec2.mul(n,l))),f=O(f),f.length>1&&f.sort(((e,n)=>u.vec2.len(u.vec2.sub(e,t.start))-u.vec2.len(u.vec2.sub(n,t.start)))),{intersects:f.length>0,intersectionPoints:f.length>0?f:void 0})}function q(t,e,n){const s=w({x:(t.start.x+t.end.x)/2,y:(t.start.y+t.end.y)/2},e),r=w(t.start,e),i=w(t.end,e);if((null==s?void 0:s.intersects)&&(null==r?void 0:r.intersects)&&(null==i?void 0:i.intersects))return{intersects:!0};let o=[];for(const e of n){const n=C(t,e);n.intersects&&n.intersectionPoint&&o.push(n.intersectionPoint)}return o=O(o),o.length>1&&o.sort(((e,n)=>u.vec2.len(u.vec2.sub(e,t.start))-u.vec2.len(u.vec2.sub(n,t.start)))),{intersects:o.length>0,intersectionPoints:o.length>0?o:void 0}}function R(t,e,n,s){let r=[];for(const n of e){const e=k(n,t);e.intersects&&e.intersectionPoints&&r.push(...e.intersectionPoints)}return(n||s)&&0===r.length?{intersects:!0}:(r=O(r),{intersects:r.length>0,intersectionPoints:r.length>0?r:void 0})}function V(t,e){let n=1/0,s=-1/0;for(const r of t){const t=u.vec2.dot(r,e);n=Math.min(n,t),s=Math.max(s,t)}return{min:n,max:s}}function Z(t,e){if(!P(t)||!P(e))return null;let n=[];if(g(t))n=[t];else{const e=E(t);if(!e)return null;n=e}let s=[];if(g(e))s=[e];else{const t=E(e);if(!t)return null;s=t}const r=x(n),i=x(s),o=[];for(const t of r)for(const e of i){const n=C(t,e);n.intersects&&n.intersectionPoint&&o.push(n.intersectionPoint)}if(0===o.length){if(n.map(I).filter((t=>!!t)).every((t=>{var n;return null===(n=w(t,e))||void 0===n?void 0:n.intersects})))return{intersects:!0};if(s.map(I).filter((t=>!!t)).every((e=>{var n;return null===(n=w(e,t))||void 0===n?void 0:n.intersects})))return{intersects:!0}}const c=O(o);return{intersects:c.length>0,intersectionPoints:c.length>0?c:void 0}}c(n(233),e)},233:(t,e,n)=>{"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.isPoint=r,e.isRay=function(t){return t&&"object"==typeof t&&"origin"in t&&r(t.origin)&&"direction"in t&&(0,s.isVec2)(t.direction)},e.isLine=function(t){return t&&"object"==typeof t&&"start"in t&&r(t.start)&&"end"in t&&r(t.end)},e.isCircle=function(t){return t&&"object"==typeof t&&"position"in t&&r(t.position)&&"radius"in t&&"number"==typeof t.radius},e.isAABB=function(t){return t&&"object"==typeof t&&"position"in t&&r(t.position)&&"size"in t&&(0,s.isVec2)(t.size)},e.isRectangle=function(t){return t&&"object"==typeof t&&"position"in t&&r(t.position)&&"size"in t&&(0,s.isVec2)(t.size)&&(!("rotation"in t)||"number"==typeof t.rotation)},e.isPolygon=function(t){return t&&"object"==typeof t&&"vertices"in t&&Array.isArray(t.vertices)&&t.vertices.every(r)};const s=n(197);function r(t){return(0,s.isVec2)(t)}},82:function(t,e,n){"use strict";var s,r=this&&this.__createBinding||(Object.create?function(t,e,n,s){void 0===s&&(s=n);var r=Object.getOwnPropertyDescriptor(e,n);r&&!("get"in r?!e.__esModule:r.writable||r.configurable)||(r={enumerable:!0,get:function(){return e[n]}}),Object.defineProperty(t,s,r)}:function(t,e,n,s){void 0===s&&(s=n),t[s]=e[n]}),i=this&&this.__setModuleDefault||(Object.create?function(t,e){Object.defineProperty(t,"default",{enumerable:!0,value:e})}:function(t,e){t.default=e}),o=this&&this.__importStar||(s=function(t){return s=Object.getOwnPropertyNames||function(t){var e=[];for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&(e[e.length]=n);return e},s(t)},function(t){if(t&&t.__esModule)return t;var e={};if(null!=t)for(var n=s(t),o=0;o<n.length;o++)"default"!==n[o]&&r(e,t,n[o]);return i(e,t),e}),c=this&&this.__exportStar||function(t,e){for(var n in t)"default"===n||Object.prototype.hasOwnProperty.call(e,n)||r(e,t,n)};Object.defineProperty(e,"__esModule",{value:!0}),e.distance=function(t,e){return u.vec3.len(u.vec3.sub(t,e))},e.angle=function(t,e){if((0,v.vectorsAlmostEqual)(t,e))return(0,u.vec3)();let n=u.vec3.radx(u.vec3.sub(e,t))%(2*Math.PI);n<0&&(n+=2*Math.PI);let s=u.vec3.rady(u.vec3.sub(e,t))%(2*Math.PI);s<0&&(s+=2*Math.PI);let r=u.vec3.radz(u.vec3.sub(e,t))%(2*Math.PI);return r<0&&(r+=2*Math.PI),(0,u.vec3)(n,s,r)},e.angleBetween=function(t,e){let n=(0,d.isRay)(t)?f(t,1):t,s=(0,d.isRay)(e)?f(e,1):e;if((0,v.vectorAlmostZero)(u.vec3.sub(n.start,n.end))||(0,v.vectorAlmostZero)(u.vec3.sub(s.start,s.end)))return 0;const r=u.vec3.nor(u.vec3.sub(n.end,n.start)),i=u.vec3.nor(u.vec3.sub(s.end,s.start)),o=(0,a.clamp)(u.vec3.dot(r,i),-1,1),c=Math.acos(o);return c<0?c+2*Math.PI:c},e.pointsAreCollinear=function(t,e,n){const s=u.vec3.sub(e,t),r=u.vec3.sub(n,t),i=u.vec3.cross(s,r);return u.vec3.len(i)<l.EPSILON},e.lineToRay=function(t){return{origin:t.start,direction:u.vec3.nor(u.vec3.sub(t.end,t.start))}},e.rayToLine=f,e.aabb=function(t){if((0,d.isLine)(t))return{position:(0,u.vec3)(Math.min(t.start.x,t.end.y),Math.min(t.start.y,t.end.y),Math.min(t.start.z,t.end.z)),size:(0,u.vec3)(Math.abs(t.start.x-t.end.x),Math.abs(t.start.y-t.end.y),Math.abs(t.start.z-t.end.z))};if((0,d.isSphere)(t))return{position:t.position,size:(0,u.vec3)(2*t.radius)};if((0,d.isCuboid)(t)){const e=m(t),n=(0,u.vec3)(Math.min(...e.map((t=>t.x))),Math.min(...e.map((t=>t.y))),Math.min(...e.map((t=>t.z))));return{position:n,size:(0,u.vec3)(Math.max(...e.map((t=>t.x)))-n.x,Math.max(...e.map((t=>t.y)))-n.y,Math.max(...e.map((t=>t.z)))-n.z)}}if((0,d.isMesh)(t)||(0,d.isPolygon)(t)){const e=(0,u.vec3)(Math.min(...t.vertices.map((t=>t.x))),Math.min(...t.vertices.map((t=>t.y))),Math.min(...t.vertices.map((t=>t.z))));return{position:e,size:(0,u.vec3)(Math.max(...t.vertices.map((t=>t.x)))-e.x,Math.max(...t.vertices.map((t=>t.y)))-e.y,Math.max(...t.vertices.map((t=>t.z)))-e.z)}}return null},e.aabbToCuboid=function(t){return{position:u.vec3.add(t.position,u.vec3.div(t.size,2)),size:t.size,rotation:(0,u.vec3)(0,0,0)}},e.aabbsOverlap=function(t,e){const n=(0,v.overlapInterval)({min:t.position.x,max:t.position.x+t.size.x},{min:e.position.x,max:e.position.x+e.size.x}),s=(0,v.overlapInterval)({min:t.position.y,max:t.position.y+t.size.y},{min:e.position.y,max:e.position.y+e.size.y}),r=(0,v.overlapInterval)({min:t.position.z,max:t.position.z+t.size.z},{min:e.position.z,max:e.position.z+e.size.z});return n&&s&&r?{intersects:!0,overlap:{position:(0,u.vec3)(n.min,s.min,r.min),size:(0,u.vec3)(n.max-n.min,s.max-s.min,r.max-r.min)}}:{intersects:!1}},e.pointInAABB=function(t,e){const{position:n,size:s}=e,r=n,i=u.vec3.add(n,s),o=(0,v.valueInInterval)(t.x,{min:r.x,max:i.x})&&(0,v.valueInInterval)(t.y,{min:r.y,max:i.y})&&(0,v.valueInInterval)(t.z,{min:r.z,max:i.z});let c;if(o){const e=[{x:r.x,y:t.y,z:t.z,d:Math.abs(t.x-r.x)},{x:i.x,y:t.y,z:t.z,d:Math.abs(t.x-i.x)},{x:t.x,y:r.y,z:t.z,d:Math.abs(t.y-r.y)},{x:t.x,y:i.y,z:t.z,d:Math.abs(t.y-i.y)},{x:t.x,y:t.y,z:r.z,d:Math.abs(t.z-r.z)},{x:t.x,y:t.y,z:i.z,d:Math.abs(t.z-i.z)}].reduce(((t,e)=>t.d<e.d?t:e));c=(0,u.vec3)(e.x,e.y,e.z)}else c=(0,u.vec3)((0,a.clamp)(t.x,r.x,i.x),(0,a.clamp)(t.y,r.y,i.y),(0,a.clamp)(t.z,r.z,i.z));const l=u.vec3.len(u.vec3.sub(t,c));return{intersects:o,closestPoint:c,distance:o?-l:l}},e.cuboidIsRotated=h,e.cuboidVertices=m,e.cuboidToPolygons=p,e.verticesToEdges=y,e.polygonIsValid=b,e.polygonWindingOrder=function(t,e){if(!b(t))return null;const[n,s,r]=t.vertices,i=(null==e?void 0:e.handedness)||"right",o=u.vec3.sub(s,n),c=u.vec3.sub(r,n),a=u.vec3.cross(o,c);if((0,v.vectorAlmostZero)(a))return null;if(null==e?void 0:e.normal){const t=u.vec3.dot(u.vec3.nor(a),u.vec3.nor(e.normal));return Math.abs(t)<l.EPSILON?null:"right"===i?t>0?"counter-clockwise":"clockwise":t>0?"clockwise":"counter-clockwise"}return Math.abs(a.z)<l.EPSILON?null:"right"===i?a.z>0?"counter-clockwise":"clockwise":a.z>0?"clockwise":"counter-clockwise"},e.polygonArea=function(t){if(!b(t))return null;const[e,n,s]=t.vertices;return Math.abs(e.x*(n.y-n.x)*e.y+n.x*(s.y-s.x)*n.y+s.x*(e.y-e.x)*s.y)/2},e.polygonCentroid=x,e.polygonToPlane=function(t){if(!b(t))return null;const[e,n,s]=t.vertices,r=u.vec3.sub(n,e),i=u.vec3.sub(s,e),o=u.vec3.nor(u.vec3.cross(r,i));return{point:x(t),normal:o}},e.polygonsToMesh=function(t){if(0===t.length)return{vertices:[],indices:[]};const e=new Map,n=[];return t.forEach(((t,s)=>{if(!b(t))throw new Error(`Invalid polygon at index ${s}`);t.vertices.forEach((t=>{const s=`${t.x},${t.y},${t.z}`;e.has(s)||e.set(s,t);const r=Array.from(e.keys()).indexOf(s);n.push(r)}))})),{vertices:Array.from(e.values()),indices:n}},e.meshToPolygons=g,e.meshToEdges=function(t){if(t.indices.length%2!=0)throw new Error("Mesh indices must be a multiple of 2 to form edges");const e=[];for(let n=0;n<t.indices.length;n+=2){const s=t.indices[n],r=t.indices[n+1];if(s>=t.vertices.length||r>=t.vertices.length)throw new Error("Mesh indices out of bounds");e.push({start:t.vertices[s],end:t.vertices[r]})}return e},e.meshCentroid=function(t){return u.vec3.div(t.vertices.reduce(((t,e)=>u.vec3.add(t,e)),(0,u.vec3)()),t.vertices.length)},e.meshIsWatertight=function(t){const e=new Map;for(let n=0;n<t.indices.length;n+=3){const s=t.indices[n],r=t.indices[n+1],i=t.indices[n+2];[[Math.min(s,r),Math.max(s,r)],[Math.min(r,i),Math.max(r,i)],[Math.min(i,s),Math.max(i,s)]].forEach((([t,n])=>{const s=`${t},${n}`;e.set(s,(e.get(s)||0)+1)}))}return Array.from(e.values()).every((t=>2===t))},e.pointOnRay=function(t,e){const n=u.vec3.sub(t,e.origin),s=u.vec3.nor(e.direction),r=u.vec3.dot(n,s),i=u.vec3.add(e.origin,u.vec3.mul(s,Math.max(0,r))),o=u.vec3.len(u.vec3.sub(t,i));return{intersects:o<l.EPSILON&&r>=0,closestPoint:i,distance:o}},e.pointOnLine=M,e.pointInSphere=function(t,e){const n=u.vec3.sub(t,e.position),s=u.vec3.len(n),r=s<=e.radius,i=r?-(e.radius-s):s-e.radius;return{intersects:r,closestPoint:u.vec3.add(e.position,u.vec3.mul(u.vec3.nor(n),e.radius)),distance:i}},e.pointInCuboid=P,e.pointOnPolygon=z,e.rayTraverseGrid=function(t,e,n,s,r=-1){if(e<=0)return{cells:[]};if((r=(0,a.clamp)(-1===r?1e4:r,0,1e4))<=0)return{cells:[]};n=u.vec3.map(n,Math.floor),s=u.vec3.map(s,Math.ceil);const i=u.vec3.nor(t.direction);if((0,v.vectorAlmostZero)(i))return{cells:[]};const o=[];let c=u.vec3.map(u.vec3.div(u.vec3.sub(t.origin,n),e),Math.floor);const d=u.vec3.sub(s,n);if(c.x<0||c.x>=d.x||c.y<0||c.y>=d.y||c.z<0||c.z>=d.z){const r=E(t,{position:u.vec3.add(n,u.vec3.div(u.vec3.sub(s,n),2)),size:u.vec3.sub(s,n)});if(!r.intersects||!r.intersectionPoints)return{cells:o};const i=r.intersectionPoints[0];if(c=u.vec3.map(u.vec3.div(u.vec3.sub(i,n),e),Math.floor),c.x<0||c.x>=d.x||c.y<0||c.y>=d.y||c.z<0||c.z>=d.z)return{cells:o}}const f=Math.sign(i.x),h=Math.sign(i.y),m=Math.sign(i.z),p={x:0!==i.x?Math.abs(e/i.x):1/0,y:0!==i.y?Math.abs(e/i.y):1/0,z:0!==i.z?Math.abs(e/i.z):1/0},y=(0,u.vec3)(n.x+(c.x+(f>0?1:0))*e,n.y+(c.y+(h>0?1:0))*e,n.z+(c.z+(m>0?1:0))*e),b={x:0!==i.x?Math.abs((y.x-t.origin.x)/i.x):1/0,y:0!==i.y?Math.abs((y.y-t.origin.y)/i.y):1/0,z:0!==i.z?Math.abs((y.z-t.origin.z)/i.z):1/0};Math.abs(t.origin.x-y.x)<l.EPSILON&&(b.x=p.x),Math.abs(t.origin.y-y.y)<l.EPSILON&&(b.y=p.y),Math.abs(t.origin.z-y.z)<l.EPSILON&&(b.z=p.z),o.push((0,u.vec3)(c.x,c.y,c.z));let x=1;for(;x<r&&c.x>=0&&c.x<d.x&&c.y>=0&&c.y<d.y&&c.z>=0&&c.z<d.z&&(b.x<b.y&&b.x<b.z?(b.x+=p.x,c.x+=f):b.y<b.z?(b.y+=p.y,c.y+=h):(b.z+=p.z,c.z+=m),!(c.x<0||c.x>=d.x||c.y<0||c.y>=d.y||c.z<0||c.z>=d.z));)o.push((0,u.vec3)(c.x,c.y,c.z)),x++;return{cells:o}},e.rayIntersectsRay=function(t,e){const n=u.vec3.nor(t.direction),s=u.vec3.nor(e.direction);if((0,v.vectorAlmostZero)(n)||(0,v.vectorAlmostZero)(s))return{intersects:!1};const r=u.vec3.sub(e.origin,t.origin),i=u.vec3.cross(n,s),o=u.vec3.dot(i,i);if(o<l.EPSILON){const e=u.vec3.cross(r,n);if(u.vec3.len(e)<l.EPSILON){const e=u.vec3.dot(r,n);if(e>=0)return{intersects:!0,intersectionPoint:u.vec3.add(t.origin,u.vec3.mul(n,e))}}return{intersects:!1}}const c=u.vec3.dot(r,u.vec3.cross(s,i))/o,a=u.vec3.dot(r,u.vec3.cross(n,i))/o;if(c<0||a<0)return{intersects:!1};const d=u.vec3.add(t.origin,u.vec3.mul(n,c)),f=u.vec3.add(e.origin,u.vec3.mul(s,a));return u.vec3.len(u.vec3.sub(d,f))<l.EPSILON?{intersects:!0,intersectionPoint:u.vec3.add(d,u.vec3.mul(u.vec3.sub(f,d),.5))}:{intersects:!1}},e.rayIntersectsLine=I,e.rayIntersectsSphere=function(t,e){const n=u.vec3.nor(t.direction),s=u.vec3.sub(e.position,t.origin),r=u.vec3.dot(n,n),i=2*u.vec3.dot(n,u.vec3.mul(s,-1)),o=i*i-4*r*(u.vec3.dot(s,s)-e.radius*e.radius);if(o<-l.EPSILON)return{intersects:!1};if(Math.abs(o)<l.EPSILON){const e=-i/(2*r);return e>=0?{intersects:!0,intersectionPoints:[u.vec3.add(t.origin,u.vec3.mul(n,e))]}:{intersects:!1}}const c=Math.sqrt(o),a=(-i-c)/(2*r),v=(-i+c)/(2*r);if(v<0)return{intersects:!1};const d=[];return a>=0&&d.push(u.vec3.add(t.origin,u.vec3.mul(n,a))),v>=0&&d.push(u.vec3.add(t.origin,u.vec3.mul(n,v))),{intersects:d.length>0,intersectionPoints:d.length>0?d:void 0}},e.rayIntersectsPlane=O,e.rayIntersectsCuboid=E,e.rayIntersectsPolygon=S,e.rayIntersectsMesh=function(t,e){const n=g(e),s=[];return n.forEach((e=>{const n=S(t,e);n&&n.intersects&&s.push(n.intersectionPoint)})),{intersects:s.length>0,intersectionPoints:s.length>0?s:void 0}},e.lineIntersectsRay=function(t,e){return I(e,t)},e.lineIntersectsLine=L,e.lineIntersectsSphere=N,e.lineIntersectsPlane=w,e.lineIntersectsCuboid=function(t,e){const n=u.vec3.sub(t.end,t.start),s=u.vec3.len(n);if(s<l.EPSILON){const n=P(t.start,e);return{intersects:n.intersects,intersectionPoints:n.intersects?[t.start]:void 0}}const r=u.vec3.div(n,s),{position:i,size:o,rotation:c=(0,u.vec3)()}=e;let a=u.vec3.sub(t.start,i),v=r;if(h(e)){const t=u.vec3.mul(c,-1);a=u.vec3.rota(a,t),v=u.vec3.rota(v,t)}const d=u.vec3.div(o,2),f=u.vec3.div(u.vec3.sub(u.vec3.mul(d,-1),a),v),m=u.vec3.div(u.vec3.sub(d,a),v),p=(0,u.vec3)(Math.min(f.x,m.x),Math.min(f.y,m.y),Math.min(f.z,m.z)),y=(0,u.vec3)(Math.max(f.x,m.x),Math.max(f.y,m.y),Math.max(f.z,m.z)),b=Math.max(p.x,p.y,p.z),x=Math.min(y.x,y.y,y.z);if(b>x||x<0||b>s)return{intersects:!1};const g=[];if(b>=0&&b<=s){let t=u.vec3.add(a,u.vec3.mul(v,b));h(e)&&(t=u.vec3.rota(t,c)),g.push(u.vec3.add(i,t))}if(x>b&&x>=0&&x<=s){let t=u.vec3.add(a,u.vec3.mul(v,x));h(e)&&(t=u.vec3.rota(t,c)),g.push(u.vec3.add(i,t))}return{intersects:g.length>0,intersectionPoints:g.length>0?g:void 0}},e.lineIntersectsPolygon=A,e.lineIntersectsMesh=function(t,e){const n=g(e),s=[];return n.forEach((e=>{const n=A(t,e);n&&n.intersects&&s.push(n.intersectionPoint)})),{intersects:s.length>0,intersectionPoints:s.length>0?s:void 0}},e.sphereIntersectsSphere=function(t,e){const n=u.vec3.sub(e.position,t.position),s=u.vec3.len(n),r=t.radius+e.radius;if(s>r)return{intersects:!1};if(s<l.EPSILON)return{intersects:!0,intersectionPoint:t.position,penetrationDepth:r,normal:(0,u.vec3)(1,0,0),contactPoints:{sphereA:u.vec3.add(t.position,(0,u.vec3)(t.radius,0,0)),sphereB:u.vec3.add(e.position,(0,u.vec3)(e.radius,0,0))}};const i=u.vec3.nor(n),o=r-s;return{intersects:!0,intersectionPoint:u.vec3.add(t.position,u.vec3.mul(i,t.radius+o/2)),penetrationDepth:o,normal:i,contactPoints:{sphereA:u.vec3.add(t.position,u.vec3.mul(i,t.radius)),sphereB:u.vec3.add(e.position,u.vec3.mul(i,-e.radius))}}},e.sphereIntersectsPlane=j,e.sphereIntersectsCuboid=function(t,e){const{position:n,size:s,rotation:r=(0,u.vec3)()}=e,i=u.vec3.div(s,2);let o=u.vec3.sub(t.position,n);h(e)&&(o=u.vec3.rota(o,u.vec3.mul(r,-1)));let c=(0,u.vec3)((0,a.clamp)(o.x,-i.x,i.x),(0,a.clamp)(o.y,-i.y,i.y),(0,a.clamp)(o.z,-i.z,i.z));h(e)&&(c=u.vec3.rota(c,r)),c=u.vec3.add(c,n);const v=u.vec3.sub(t.position,c),d=u.vec3.len(v);if(d>t.radius)return{intersects:!1};if(d<l.EPSILON){let e=u.vec3.nor(u.vec3.sub(t.position,n));const s=t.radius;return{intersects:!0,intersectionPoint:t.position,penetrationDepth:s,normal:e,contactPoint:c}}const f=u.vec3.nor(v),m=t.radius-d;return{intersects:!0,intersectionPoint:u.vec3.add(c,u.vec3.mul(f,m/2)),penetrationDepth:m,normal:f,contactPoint:c}},e.sphereIntersectsPolygon=_,e.sphereIntersectsMesh=function(t,e){const n=g(e);let s=!1;const r=[],i=[];return n.forEach((e=>{const n=_(t,e);n&&n.intersects&&(s=!0,r.push(n.intersectionPoint),n.polygonIntersectionPoints&&i.push(...n.polygonIntersectionPoints))})),{intersects:s,intersectionPoints:r.length>0?r:void 0,polygonIntersectionPoints:i.length>0?i:void 0}},e.planeIntersectsPlane=C,e.planeIntersectsMesh=function(t,e){return T(e,t)},e.cuboidIntersectsCuboid=function(t,e){const{position:n,size:s,rotation:r=(0,u.vec3)()}=t,{position:i,size:o,rotation:c=(0,u.vec3)()}=e,a=u.vec3.div(s,2),v=u.vec3.div(o,2),d=h(t)?k(r):null,f=h(e)?k(c):null,m=q(d),p=q(f),y=u.vec3.sub(i,n),b=[...m,...p,...R(m,p)];let x=1/0,g=null;for(const t of b){const e=u.vec3.len(t);if(e<l.EPSILON)continue;const n=u.vec3.div(t,e),s=u.vec3.dot(y,n),r=V(a,d,n)+V(v,f,n)-Math.abs(s);if(r<=0)return{intersects:!1};r<x&&(x=r,g=n)}if(!g)return{intersects:!0};const M=u.vec3.dot(y,g)<0?u.vec3.mul(g,-1):g,P=Z(t,M),z=Z(e,u.vec3.mul(M,-1));return{intersects:!0,intersectionPoint:u.vec3.add(P,u.vec3.mul(u.vec3.sub(z,P),.5)),penetrationDepth:x,normal:M,contactPoints:{cuboidA:P,cuboidB:z}}},e.cuboidIntersectsPlane=function(t,e){const n=p(t),s=[],r=u.vec3.nor(e.normal);let i,o=-1/0,c=1/0;m(t).forEach((t=>{const n=u.vec3.dot(u.vec3.sub(t,e.point),r);o=Math.max(o,n),c=Math.min(c,n)}));for(const t of n){const n=$(t,e);(null==n?void 0:n.intersects)&&n.intersectionPoints&&n.intersectionPoints.forEach((t=>{s.some((e=>u.vec3.len(u.vec3.sub(e,t))<l.EPSILON))||s.push(t)}))}return i=c*o<=0?Math.max(Math.abs(c),Math.abs(o)):Math.abs(o)<Math.abs(c)?Math.abs(o):Math.abs(c),{intersects:s.length>0,intersectionPoints:s.length>0?s:void 0,penetrationDepth:i}},e.cuboidIntersectsPolygon=D,e.cuboidIntersectsMesh=function(t,e){const n=g(e),s=[];for(const e of n){const n=D(t,e);if(n&&n.intersects){if(!n.intersectionPoints)return{intersects:!0};n.intersectionPoints.forEach((t=>{s.some((e=>(0,v.vectorsAlmostEqual)(e,t)))||s.push(t)}))}}return{intersects:s.length>0,intersectionPoints:s.length>0?s:void 0}},e.polygonIntersectsPolygon=B,e.polygonIntersectsPlane=$,e.polygonIntersectsMesh=function(t,e){if(!b(t))return null;const n=g(e),s=[];for(const e of n){const n=B(t,e);if(n&&n.intersects){if(!n.intersectionPoints)return{intersects:!0};n.intersectionPoints.forEach((t=>{s.some((e=>(0,v.vectorsAlmostEqual)(e,t)))||s.push(t)}))}}return{intersects:s.length>0,intersectionPoints:s.length>0?s:void 0}},e.meshIntersectsMesh=function(t,e){const n=g(t),s=g(e),r=[];for(const t of n)for(const e of s){const n=B(t,e);n&&n.intersects&&n.intersectionPoints&&n.intersectionPoints.forEach((t=>{r.some((e=>u.vec3.len(u.vec3.sub(e,t))<l.EPSILON))||r.push(t)}))}return{intersects:r.length>0,intersectionPoints:r.length>0?r:void 0}},e.meshIntersectsPlane=T;const a=n(395),u=n(430),v=n(955),l=o(n(388)),d=n(962);function f(t,e=1){return{start:t.origin,end:u.vec3.add(t.origin,u.vec3.mul(t.direction,e))}}function h(t){return void 0!==t.rotation&&!(0,v.vectorAlmostZero)(t.rotation)}function m(t){const{position:e,size:n,rotation:s=(0,u.vec3)()}=t,r=u.vec3.div(n,2);let i=u.vec3.fromComponents(u.vec3.swiz(r,"XYz")),o=u.vec3.fromComponents(u.vec3.swiz(r,"xYz")),c=u.vec3.fromComponents(u.vec3.swiz(r,"xyz")),a=u.vec3.fromComponents(u.vec3.swiz(r,"Xyz")),v=u.vec3.fromComponents(u.vec3.swiz(r,"XYZ")),l=u.vec3.fromComponents(u.vec3.swiz(r,"xYZ")),d=u.vec3.fromComponents(u.vec3.swiz(r,"xyZ")),f=u.vec3.fromComponents(u.vec3.swiz(r,"XyZ"));return h(t)&&(i=u.vec3.rota(i,s),o=u.vec3.rota(o,s),c=u.vec3.rota(c,s),a=u.vec3.rota(a,s),v=u.vec3.rota(v,s),l=u.vec3.rota(l,s),d=u.vec3.rota(d,s),f=u.vec3.rota(f,s)),[u.vec3.add(e,i),u.vec3.add(e,o),u.vec3.add(e,c),u.vec3.add(e,a),u.vec3.add(e,v),u.vec3.add(e,l),u.vec3.add(e,d),u.vec3.add(e,f)]}function p(t){const e=m(t);if(8!==e.length)throw new Error("Cuboid must have exactly 8 vertices");return[{vertices:[e[0],e[1],e[2]]},{vertices:[e[0],e[2],e[3]]},{vertices:[e[4],e[5],e[6]]},{vertices:[e[4],e[6],e[7]]},{vertices:[e[0],e[1],e[5]]},{vertices:[e[0],e[5],e[4]]},{vertices:[e[2],e[3],e[7]]},{vertices:[e[2],e[7],e[6]]},{vertices:[e[0],e[3],e[7]]},{vertices:[e[0],e[7],e[4]]},{vertices:[e[1],e[2],e[6]]},{vertices:[e[1],e[6],e[5]]}]}function y(t){const e=[];for(let n=0;n<t.length;n++){const s=t[n],r=(0,a.at)(t,n+1);e.push({start:s,end:r})}return e}function b(t){return 3===t.vertices.length}function x(t){return b(t)?u.vec3.div(u.vec3.add(t.vertices[0],u.vec3.add(t.vertices[1],t.vertices[2])),3):null}function g(t){if(t.indices.length%3!=0)throw new Error("Mesh indices must be a multiple of 3 to form triangles");const e=[];for(let n=0;n<t.indices.length;n+=3){const s=t.indices.slice(n,n+3);if(3!==s.length)throw new Error("Mesh indices must form triangles");const r=s.map((e=>t.vertices[e]));e.push({vertices:r})}return e}function M(t,e){const n=u.vec3.sub(e.end,e.start),s=u.vec3.nor(n),r=u.vec3.sub(t,e.start),i=u.vec3.dot(r,s),o=u.vec3.len(n),c=Math.max(0,Math.min(o,i)),a=u.vec3.add(e.start,u.vec3.mul(s,c)),v=u.vec3.len(u.vec3.sub(t,a));return{intersects:v<l.EPSILON,closestPoint:a,distance:v}}function P(t,e){const{position:n,size:s,rotation:r=(0,u.vec3)()}=e,i=u.vec3.div(s,2);let o=u.vec3.sub(t,n);h(e)&&(o=u.vec3.rota(o,u.vec3.mul(r,-1)));const c=Math.max(Math.abs(o.x)-i.x,0),v=Math.max(Math.abs(o.y)-i.y,0),l=Math.max(Math.abs(o.z)-i.z,0);let d=(0,u.vec3)((0,a.clamp)(o.x,-i.x,i.x),(0,a.clamp)(o.y,-i.y,i.y),(0,a.clamp)(o.z,-i.z,i.z));h(e)&&(d=u.vec3.rota(d,r)),d=u.vec3.add(d,n);const f=0===c&&0===v&&0===l;return{intersects:f,closestPoint:d,distance:f?-Math.min(i.x-Math.abs(o.x),i.y-Math.abs(o.y),i.z-Math.abs(o.z)):Math.sqrt(c*c+v*v+l*l)}}function z(t,e){if(!b(e))return null;const[n,s,r]=e.vertices,i=u.vec3.sub(s,n),o=u.vec3.sub(r,n),c=u.vec3.nor(u.vec3.cross(i,o)),a=-u.vec3.dot(c,n),v=u.vec3.dot(c,t)+a,d=u.vec3.sub(t,u.vec3.mul(c,v)),f=u.vec3.len(u.vec3.cross(i,o))/2,h=u.vec3.sub(r,s),m=u.vec3.sub(d,n),p=u.vec3.sub(d,s),y=u.vec3.sub(d,r),x=u.vec3.len(u.vec3.cross(h,p))/(2*f),g=u.vec3.len(u.vec3.cross(o,y))/(2*f),P=u.vec3.len(u.vec3.cross(i,m))/(2*f),z=x+g+P;let I,O;if(x>=-l.EPSILON&&g>=-l.EPSILON&&P>=-l.EPSILON&&Math.abs(z-1)<l.EPSILON)I=d,O=Math.abs(v);else{const e=M(t,{start:n,end:s}),i=M(t,{start:s,end:r}),o=M(t,{start:r,end:n}),c=Math.min(e.distance,i.distance,o.distance);I=c===e.distance?e.closestPoint:c===i.distance?i.closestPoint:o.closestPoint,O=c}return{intersects:O<l.EPSILON,closestPoint:I,distance:O}}function I(t,e){let n=u.vec3.sub(e.end,e.start);const s=u.vec3.len(n);if(s<l.EPSILON)return{intersects:!1};const r=u.vec3.nor(t.direction);n=u.vec3.div(n,s);const i=u.vec3.sub(e.start,t.origin),o=u.vec3.cross(r,n),c=u.vec3.dot(o,o);if(c<l.EPSILON){const t=u.vec3.cross(i,r);if(u.vec3.len(t)<l.EPSILON){const t=u.vec3.dot(i,n);if(t>=0&&t<=s)return{intersects:!0,intersectionPoint:u.vec3.add(e.start,u.vec3.mul(n,t))}}return{intersects:!1}}const a=u.vec3.dot(i,u.vec3.cross(n,o))/c,v=u.vec3.dot(i,u.vec3.cross(r,o))/c;if(a>=0&&v>=0&&v<=s){const s=u.vec3.add(t.origin,u.vec3.mul(r,a)),i=u.vec3.add(e.start,u.vec3.mul(n,v));if(u.vec3.len(u.vec3.sub(s,i))<l.EPSILON)return{intersects:!0,intersectionPoint:u.vec3.add(s,u.vec3.mul(u.vec3.sub(i,s),.5))}}return{intersects:!1}}function O(t,e){const n=u.vec3.nor(t.direction),s=u.vec3.nor(e.normal),r=u.vec3.dot(n,s);if(Math.abs(r)<l.EPSILON){const n=u.vec3.dot(u.vec3.sub(t.origin,e.point),s);return Math.abs(n)<l.EPSILON?{intersects:!0}:{intersects:!1}}const i=u.vec3.dot(u.vec3.sub(e.point,t.origin),s)/r;return i<0?{intersects:!1}:{intersects:!0,intersectionPoint:u.vec3.add(t.origin,u.vec3.mul(n,i))}}function E(t,e){const n=u.vec3.nor(t.direction),{position:s,size:r,rotation:i=(0,u.vec3)()}=e;let o=u.vec3.sub(t.origin,s),c=n;if(h(e)){const t=u.vec3.mul(i,-1);o=u.vec3.rota(o,t),c=u.vec3.rota(c,t)}const a=u.vec3.div(r,2),v=u.vec3.div(u.vec3.sub(u.vec3.mul(a,-1),o),c),l=u.vec3.div(u.vec3.sub(a,o),c),d=(0,u.vec3)(Math.min(v.x,l.x),Math.min(v.y,l.y),Math.min(v.z,l.z)),f=(0,u.vec3)(Math.max(v.x,l.x),Math.max(v.y,l.y),Math.max(v.z,l.z)),m=Math.max(d.x,d.y,d.z),p=Math.min(f.x,f.y,f.z);if(m>p||p<0)return{intersects:!1};const y=[];if(m>=0){let t=u.vec3.add(o,u.vec3.mul(c,m));h(e)&&(t=u.vec3.rota(t,i)),y.push(u.vec3.add(s,t))}if(p>m&&p>=0){let t=u.vec3.add(o,u.vec3.mul(c,p));h(e)&&(t=u.vec3.rota(t,i)),y.push(u.vec3.add(s,t))}return{intersects:y.length>0,intersectionPoints:y.length>0?y:void 0}}function S(t,e){if(!b(e))return null;const[n,s,r]=e.vertices,i=u.vec3.sub(s,n),o=u.vec3.sub(r,n),c=O(t,{point:n,normal:u.vec3.nor(u.vec3.cross(i,o))});if(!c.intersects||!c.intersectionPoint)return{intersects:!1};const a=z(c.intersectionPoint,e);return a&&a.intersects?{intersects:!0,intersectionPoint:c.intersectionPoint}:{intersects:!1}}function L(t,e){const n=u.vec3.sub(t.end,t.start),s=u.vec3.sub(e.end,e.start),r=u.vec3.len(n),i=u.vec3.len(s);if(r<l.EPSILON||i<l.EPSILON)return{intersects:!1};const o=u.vec3.div(n,r),c=u.vec3.div(s,i),v=u.vec3.sub(e.start,t.start),d=u.vec3.cross(o,c),f=u.vec3.dot(d,d);if(f<l.EPSILON){const e=u.vec3.cross(v,o);if(u.vec3.len(e)<l.EPSILON){const e=u.vec3.dot(v,o),n=e+u.vec3.dot(s,o),i=Math.min(e,n),c=Math.max(e,n);if(i<=r&&c>=0){const e=(0,a.clamp)(0,Math.max(0,i),r);return{intersects:!0,intersectionPoint:u.vec3.add(t.start,u.vec3.mul(o,e))}}}return{intersects:!1}}const h=u.vec3.dot(v,u.vec3.cross(s,d))/f,m=u.vec3.dot(v,u.vec3.cross(n,d))/f;if(h>=0&&h<=r&&m>=0&&m<=i){const n=u.vec3.add(t.start,u.vec3.mul(o,h)),s=u.vec3.add(e.start,u.vec3.mul(c,m));if(u.vec3.len(u.vec3.sub(n,s))<l.EPSILON)return{intersects:!0,intersectionPoint:u.vec3.add(n,u.vec3.mul(u.vec3.sub(s,n),.5))}}return{intersects:!1}}function N(t,e){const n=u.vec3.sub(t.end,t.start),s=u.vec3.len(n);if(s<l.EPSILON)return u.vec3.len(u.vec3.sub(t.start,e.position))<=e.radius?{intersects:!0,intersectionPoints:[t.start]}:{intersects:!1};const r=u.vec3.div(n,s),i=u.vec3.sub(e.position,t.start),o=u.vec3.dot(r,r),c=2*u.vec3.dot(r,u.vec3.mul(i,-1)),a=c*c-4*o*(u.vec3.dot(i,i)-e.radius*e.radius);if(a<-l.EPSILON)return{intersects:!1};if(Math.abs(a)<l.EPSILON){const e=-c/(2*o);return e>=0&&e<=s?{intersects:!0,intersectionPoints:[u.vec3.add(t.start,u.vec3.mul(r,e))]}:{intersects:!1}}const v=Math.sqrt(a),d=(-c-v)/(2*o),f=(-c+v)/(2*o),h=[];return d>=0&&d<=s&&h.push(u.vec3.add(t.start,u.vec3.mul(r,d))),f>=0&&f<=s&&h.push(u.vec3.add(t.start,u.vec3.mul(r,f))),{intersects:h.length>0,intersectionPoints:h.length>0?h:void 0}}function w(t,e){const n=u.vec3.sub(t.end,t.start),s=u.vec3.len(n);if(s<l.EPSILON)return{intersects:!1};const r=u.vec3.div(n,s),i=u.vec3.dot(r,e.normal);if(Math.abs(i)<l.EPSILON){const n=u.vec3.dot(u.vec3.sub(t.start,e.point),e.normal);return Math.abs(n)<l.EPSILON?{intersects:!0}:{intersects:!1}}const o=u.vec3.dot(u.vec3.sub(e.point,t.start),e.normal)/i;return o<0||o>s?{intersects:!1}:{intersects:!0,intersectionPoint:u.vec3.add(t.start,u.vec3.mul(r,o))}}function A(t,e){if(!b(e))return{intersects:!1};const[n,s,r]=e.vertices,i=u.vec3.sub(s,n),o=u.vec3.sub(r,n),c=w(t,{point:n,normal:u.vec3.nor(u.vec3.cross(i,o))});if(!c.intersects||!c.intersectionPoint)return{intersects:!1};const a=z(c.intersectionPoint,e);return a&&a.intersects?{intersects:!0,intersectionPoint:c.intersectionPoint}:{intersects:!1}}function j(t,e){const n=u.vec3.nor(e.normal),s=u.vec3.dot(u.vec3.sub(t.position,e.point),n);if(Math.abs(s)>t.radius)return{intersects:!1};const r=t.radius-Math.abs(s);return{intersects:!0,intersectionPoint:u.vec3.sub(t.position,u.vec3.mul(n,s)),penetrationDepth:r,intersectionRadius:Math.sqrt(t.radius*t.radius-s*s)}}function _(t,e){if(!b(e))return null;const[n,s,r]=e.vertices,i=u.vec3.sub(s,n),o=u.vec3.sub(r,n),c=u.vec3.nor(u.vec3.cross(i,o)),a=j(t,{point:n,normal:c});if(!a.intersects)return{intersects:!1};if(e.vertices.map((e=>u.vec3.len(u.vec3.sub(e,t.position)))).every((e=>e<=t.radius)))return{intersects:!0,intersectionPoint:a.intersectionPoint,penetrationDepth:t.radius};const v=[];[{start:n,end:s},{start:s,end:r},{start:r,end:n}].forEach((e=>{const n=N(e,t);n.intersects&&n.intersectionPoints&&n.intersectionPoints.forEach((t=>{M(t,e).intersects&&v.push(t)}))}));const l=z(t.position,e);if(l&&l.intersects){const e=u.vec3.len(u.vec3.sub(t.position,l.closestPoint));if(e<=t.radius)return{intersects:!0,intersectionPoint:l.closestPoint,penetrationDepth:t.radius-e,polygonIntersectionPoints:v.length>0?v:void 0}}if(v.length>0){const e=u.vec3.div(v.reduce(((t,e)=>u.vec3.add(t,e)),(0,u.vec3)()),v.length);return{intersects:!0,intersectionPoint:e,penetrationDepth:t.radius-u.vec3.len(u.vec3.sub(e,t.position)),polygonIntersectionPoints:v}}return{intersects:!1}}function C(t,e){const n=u.vec3.nor(t.normal),s=u.vec3.nor(e.normal),r=u.vec3.cross(n,s),i=u.vec3.dot(r,r);if(i<l.EPSILON){const s=u.vec3.dot(u.vec3.sub(e.point,t.point),n);return Math.abs(s)<l.EPSILON?{intersects:!0}:{intersects:!1}}const o=-u.vec3.dot(n,t.point),c=-u.vec3.dot(s,e.point),a=u.vec3.div(u.vec3.cross(u.vec3.sub(u.vec3.mul(n,c),u.vec3.mul(s,o)),r),i);return{intersects:!0,intersectionLine:{start:a,end:u.vec3.add(a,r)}}}function k(t){const e=Math.cos(t.x),n=Math.cos(t.y),s=Math.cos(t.z),r=Math.sin(t.x),i=Math.sin(t.y),o=Math.sin(t.z);return[(0,u.vec3)(n*s,n*o,-i),(0,u.vec3)(r*i*s-e*o,r*i*o+e*s,r*n),(0,u.vec3)(e*i*s+r*o,e*i*o-r*s,e*n)]}function q(t){return t||[(0,u.vec3)(1,0,0),(0,u.vec3)(0,1,0),(0,u.vec3)(0,0,1)]}function R(t,e){const n=[];for(const s of t)for(const t of e)n.push(u.vec3.cross(s,t));return n}function V(t,e,n){let s=0;return s=e?Math.abs(u.vec3.dot(u.vec3.mul(e[0],t.x),n))+Math.abs(u.vec3.dot(u.vec3.mul(e[1],t.y),n))+Math.abs(u.vec3.dot(u.vec3.mul(e[2],t.z),n)):Math.abs(t.x*n.x)+Math.abs(t.y*n.y)+Math.abs(t.z*n.z),s}function Z(t,e){const n=m(t);let s=-1/0,r=n[0];for(const t of n){const n=u.vec3.dot(t,e);n>s&&(s=n,r=t)}return r}function D(t,e){if(!b(e))return null;const n=e.vertices.map((e=>P(e,t)));if(n.every((t=>t.intersects)))return{intersects:!0};const s=m(t),r=s.map((t=>z(t,e)));if(r.some((t=>null==t?void 0:t.intersects)))return{intersects:!0};const i=y(s),o=[];for(const t of i){const n=A(t,e);n&&n.intersects&&n.intersectionPoint&&(o.some((t=>(0,v.vectorsAlmostEqual)(t,n.intersectionPoint)))||o.push(n.intersectionPoint))}const c=y(e.vertices),a=p(t);for(const t of c)for(const e of a){const n=A(t,e);n&&n.intersects&&n.intersectionPoint&&(o.some((t=>(0,v.vectorsAlmostEqual)(t,n.intersectionPoint)))||o.push(n.intersectionPoint))}return{intersects:o.length>0||n.some((t=>t.intersects))||r.some((t=>null==t?void 0:t.intersects)),intersectionPoints:o.length>0?o:void 0}}function B(t,e){if(!b(t)||!b(e))return null;const n=C({point:t.vertices[0],normal:u.vec3.nor(u.vec3.cross(u.vec3.sub(t.vertices[1],t.vertices[0]),u.vec3.sub(t.vertices[2],t.vertices[0])))},{point:e.vertices[0],normal:u.vec3.nor(u.vec3.cross(u.vec3.sub(e.vertices[1],e.vertices[0]),u.vec3.sub(e.vertices[2],e.vertices[0])))});if(!n.intersects)return{intersects:!1};if(!n.intersectionLine){for(const n of t.vertices){const t=z(n,e);if(null==t?void 0:t.intersects)return{intersects:!0}}for(const n of e.vertices){const e=z(n,t);if(null==e?void 0:e.intersects)return{intersects:!0}}return{intersects:!1}}const s=y(t.vertices),r=y(e.vertices),i=[];for(const t of s)for(const e of r){const n=L(t,e);if(n.intersects&&n.intersectionPoint){const s=M(n.intersectionPoint,t),r=M(n.intersectionPoint,e);s.intersects&&r.intersects&&(i.some((t=>u.vec3.len(u.vec3.sub(t,n.intersectionPoint))<l.EPSILON))||i.push(n.intersectionPoint))}}return{intersects:i.length>0,intersectionPoints:i.length>0?i:void 0}}function $(t,e){if(!b(t))return null;const n=y(t.vertices),s=[];let r=!1;for(const t of n){const n=w(t,e);if(n.intersects){if(!n.intersectionPoint){r=!0;break}s.push(n.intersectionPoint)}}if(r)return{intersects:!0};const i=s.filter(((t,e)=>!s.some(((n,s)=>s<e&&u.vec3.len(u.vec3.sub(n,t))<l.EPSILON))));return{intersects:i.length>0,intersectionPoints:i.length>0?i:void 0}}function T(t,e){const n=g(t),s=[];let r=-1/0,i=1/0;const o=u.vec3.nor(e.normal);t.vertices.forEach((t=>{const n=u.vec3.dot(u.vec3.sub(t,e.point),o);r=Math.max(r,n),i=Math.min(i,n)}));let c,a=!1;for(const t of n){const n=$(t,e);(null==n?void 0:n.intersects)&&(a=!0,n.intersectionPoints&&n.intersectionPoints.forEach((t=>{s.some((e=>u.vec3.len(u.vec3.sub(e,t))<l.EPSILON))||s.push(t)})))}return c=i*r<=0?Math.max(Math.abs(i),Math.abs(r)):Math.abs(r)<Math.abs(i)?Math.abs(r):Math.abs(i),{intersects:a,intersectionPoints:s.length>0?s:void 0,penetrationDepth:c}}c(n(962),e)},962:(t,e,n)=>{"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.isPoint=r,e.isRay=function(t){return t&&"object"==typeof t&&"origin"in t&&r(t.origin)&&"direction"in t&&(0,s.isVec3)(t.direction)},e.isLine=function(t){return t&&"object"==typeof t&&"start"in t&&r(t.start)&&"end"in t&&r(t.end)},e.isSphere=function(t){return t&&"object"==typeof t&&"position"in t&&r(t.position)&&"radius"in t&&"number"==typeof t.radius},e.isAABB=function(t){return t&&"object"==typeof t&&"position"in t&&r(t.position)&&"size"in t&&(0,s.isVec3)(t.size)},e.isCuboid=function(t){return t&&"object"==typeof t&&"position"in t&&r(t.position)&&"size"in t&&(0,s.isVec3)(t.size)&&(!("rotation"in t)||(0,s.isVec3)(t.rotation))},e.isPlane=function(t){return t&&"object"==typeof t&&"point"in t&&r(t.point)&&"normal"in t&&(0,s.isVec3)(t.normal)},e.isPolygon=function(t){return t&&"object"==typeof t&&"vertices"in t&&Array.isArray(t.vertices)&&3===t.vertices.length&&t.vertices.every(r)&&!("indices"in t)},e.isMesh=function(t){return t&&"object"==typeof t&&"vertices"in t&&Array.isArray(t.vertices)&&t.vertices.every(r)&&"indices"in t&&Array.isArray(t.indices)&&t.indices.every((t=>"number"==typeof t))};const s=n(197);function r(t){return(0,s.isVec3)(t)}},607:function(t,e,n){"use strict";var s,r=this&&this.__createBinding||(Object.create?function(t,e,n,s){void 0===s&&(s=n);var r=Object.getOwnPropertyDescriptor(e,n);r&&!("get"in r?!e.__esModule:r.writable||r.configurable)||(r={enumerable:!0,get:function(){return e[n]}}),Object.defineProperty(t,s,r)}:function(t,e,n,s){void 0===s&&(s=n),t[s]=e[n]}),i=this&&this.__setModuleDefault||(Object.create?function(t,e){Object.defineProperty(t,"default",{enumerable:!0,value:e})}:function(t,e){t.default=e}),o=this&&this.__importStar||(s=function(t){return s=Object.getOwnPropertyNames||function(t){var e=[];for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&(e[e.length]=n);return e},s(t)},function(t){if(t&&t.__esModule)return t;var e={};if(null!=t)for(var n=s(t),o=0;o<n.length;o++)"default"!==n[o]&&r(e,t,n[o]);return i(e,t),e});Object.defineProperty(e,"__esModule",{value:!0}),e.intersectionUtilities=e.intersection3d=e.intersection2d=void 0,e.intersection2d=o(n(674)),e.intersection3d=o(n(82)),e.intersectionUtilities=o(n(955))},388:(t,e)=>{"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.EPSILON=void 0,e.EPSILON=1e-6},955:function(t,e,n){"use strict";var s,r=this&&this.__createBinding||(Object.create?function(t,e,n,s){void 0===s&&(s=n);var r=Object.getOwnPropertyDescriptor(e,n);r&&!("get"in r?!e.__esModule:r.writable||r.configurable)||(r={enumerable:!0,get:function(){return e[n]}}),Object.defineProperty(t,s,r)}:function(t,e,n,s){void 0===s&&(s=n),t[s]=e[n]}),i=this&&this.__setModuleDefault||(Object.create?function(t,e){Object.defineProperty(t,"default",{enumerable:!0,value:e})}:function(t,e){t.default=e}),o=this&&this.__importStar||(s=function(t){return s=Object.getOwnPropertyNames||function(t){var e=[];for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&(e[e.length]=n);return e},s(t)},function(t){if(t&&t.__esModule)return t;var e={};if(null!=t)for(var n=s(t),o=0;o<n.length;o++)"default"!==n[o]&&r(e,t,n[o]);return i(e,t),e}),c=this&&this.__exportStar||function(t,e){for(var n in t)"default"===n||Object.prototype.hasOwnProperty.call(e,n)||r(e,t,n)};Object.defineProperty(e,"__esModule",{value:!0}),e.vectorAlmostZero=function(t){return(0,u.isVec3)(t)?Math.abs(t.x)<a.EPSILON&&Math.abs(t.y)<a.EPSILON&&Math.abs(t.z)<a.EPSILON:!!(0,u.isVec2)(t)&&Math.abs(t.x)<a.EPSILON&&Math.abs(t.y)<a.EPSILON},e.vectorsAlmostEqual=function(t,e){return(0,u.isVec3)(t)&&(0,u.isVec3)(e)?Math.abs(t.x-e.x)<a.EPSILON&&Math.abs(t.y-e.y)<a.EPSILON&&Math.abs(t.z-e.z)<a.EPSILON:!(!(0,u.isVec2)(t)||!(0,u.isVec2)(e))&&Math.abs(t.x-e.x)<a.EPSILON&&Math.abs(t.y-e.y)<a.EPSILON},e.valueInInterval=function(t,e){const{min:n,minInclusive:s=!0,max:r,maxInclusive:i=!0}=e;return(s?t>=n:t>n)&&(i?t<=r:t<r)},e.intervalsOverlap=v,e.overlapInterval=function(t,e){return v(t,e)?{min:Math.max(t.min,e.min),max:Math.min(t.max,e.max)}:null};const a=o(n(388)),u=n(197);function v(t,e){return Math.max(t.min,e.min)<=Math.min(t.max,e.max)}c(n(197),e)},197:(t,e)=>{"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.isVec2=function(t){return t&&"object"==typeof t&&"x"in t&&"number"==typeof t.x&&"y"in t&&"number"==typeof t.y&&!("z"in t)},e.isVec3=function(t){return t&&"object"==typeof t&&"x"in t&&"number"==typeof t.x&&"y"in t&&"number"==typeof t.y&&"z"in t&&"number"==typeof t.z}}},e={},function n(s){var r=e[s];if(void 0!==r)return r.exports;var i=e[s]={exports:{}};return t[s].call(i.exports,i,i.exports,n),i.exports}(607);var t,e}));
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(this, () => {
+return /******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./node_modules/@basementuniverse/utils/utils.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/@basementuniverse/utils/utils.js ***!
+  \*******************************************************/
+/***/ ((module) => {
+
+/**
+ * @overview A library of useful functions
+ * @author Gordon Larrigan
+ */
+
+/**
+ * Memoize a function
+ * @param {Function} f The function to memoize
+ * @returns {Function} A memoized version of the function
+ */
+const memoize = f => {
+  var cache = {};
+  return function(...args) {
+    return cache[args] ?? (cache[args] = f.apply(this, args));
+  };
+};
+
+/**
+ * Check if two numbers are approximately equal
+ * @param {number} a Number a
+ * @param {number} b Number b
+ * @param {number} [p=Number.EPSILON] The precision value
+ * @return {boolean} True if numbers a and b are approximately equal
+ */
+const floatEquals = (a, b, p = Number.EPSILON) => Math.abs(a - b) < p;
+
+/**
+ * Clamp a number between min and max
+ * @param {number} a The number to clamp
+ * @param {number} [min=0] The minimum value
+ * @param {number} [max=1] The maximum value
+ * @return {number} A clamped number
+ */
+const clamp = (a, min = 0, max = 1) => a < min ? min : (a > max ? max : a);
+
+/**
+ * Get the fractional part of a number
+ * @param {number} a The number from which to get the fractional part
+ * @return {number} The fractional part of the number
+ */
+const frac = a => a >= 0 ? a - Math.floor(a) : a - Math.ceil(a);
+
+/**
+ * Round n to d decimal places
+ * @param {number} n The number to round
+ * @param {number} [d=0] The number of decimal places to round to
+ * @return {number} A rounded number
+ */
+const round = (n, d = 0) => {
+  const p = Math.pow(10, d);
+  return Math.round(n * p + Number.EPSILON) / p;
+}
+
+/**
+ * Do a linear interpolation between a and b
+ * @param {number} a The minimum number
+ * @param {number} b The maximum number
+ * @param {number} i The interpolation value, should be in the interval [0, 1]
+ * @return {number} An interpolated value in the interval [a, b]
+ */
+const lerp = (a, b, i) => a + (b - a) * i;
+
+/**
+ * Get the position of i between a and b
+ * @param {number} a The minimum number
+ * @param {number} b The maximum number
+ * @param {number} i The interpolated value in the interval [a, b]
+ * @return {number} The position of i between a and b
+ */
+const unlerp = (a, b, i) => (i - a) / (b - a);
+
+/**
+ * Do a bilinear interpolation
+ * @param {number} c00 Top-left value
+ * @param {number} c10 Top-right value
+ * @param {number} c01 Bottom-left value
+ * @param {number} c11 Bottom-right value
+ * @param {number} ix Interpolation value along x
+ * @param {number} iy Interpolation value along y
+ * @return {number} A bilinear interpolated value
+ */
+const blerp = (c00, c10, c01, c11, ix, iy) => lerp(lerp(c00, c10, ix), lerp(c01, c11, ix), iy);
+
+/**
+ * Re-map a number i from range a1...a2 to b1...b2
+ * @param {number} i The number to re-map
+ * @param {number} a1
+ * @param {number} a2
+ * @param {number} b1
+ * @param {number} b2
+ * @return {number}
+ */
+const remap = (i, a1, a2, b1, b2) => b1 + (i - a1) * (b2 - b1) / (a2 - a1);
+
+/**
+ * Do a smooth interpolation between a and b
+ * @param {number} a The minimum number
+ * @param {number} b The maximum number
+ * @param {number} i The interpolation value
+ * @return {number} An interpolated value in the interval [a, b]
+ */
+const smoothstep = (a, b, i) => lerp(a, b, 3 * Math.pow(i, 2) - 2 * Math.pow(i, 3));
+
+/**
+ * Get an angle in radians
+ * @param {number} degrees The angle in degrees
+ * @return {number} The angle in radians
+ */
+const radians = degrees => (Math.PI / 180) * degrees;
+
+/**
+ * Get an angle in degrees
+ * @param {number} radians The angle in radians
+ * @return {number} The angle in degrees
+ */
+const degrees = radians => (180 / Math.PI) * radians;
+
+/**
+ * Get a random float in the interval [min, max)
+ * @param {number} min Inclusive min
+ * @param {number} max Exclusive max
+ * @return {number} A random float in the interval [min, max)
+ */
+const randomBetween = (min, max) => Math.random() * (max - min) + min;
+
+/**
+ * Get a random integer in the interval [min, max]
+ * @param {number} min Inclusive min
+ * @param {number} max Inclusive max
+ * @return {number} A random integer in the interval [min, max]
+ */
+const randomIntBetween = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+/**
+ * Get a normally-distributed random number
+ * @param {number} [mu=0.5] The mean value
+ * @param {number} [sigma=0.5] The standard deviation
+ * @param {number} [samples=2] The number of samples
+ * @return {number} A normally-distributed random number
+ */
+const cltRandom = (mu = 0.5, sigma = 0.5, samples = 2) => {
+  let total = 0;
+  for (let i = samples; i--;) {
+    total += Math.random();
+  }
+  return mu + (total - samples / 2) / (samples / 2) * sigma;
+};
+
+/**
+ * Get a normally-distributed random integer in the interval [min, max]
+ * @param {number} min Inclusive min
+ * @param {number} max Inclusive max
+ * @return {number} A normally-distributed random integer
+ */
+const cltRandomInt = (min, max) => Math.floor(min + cltRandom(0.5, 0.5, 2) * (max + 1 - min));
+
+/**
+ * Return a weighted random integer
+ * @param {Array<number>} w An array of weights
+ * @return {number} An index from w
+ */
+const weightedRandom = w => {
+  let total = w.reduce((a, i) => a + i, 0), n = 0;
+  const r = Math.random() * total;
+  while (total > r) {
+    total -= w[n++];
+  }
+  return n - 1;
+};
+
+/**
+ * An interpolation function
+ * @callback InterpolationFunction
+ * @param {number} a The minimum number
+ * @param {number} b The maximum number
+ * @param {number} i The interpolation value, should be in the interval [0, 1]
+ * @return {number} The interpolated value in the interval [a, b]
+ */
+
+/**
+ * Return an interpolated value from an array
+ * @param {Array<number>} a An array of values interpolate
+ * @param {number} i A number in the interval [0, 1]
+ * @param {InterpolationFunction} [f=Math.lerp] The interpolation function to use
+ * @return {number} An interpolated value in the interval [min(a), max(a)]
+ */
+const lerpArray = (a, i, f = lerp) => {
+  const s = i * (a.length - 1);
+  const p = clamp(Math.trunc(s), 0, a.length - 1);
+  return f(a[p] || 0, a[p + 1] || 0, frac(s));
+};
+
+/**
+ * Get the dot product of two vectors
+ * @param {Array<number>} a Vector a
+ * @param {Array<number>} b Vector b
+ * @return {number} a ∙ b
+ */
+const dot = (a, b) => a.reduce((n, v, i) => n + v * b[i], 0);
+
+/**
+ * Get the factorial of a number
+ * @param {number} a
+ * @return {number} a!
+ */
+const factorial = a => {
+  let result = 1;
+  for (let i = 2; i <= a; i++) {
+    result *= i;
+  }
+  return result;
+};
+
+/**
+ * Get the number of permutations of r elements from a set of n elements
+ * @param {number} n
+ * @param {number} r
+ * @return {number} nPr
+ */
+const npr = (n, r) => factorial(n) / factorial(n - r);
+
+/**
+ * Get the number of combinations of r elements from a set of n elements
+ * @param {number} n
+ * @param {number} r
+ * @return {number} nCr
+ */
+const ncr = (n, r) => factorial(n) / (factorial(r) * factorial(n - r));
+
+/**
+ * Generate all permutations of r elements from an array
+ *
+ * @example
+ * ```js
+ * permutations([1, 2, 3], 2);
+ * ```
+ *
+ * Output:
+ * ```json
+ * [
+ *   [1, 2],
+ *   [1, 3],
+ *   [2, 1],
+ *   [2, 3],
+ *   [3, 1],
+ *   [3, 2]
+ * ]
+ * ```
+ * @param {Array<*>} a
+ * @param {number} r The number of elements to choose in each permutation
+ * @return {Array<Array<*>>} An array of permutation arrays
+ */
+const permutations = (a, r) => {
+  if (r === 1) {
+    return a.map(item => [item]);
+  }
+
+  return a.reduce(
+    (acc, item, i) => [
+      ...acc,
+      ...permutations(a.slice(0, i).concat(a.slice(i + 1)), r - 1).map(c => [item, ...c]),
+    ],
+    []
+  );
+}
+
+/**
+ * Generate all combinations of r elements from an array
+ *
+ * @example
+ * ```js
+ * combinations([1, 2, 3], 2);
+ * ```
+ *
+ * Output:
+ * ```json
+ * [
+ *   [1, 2],
+ *   [1, 3],
+ *   [2, 3]
+ * ]
+ * ```
+ * @param {Array<*>} a
+ * @param {number} r The number of elements to choose in each combination
+ * @return {Array<Array<*>>} An array of combination arrays
+ */
+const combinations = (a, r) => {
+  if (r === 1) {
+    return a.map(item => [item]);
+  }
+
+  return a.reduce(
+    (acc, item, i) => [
+      ...acc,
+      ...combinations(a.slice(i + 1), r - 1).map(c => [item, ...c]),
+    ],
+    []
+  );
+};
+
+/**
+ * Get a cartesian product of arrays
+ *
+ * @example
+ * ```js
+ * cartesian([1, 2, 3], ['a', 'b']);
+ * ```
+ *
+ * Output:
+ * ```json
+ * [
+ *   [1, "a"],
+ *   [1, "b"],
+ *   [2, "a"],
+ *   [2, "b"],
+ *   [3, "a"],
+ *   [3, "b"]
+ * ]
+ * ```
+ */
+const cartesian = (...arr) =>
+  arr.reduce(
+    (a, b) => a.flatMap(c => b.map(d => [...c, d])),
+    [[]]
+  );
+
+/**
+ * A function for generating array values
+ * @callback TimesFunction
+ * @param {number} i The array index
+ * @return {*} The array value
+ */
+
+/**
+ * Return a new array with length n by calling function f(i) on each element
+ * @param {TimesFunction} f
+ * @param {number} n The size of the array
+ * @return {Array<*>}
+ */
+const times = (f, n) => Array(n).fill(0).map((_, i) => f(i));
+
+/**
+ * Return an array containing numbers 0->(n - 1)
+ * @param {number} n The size of the array
+ * @return {Array<number>} An array of integers 0->(n - 1)
+ */
+const range = n => times(i => i, n);
+
+/**
+ * Zip multiple arrays together, i.e. ([1, 2, 3], [a, b, c]) => [[1, a], [2, b], [3, c]]
+ * @param {...Array<*>} a The arrays to zip
+ * @return {Array<Array<*>>}
+ */
+const zip = (...a) => times(i => a.map(a => a[i]), Math.max(...a.map(a => a.length)));
+
+/**
+ * Return array[i] with positive and negative wrapping
+ * @param {Array<*>} a The array to access
+ * @param {number} i The positively/negatively wrapped array index
+ * @return {*} An element from the array
+ */
+const at = (a, i) => a[i < 0 ? a.length - (Math.abs(i + 1) % a.length) - 1 : i % a.length];
+
+/**
+ * Return the last element of an array without removing it
+ * @param {Array<*>} a
+ * @return {*} The last element from the array
+ */
+const peek = (a) => {
+  if (!a.length) {
+    return undefined;
+  }
+
+  return a[a.length - 1];
+};
+
+/**
+ * Return the index for a given position in an unrolled 2d array
+ * @param {number} x The x position
+ * @param {number} y The y position
+ * @param {number} w The width of the 2d array
+ * @returns {number} The index in the unrolled array
+ */
+const ind = (x, y, w) => x + y * w;
+
+/**
+ * Return the position for a given index in an unrolled 2d array
+ * @param {number} i The index
+ * @param {number} w The width of the 2d array
+ * @returns {Array<number>} The position as a 2-tuple
+ */
+const pos = (i, w) => [i % w, Math.floor(i / w)];
+
+/**
+ * Chop an array into chunks of size n
+ * @param {Array<*>} a
+ * @param {number} n The chunk size
+ * @return {Array<Array<*>>} An array of array chunks
+ */
+const chunk = (a, n) => times(i => a.slice(i * n, i * n + n), Math.ceil(a.length / n));
+
+/**
+ * Randomly shuffle a shallow copy of an array
+ * @param {Array<*>} a
+ * @return {Array<*>} The shuffled array
+ */
+const shuffle = a => a.slice().sort(() => Math.random() - 0.5);
+
+/**
+ * Flatten an object
+ * @param {object} o
+ * @param {string} concatenator The string to use for concatenating keys
+ * @return {object} A flattened object
+ */
+const flat = (o, concatenator = '.') => {
+  return Object.keys(o).reduce((acc, key) => {
+    if (o[key] instanceof Date) {
+      return {
+        ...acc,
+        [key]: o[key].toISOString(),
+      };
+    }
+
+    if (typeof o[key] !== 'object' || !o[key]) {
+      return {
+        ...acc,
+        [key]: o[key],
+      };
+    }
+    const flattened = flat(o[key], concatenator);
+
+    return {
+      ...acc,
+      ...Object.keys(flattened).reduce(
+        (childAcc, childKey) => ({
+          ...childAcc,
+          [`${key}${concatenator}${childKey}`]: flattened[childKey],
+        }),
+        {}
+      ),
+    };
+  }, {});
+};
+
+/**
+ * Unflatten an object
+ * @param {object} o
+ * @param {string} concatenator The string to check for in concatenated keys
+ * @return {object} An un-flattened object
+ */
+const unflat = (o, concatenator = '.') => {
+  let result = {}, temp, substrings, property, i;
+
+  for (property in o) {
+    substrings = property.split(concatenator);
+    temp = result;
+    for (i = 0; i < substrings.length - 1; i++) {
+      if (!(substrings[i] in temp)) {
+        if (isFinite(substrings[i + 1])) {
+          temp[substrings[i]] = [];
+        } else {
+          temp[substrings[i]] = {};
+        }
+      }
+      temp = temp[substrings[i]];
+    }
+    temp[substrings[substrings.length - 1]] = o[property];
+  }
+
+  return result;
+};
+
+/**
+ * A split predicate
+ * @callback SplitPredicate
+ * @param {any} value The current value
+ * @return {boolean} True if the array should split at this index
+ */
+
+/**
+ * Split an array into sub-arrays based on a predicate
+ * @param {Array<*>} array
+ * @param {SplitPredicate} predicate
+ * @return {Array<Array<*>>} An array of arrays
+ */
+const split = (array, predicate) => {
+  const result = [];
+  let current = [];
+  for (const value of array) {
+    if (predicate(value)) {
+      if (current.length) {
+        result.push(current);
+      }
+      current = [value];
+    } else {
+      current.push(value);
+    }
+  }
+  result.push(current);
+
+  return result;
+};
+
+/**
+ * Pluck keys from an object
+ * @param {object} o
+ * @param {...string} keys The keys to pluck from the object
+ * @return {object} An object containing the plucked keys
+ */
+const pluck = (o, ...keys) => {
+  return keys.reduce(
+    (result, key) => Object.assign(result, { [key]: o[key] }),
+    {}
+  );
+};
+
+/**
+ * Exclude keys from an object
+ * @param {object} o
+ * @param {...string} keys The keys to exclude from the object
+ * @return {object} An object containing all keys except excluded keys
+ */
+const exclude = (o, ...keys) => {
+  return Object.fromEntries(
+    Object.entries(o).filter(([key]) => !keys.includes(key))
+  );
+};
+
+if (true) {
+  module.exports = {
+    memoize,
+    floatEquals,
+    clamp,
+    frac,
+    round,
+    lerp,
+    unlerp,
+    blerp,
+    remap,
+    smoothstep,
+    radians,
+    degrees,
+    randomBetween,
+    randomIntBetween,
+    cltRandom,
+    cltRandomInt,
+    weightedRandom,
+    lerpArray,
+    dot,
+    factorial,
+    npr,
+    ncr,
+    permutations,
+    combinations,
+    cartesian,
+    times,
+    range,
+    zip,
+    at,
+    peek,
+    ind,
+    pos,
+    chunk,
+    shuffle,
+    flat,
+    unflat,
+    split,
+    pluck,
+    exclude,
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@basementuniverse/vec/vec.js":
+/*!***************************************************!*\
+  !*** ./node_modules/@basementuniverse/vec/vec.js ***!
+  \***************************************************/
+/***/ ((module) => {
+
+/**
+ * @overview A small vector and matrix library
+ * @author Gordon Larrigan
+ */
+
+const _vec_times = (f, n) => Array(n).fill(0).map((_, i) => f(i));
+const _vec_chunk = (a, n) => _vec_times(i => a.slice(i * n, i * n + n), Math.ceil(a.length / n));
+const _vec_dot = (a, b) => a.reduce((n, v, i) => n + v * b[i], 0);
+const _vec_is_vec2 = a => typeof a === 'object' && 'x' in a && 'y' in a;
+const _vec_is_vec3 = a => typeof a === 'object' && 'x' in a && 'y' in a && 'z' in a;
+
+/**
+ * A 2d vector
+ * @typedef {Object} vec2
+ * @property {number} x The x component of the vector
+ * @property {number} y The y component of the vector
+ */
+
+/**
+ * Create a new 2d vector
+ * @param {number|vec2} [x] The x component of the vector, or a vector to copy
+ * @param {number} [y] The y component of the vector
+ * @return {vec2} A new 2d vector
+ * @example <caption>various ways to initialise a vector</caption>
+ * let a = vec2(3, 2); // (3, 2)
+ * let b = vec2(4);    // (4, 4)
+ * let c = vec2(a);    // (3, 2)
+ * let d = vec2();     // (0, 0)
+ */
+const vec2 = (x, y) => {
+  if (!x && !y) {
+    return { x: 0, y: 0 };
+  }
+  if (_vec_is_vec2(x)) {
+    return { x: x.x || 0, y: x.y || 0 };
+  }
+  return { x: x, y: y ?? x };
+};
+
+/**
+ * Get the components of a vector as an array
+ * @param {vec2} a The vector to get components from
+ * @return {Array<number>} The vector components as an array
+ */
+vec2.components = a => [a.x, a.y];
+
+/**
+ * Create a vector from an array of components
+ * @param {Array<number>} components The components of the vector
+ * @return {vec2} A new vector
+ */
+vec2.fromComponents = components => vec2(...components.slice(0, 2));
+
+/**
+ * Return a unit vector (1, 0)
+ * @return {vec2} A unit vector (1, 0)
+ */
+vec2.ux = () => vec2(1, 0);
+
+/**
+ * Return a unit vector (0, 1)
+ * @return {vec2} A unit vector (0, 1)
+ */
+vec2.uy = () => vec2(0, 1);
+
+/**
+ * Add vectors
+ * @param {vec2} a Vector a
+ * @param {vec2|number} b Vector or scalar b
+ * @return {vec2} a + b
+ */
+vec2.add = (a, b) => ({ x: a.x + (b.x ?? b), y: a.y + (b.y ?? b) });
+
+/**
+ * Subtract vectors
+ * @param {vec2} a Vector a
+ * @param {vec2|number} b Vector or scalar b
+ * @return {vec2} a - b
+ */
+vec2.sub = (a, b) => ({ x: a.x - (b.x ?? b), y: a.y - (b.y ?? b) });
+
+/**
+ * Scale a vector
+ * @param {vec2} a Vector a
+ * @param {vec2|number} b Vector or scalar b
+ * @return {vec2} a * b
+ */
+vec2.mul = (a, b) => ({ x: a.x * (b.x ?? b), y: a.y * (b.y ?? b) });
+
+/**
+ * Scale a vector by a scalar, alias for vec2.mul
+ * @param {vec2} a Vector a
+ * @param {number} b Scalar b
+ * @return {vec2} a * b
+ */
+vec2.scale = (a, b) => vec2.mul(a, b);
+
+/**
+ * Divide a vector
+ * @param {vec2} a Vector a
+ * @param {vec2|number} b Vector or scalar b
+ * @return {vec2} a / b
+ */
+vec2.div = (a, b) => ({ x: a.x / (b.x ?? b), y: a.y / (b.y ?? b) });
+
+/**
+ * Get the length of a vector
+ * @param {vec2} a Vector a
+ * @return {number} |a|
+ */
+vec2.len = a => Math.sqrt(a.x * a.x + a.y * a.y);
+
+/**
+ * Get the length of a vector using taxicab geometry
+ * @param {vec2} a Vector a
+ * @return {number} |a|
+ */
+vec2.manhattan = a => Math.abs(a.x) + Math.abs(a.y);
+
+/**
+ * Normalise a vector
+ * @param {vec2} a The vector to normalise
+ * @return {vec2} ^a
+ */
+vec2.nor = a => {
+  let len = vec2.len(a);
+  return len ? { x: a.x / len, y: a.y / len } : vec2();
+};
+
+/**
+ * Get a dot product of vectors
+ * @param {vec2} a Vector a
+ * @param {vec2} b Vector b
+ * @return {number} a ∙ b
+ */
+vec2.dot = (a, b) => a.x * b.x + a.y * b.y;
+
+/**
+ * Rotate a vector by r radians
+ * @param {vec2} a The vector to rotate
+ * @param {number} r The angle to rotate by, measured in radians
+ * @return {vec2} A rotated vector
+ */
+vec2.rot = (a, r) => {
+  let s = Math.sin(r),
+    c = Math.cos(r);
+  return { x: c * a.x - s * a.y, y: s * a.x + c * a.y };
+};
+
+/**
+ * Fast method to rotate a vector by -90, 90 or 180 degrees
+ * @param {vec2} a The vector to rotate
+ * @param {number} r 1 for 90 degrees (cw), -1 for -90 degrees (ccw), 2 or -2 for 180 degrees
+ * @return {vec2} A rotated vector
+ */
+vec2.rotf = (a, r) => {
+  switch (r) {
+    case 1: return vec2(a.y, -a.x);
+    case -1: return vec2(-a.y, a.x);
+    case 2: case -2: return vec2(-a.x, -a.y);
+    default: return a;
+  }
+};
+
+/**
+ * Scalar cross product of two vectors
+ * @param {vec2} a Vector a
+ * @param {vec2} b Vector b
+ * @return {number} a × b
+ */
+vec2.cross = (a, b) => {
+  return a.x * b.y - a.y * b.x;
+};
+
+/**
+ * Check if two vectors are equal
+ * @param {vec2} a Vector a
+ * @param {vec2} b Vector b
+ * @return {boolean} True if vectors a and b are equal, false otherwise
+ */
+vec2.eq = (a, b) => a.x === b.x && a.y === b.y;
+
+/**
+ * Get the angle of a vector
+ * @param {vec2} a Vector a
+ * @return {number} The angle of vector a in radians
+ */
+vec2.rad = a => Math.atan2(a.y, a.x);
+
+/**
+ * Copy a vector
+ * @param {vec2} a The vector to copy
+ * @return {vec2} A copy of vector a
+ */
+vec2.cpy = a => vec2(a);
+
+/**
+ * A function to call on each component of a 2d vector
+ * @callback vec2MapCallback
+ * @param {number} value The component value
+ * @param {'x' | 'y'} label The component label (x or y)
+ * @return {number} The mapped component
+ */
+
+/**
+ * Call a function on each component of a vector and build a new vector from the results
+ * @param {vec2} a Vector a
+ * @param {vec2MapCallback} f The function to call on each component of the vector
+ * @return {vec2} Vector a mapped through f
+ */
+vec2.map = (a, f) => ({ x: f(a.x, 'x'), y: f(a.y, 'y') });
+
+/**
+ * Convert a vector into a string
+ * @param {vec2} a The vector to convert
+ * @param {string} [s=', '] The separator string
+ * @return {string} A string representation of the vector
+ */
+vec2.str = (a, s = ', ') => `${a.x}${s}${a.y}`;
+
+/**
+ * Swizzle a vector with a string of component labels
+ *
+ * The string can contain:
+ * - `x` or `y`
+ * - `u` or `v` (aliases for `x` and `y`, respectively)
+ * - `X`, `Y`, `U`, `V` (negated versions of the above)
+ * - `0` or `1` (these will be passed through unchanged)
+ * - `.` to return the component that would normally be at this position (or 0)
+ *
+ * Any other characters will default to 0
+ * @param {vec2} a The vector to swizzle
+ * @param {string} [s='..'] The swizzle string
+ * @return {Array<number>} The swizzled components
+ * @example <caption>swizzling a vector</caption>
+ * let a = vec2(3, -2);
+ * vec2.swiz(a, 'x');    // [3]
+ * vec2.swiz(a, 'yx');   // [-2, 3]
+ * vec2.swiz(a, 'xY');   // [3, 2]
+ * vec2.swiz(a, 'Yy');   // [2, -2]
+ * vec2.swiz(a, 'x.x');  // [3, -2, 3]
+ * vec2.swiz(a, 'y01x'); // [-2, 0, 1, 3]
+ */
+vec2.swiz = (a, s = '..') => {
+  const result = [];
+  s.split('').forEach((c, i) => {
+    switch (c) {
+      case 'x': case 'u': result.push(a.x); break;
+      case 'y': case 'v': result.push(a.y); break;
+      case 'X': case 'U': result.push(-a.x); break;
+      case 'Y': case 'V': result.push(-a.y); break;
+      case '0': result.push(0); break;
+      case '1': result.push(1); break;
+      case '.': result.push([a.x, a.y][i] ?? 0); break;
+      default: result.push(0);
+    }
+  });
+  return result;
+};
+
+/**
+ * Polar coordinates for a 2d vector
+ * @typedef {Object} polarCoordinates2d
+ * @property {number} r The magnitude (radius) of the vector
+ * @property {number} theta The angle of the vector
+ */
+
+/**
+ * Convert a vector into polar coordinates
+ * @param {vec2} a The vector to convert
+ * @return {polarCoordinates2d} The magnitude and angle of the vector
+ */
+vec2.polar = a => ({ r: vec2.len(a), theta: Math.atan2(a.y, a.x) });
+
+/**
+ * Convert polar coordinates into a vector
+ * @param {number} r The magnitude (radius) of the vector
+ * @param {number} theta The angle of the vector
+ * @return {vec2} A vector with the given angle and magnitude
+ */
+vec2.fromPolar = (r, theta) => vec2(r * Math.cos(theta), r * Math.sin(theta));
+
+/**
+ * A 3d vector
+ * @typedef {Object} vec3
+ * @property {number} x The x component of the vector
+ * @property {number} y The y component of the vector
+ * @property {number} z The z component of the vector
+ */
+
+/**
+ * Create a new 3d vector
+ * @param {number|vec3|vec2} [x] The x component of the vector, or a vector to copy
+ * @param {number} [y] The y component of the vector, or the z component if x is a vec2
+ * @param {number} [z] The z component of the vector
+ * @return {vec3} A new 3d vector
+ * @example <caption>various ways to initialise a vector</caption>
+ * let a = vec3(3, 2, 1);       // (3, 2, 1)
+ * let b = vec3(4, 5);          // (4, 5, 0)
+ * let c = vec3(6);             // (6, 6, 6)
+ * let d = vec3(a);             // (3, 2, 1)
+ * let e = vec3();              // (0, 0, 0)
+ * let f = vec3(vec2(1, 2), 3); // (1, 2, 3)
+ * let g = vec3(vec2(4, 5));    // (4, 5, 0)
+ */
+const vec3 = (x, y, z) => {
+  if (!x && !y && !z) {
+    return { x: 0, y: 0, z: 0 };
+  }
+  if (_vec_is_vec3(x)) {
+    return { x: x.x || 0, y: x.y || 0, z: x.z || 0 };
+  }
+  if (_vec_is_vec2(x)) {
+    return { x: x.x || 0, y: x.y || 0, z: y || 0 };
+  }
+  return { x: x, y: y ?? x, z: z ?? x };
+};
+
+/**
+ * Get the components of a vector as an array
+ * @param {vec3} a The vector to get components from
+ * @return {Array<number>} The vector components as an array
+ */
+vec3.components = a => [a.x, a.y, a.z];
+
+/**
+ * Create a vector from an array of components
+ * @param {Array<number>} components The components of the vector
+ * @return {vec3} A new vector
+ */
+vec3.fromComponents = components => vec3(...components.slice(0, 3));
+
+/**
+ * Return a unit vector (1, 0, 0)
+ * @return {vec3} A unit vector (1, 0, 0)
+ */
+vec3.ux = () => vec3(1, 0, 0);
+
+/**
+ * Return a unit vector (0, 1, 0)
+ * @return {vec3} A unit vector (0, 1, 0)
+ */
+vec3.uy = () => vec3(0, 1, 0);
+
+/**
+ * Return a unit vector (0, 0, 1)
+ * @return {vec3} A unit vector (0, 0, 1)
+ */
+vec3.uz = () => vec3(0, 0, 1);
+
+/**
+ * Add vectors
+ * @param {vec3} a Vector a
+ * @param {vec3|number} b Vector or scalar b
+ * @return {vec3} a + b
+ */
+vec3.add = (a, b) => ({ x: a.x + (b.x ?? b), y: a.y + (b.y ?? b), z: a.z + (b.z ?? b) });
+
+/**
+ * Subtract vectors
+ * @param {vec3} a Vector a
+ * @param {vec3|number} b Vector or scalar b
+ * @return {vec3} a - b
+ */
+vec3.sub = (a, b) => ({ x: a.x - (b.x ?? b), y: a.y - (b.y ?? b), z: a.z - (b.z ?? b) });
+
+/**
+ * Scale a vector
+ * @param {vec3} a Vector a
+ * @param {vec3|number} b Vector or scalar b
+ * @return {vec3} a * b
+ */
+vec3.mul = (a, b) => ({ x: a.x * (b.x ?? b), y: a.y * (b.y ?? b), z: a.z * (b.z ?? b) });
+
+/**
+ * Scale a vector by a scalar, alias for vec3.mul
+ * @param {vec3} a Vector a
+ * @param {number} b Scalar b
+ * @return {vec3} a * b
+ */
+vec3.scale = (a, b) => vec3.mul(a, b);
+
+/**
+ * Divide a vector
+ * @param {vec3} a Vector a
+ * @param {vec3|number} b Vector or scalar b
+ * @return {vec3} a / b
+ */
+vec3.div = (a, b) => ({ x: a.x / (b.x ?? b), y: a.y / (b.y ?? b), z: a.z / (b.z ?? b) });
+
+/**
+ * Get the length of a vector
+ * @param {vec3} a Vector a
+ * @return {number} |a|
+ */
+vec3.len = a => Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+
+/**
+ * Get the length of a vector using taxicab geometry
+ * @param {vec3} a Vector a
+ * @return {number} |a|
+ */
+vec3.manhattan = a => Math.abs(a.x) + Math.abs(a.y) + Math.abs(a.z);
+
+/**
+ * Normalise a vector
+ * @param {vec3} a The vector to normalise
+ * @return {vec3} ^a
+ */
+vec3.nor = a => {
+  let len = vec3.len(a);
+  return len ? { x: a.x / len, y: a.y / len, z: a.z / len } : vec3();
+};
+
+/**
+ * Get a dot product of vectors
+ * @param {vec3} a Vector a
+ * @param {vec3} b Vector b
+ * @return {number} a ∙ b
+ */
+vec3.dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+
+/**
+ * Rotate a vector using a rotation matrix
+ * @param {vec3} a The vector to rotate
+ * @param {mat} m The rotation matrix
+ * @return {vec3} A rotated vector
+ */
+vec3.rot = (a, m) => vec3(
+  vec3.dot(vec3.fromComponents(mat.row(m, 1)), a),
+  vec3.dot(vec3.fromComponents(mat.row(m, 2)), a),
+  vec3.dot(vec3.fromComponents(mat.row(m, 3)), a)
+);
+
+/**
+ * Rotate a vector by r radians around the x axis
+ * @param {vec3} a The vector to rotate
+ * @param {number} r The angle to rotate by, measured in radians
+ * @return {vec3} A rotated vector
+ */
+vec3.rotx = (a, r) => vec3(
+  a.x,
+  a.y * Math.cos(r) - a.z * Math.sin(r),
+  a.y * Math.sin(r) + a.z * Math.cos(r)
+);
+
+/**
+ * Rotate a vector by r radians around the y axis
+ * @param {vec3} a The vector to rotate
+ * @param {number} r The angle to rotate by, measured in radians
+ * @return {vec3} A rotated vector
+ */
+vec3.roty = (a, r) => vec3(
+  a.x * Math.cos(r) + a.z * Math.sin(r),
+  a.y,
+  -a.x * Math.sin(r) + a.z * Math.cos(r)
+);
+
+/**
+ * Rotate a vector by r radians around the z axis
+ * @param {vec3} a The vector to rotate
+ * @param {number} r The angle to rotate by, measured in radians
+ * @return {vec3} A rotated vector
+ */
+vec3.rotz = (a, r) => vec3(
+  a.x * Math.cos(r) - a.y * Math.sin(r),
+  a.x * Math.sin(r) + a.y * Math.cos(r),
+  a.z
+);
+
+/**
+ * Rotate a vector using a quaternion
+ * @param {vec3} a The vector to rotate
+ * @param {Array<number>} q The quaternion to rotate by
+ * @return {vec3} A rotated vector
+ */
+vec3.rotq = (v, q) => {
+  if (q.length !== 4) {
+    return vec3();
+  }
+
+  const d = Math.sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+  if (d === 0) {
+    return vec3();
+  }
+
+  const uq = [q[0] / d, q[1] / d, q[2] / d, q[3] / d];
+  const u = vec3(...uq.slice(0, 3));
+  const s = uq[3];
+  return vec3.add(
+    vec3.add(
+      vec3.mul(u, 2 * vec3.dot(u, v)),
+      vec3.mul(v, s * s - vec3.dot(u, u))
+    ),
+    vec3.mul(vec3.cross(u, v), 2 * s)
+  );
+};
+
+/**
+ * Rotate a vector using Euler angles
+ * @param {vec3} a The vector to rotate
+ * @param {vec3} e The Euler angles to rotate by
+ * @return {vec3} A rotated vector
+ */
+vec3.rota = (a, e) => vec3.rotz(vec3.roty(vec3.rotx(a, e.x), e.y), e.z);
+
+/**
+ * Get the cross product of vectors
+ * @param {vec3} a Vector a
+ * @param {vec3} b Vector b
+ * @return {vec3} a × b
+ */
+vec3.cross = (a, b) => vec3(
+  a.y * b.z - a.z * b.y,
+  a.z * b.x - a.x * b.z,
+  a.x * b.y - a.y * b.x
+);
+
+/**
+ * Check if two vectors are equal
+ * @param {vec3} a Vector a
+ * @param {vec3} b Vector b
+ * @return {boolean} True if vectors a and b are equal, false otherwise
+ */
+vec3.eq = (a, b) => a.x === b.x && a.y === b.y && a.z === b.z;
+
+/**
+ * Get the angle of a vector from the x axis
+ * @param {vec3} a Vector a
+ * @return {number} The angle of vector a in radians
+ */
+vec3.radx = a => Math.atan2(a.z, a.y);
+
+/**
+ * Get the angle of a vector from the y axis
+ * @param {vec3} a Vector a
+ * @return {number} The angle of vector a in radians
+ */
+vec3.rady = a => Math.atan2(a.x, a.y);
+
+/**
+ * Get the angle of a vector from the z axis
+ * @param {vec3} a Vector a
+ * @return {number} The angle of vector a in radians
+ */
+vec3.radz = a => Math.atan2(a.y, a.z);
+
+/**
+ * Copy a vector
+ * @param {vec3} a The vector to copy
+ * @return {vec3} A copy of vector a
+ */
+vec3.cpy = a => vec3(a);
+
+/**
+ * A function to call on each component of a 3d vector
+ * @callback vec3MapCallback
+ * @param {number} value The component value
+ * @param {'x' | 'y' | 'z'} label The component label (x, y or z)
+ * @return {number} The mapped component
+ */
+
+/**
+ * Call a function on each component of a vector and build a new vector from the results
+ * @param {vec3} a Vector a
+ * @param {vec3MapCallback} f The function to call on each component of the vector
+ * @return {vec3} Vector a mapped through f
+ */
+vec3.map = (a, f) => ({ x: f(a.x, 'x'), y: f(a.y, 'y'), z: f(a.z, 'z') });
+
+/**
+ * Convert a vector into a string
+ * @param {vec3} a The vector to convert
+ * @param {string} [s=', '] The separator string
+ * @return {string} A string representation of the vector
+ */
+vec3.str = (a, s = ', ') => `${a.x}${s}${a.y}${s}${a.z}`;
+
+/**
+ * Swizzle a vector with a string of component labels
+ *
+ * The string can contain:
+ * - `x`, `y` or `z`
+ * - `u`, `v` or `w` (aliases for `x`, `y` and `z`, respectively)
+ * - `r`, `g` or `b` (aliases for `x`, `y` and `z`, respectively)
+ * - `X`, `Y`, `Z`, `U`, `V`, `W`, `R`, `G`, `B` (negated versions of the above)
+ * - `0` or `1` (these will be passed through unchanged)
+ * - `.` to return the component that would normally be at this position (or 0)
+ *
+ * Any other characters will default to 0
+ * @param {vec3} a The vector to swizzle
+ * @param {string} [s='...'] The swizzle string
+ * @return {Array<number>} The swizzled components
+ * @example <caption>swizzling a vector</caption>
+ * let a = vec3(3, -2, 1);
+ * vec3.swiz(a, 'x');     // [3]
+ * vec3.swiz(a, 'zyx');   // [1, -2, 3]
+ * vec3.swiz(a, 'xYZ');   // [3, 2, -1]
+ * vec3.swiz(a, 'Zzx');   // [-1, 1, 3]
+ * vec3.swiz(a, 'x.x');   // [3, -2, 3]
+ * vec3.swiz(a, 'y01zx'); // [-2, 0, 1, 1, 3]
+ */
+vec3.swiz = (a, s = '...') => {
+  const result = [];
+  s.split('').forEach((c, i) => {
+    switch (c) {
+      case 'x': case 'u': case 'r': result.push(a.x); break;
+      case 'y': case 'v': case 'g': result.push(a.y); break;
+      case 'z': case 'w': case 'b': result.push(a.z); break;
+      case 'X': case 'U': case 'R': result.push(-a.x); break;
+      case 'Y': case 'V': case 'G': result.push(-a.y); break;
+      case 'Z': case 'W': case 'B': result.push(-a.z); break;
+      case '0': result.push(0); break;
+      case '1': result.push(1); break;
+      case '.': result.push([a.x, a.y, a.z][i] ?? 0); break;
+      default: result.push(0);
+    }
+  });
+  return result;
+};
+
+/**
+ * Polar coordinates for a 3d vector
+ * @typedef {Object} polarCoordinates3d
+ * @property {number} r The magnitude (radius) of the vector
+ * @property {number} theta The tilt angle of the vector
+ * @property {number} phi The pan angle of the vector
+ */
+
+/**
+ * Convert a vector into polar coordinates
+ * @param {vec3} a The vector to convert
+ * @return {polarCoordinates3d} The magnitude, tilt and pan of the vector
+ */
+vec3.polar = a => {
+  let r = vec3.len(a),
+    theta = Math.acos(a.y / r),
+    phi = Math.atan2(a.z, a.x);
+  return { r, theta, phi };
+};
+
+/**
+ * Convert polar coordinates into a vector
+ * @param {number} r The magnitude (radius) of the vector
+ * @param {number} theta The tilt of the vector
+ * @param {number} phi The pan of the vector
+ * @return {vec3} A vector with the given angle and magnitude
+ */
+vec3.fromPolar = (r, theta, phi) => {
+  const sinTheta = Math.sin(theta);
+  return vec3(
+    r * sinTheta * Math.cos(phi),
+    r * Math.cos(theta),
+    r * sinTheta * Math.sin(phi)
+  );
+};
+
+/**
+ * A matrix
+ * @typedef {Object} mat
+ * @property {number} m The number of rows in the matrix
+ * @property {number} n The number of columns in the matrix
+ * @property {Array<number>} entries The matrix values
+ */
+
+/**
+ * Create a new matrix
+ * @param {number} [m=4] The number of rows
+ * @param {number} [n=4] The number of columns
+ * @param {Array<number>} [entries=[]] Matrix values in reading order
+ * @return {mat} A new matrix
+ */
+const mat = (m = 4, n = 4, entries = []) => ({
+  m, n,
+  entries: entries.concat(Array(m * n).fill(0)).slice(0, m * n)
+});
+
+/**
+ * Get an identity matrix of size n
+ * @param {number} n The size of the matrix
+ * @return {mat} An identity matrix
+ */
+mat.identity = n => mat(n, n, Array(n * n).fill(0).map((v, i) => +(Math.floor(i / n) === i % n)));
+
+/**
+ * Get an entry from a matrix
+ * @param {mat} a Matrix a
+ * @param {number} i The row offset
+ * @param {number} j The column offset
+ * @return {number} The value at position (i, j) in matrix a
+ */
+mat.get = (a, i, j) => a.entries[(j - 1) + (i - 1) * a.n];
+
+/**
+ * Set an entry of a matrix
+ * @param {mat} a Matrix a
+ * @param {number} i The row offset
+ * @param {number} j The column offset
+ * @param {number} v The value to set in matrix a
+ */
+mat.set = (a, i, j, v) => { a.entries[(j - 1) + (i - 1) * a.n] = v; };
+
+/**
+ * Get a row from a matrix as an array
+ * @param {mat} a Matrix a
+ * @param {number} m The row offset
+ * @return {Array<number>} Row m from matrix a
+ */
+mat.row = (a, m) => {
+  const s = (m - 1) * a.n;
+  return a.entries.slice(s, s + a.n);
+};
+
+/**
+ * Get a column from a matrix as an array
+ * @param {mat} a Matrix a
+ * @param {number} n The column offset
+ * @return {Array<number>} Column n from matrix a
+ */
+mat.col = (a, n) => _vec_times(i => mat.get(a, (i + 1), n), a.m);
+
+/**
+ * Add matrices
+ * @param {mat} a Matrix a
+ * @param {mat} b Matrix b
+ * @return {mat} a + b
+ */
+mat.add = (a, b) => a.m === b.m && a.n === b.n && mat.map(a, (v, i) => v + b.entries[i]);
+
+/**
+ * Subtract matrices
+ * @param {mat} a Matrix a
+ * @param {mat} b Matrix b
+ * @return {mat} a - b
+ */
+mat.sub = (a, b) => a.m === b.m && a.n === b.n && mat.map(a, (v, i) => v - b.entries[i]);
+
+/**
+ * Multiply matrices
+ * @param {mat} a Matrix a
+ * @param {mat} b Matrix b
+ * @return {mat|false} ab or false if the matrices cannot be multiplied
+ */
+mat.mul = (a, b) => {
+  if (a.n !== b.m) { return false; }
+  const result = mat(a.m, b.n);
+  for (let i = 1; i <= a.m; i++) {
+    for (let j = 1; j <= b.n; j++) {
+      mat.set(result, i, j, _vec_dot(mat.row(a, i), mat.col(b, j)));
+    }
+  }
+  return result;
+};
+
+/**
+ * Multiply a matrix by a vector
+ * @param {mat} a Matrix a
+ * @param {vec2|vec3|number[]} b Vector b
+ * @return {vec2|vec3|number[]|false} ab or false if the matrix and vector cannot be multiplied
+ */
+mat.mulv = (a, b) => {
+  let n, bb, rt;
+  if (_vec_is_vec3(b)) {
+    bb = vec3.components(b);
+    n = 3;
+    rt = vec3.fromComponents;
+  } else if (_vec_is_vec2(b)) {
+    bb = vec2.components(b);
+    n = 2;
+    rt = vec2.fromComponents;
+  } else {
+    bb = b;
+    n = b.length ?? 0;
+    rt = v => v;
+  }
+  if (a.n !== n) { return false; }
+  const result = [];
+  for (let i = 1; i <= a.m; i++) {
+    result.push(_vec_dot(mat.row(a, i), bb));
+  }
+  return rt(result);
+}
+
+/**
+ * Scale a matrix
+ * @param {mat} a Matrix a
+ * @param {number} b Scalar b
+ * @return {mat} a * b
+ */
+mat.scale = (a, b) => mat.map(a, v => v * b);
+
+/**
+ * Transpose a matrix
+ * @param {mat} a The matrix to transpose
+ * @return {mat} A transposed matrix
+ */
+mat.trans = a => mat(a.n, a.m, _vec_times(i => mat.col(a, (i + 1)), a.n).flat());
+
+/**
+ * Get the minor of a matrix
+ * @param {mat} a Matrix a
+ * @param {number} i The row offset
+ * @param {number} j The column offset
+ * @return {mat|false} The (i, j) minor of matrix a or false if the matrix is not square
+ */
+mat.minor = (a, i, j) => {
+  if (a.m !== a.n) { return false; }
+  const entries = [];
+  for (let ii = 1; ii <= a.m; ii++) {
+    if (ii === i) { continue; }
+    for (let jj = 1; jj <= a.n; jj++) {
+      if (jj === j) { continue; }
+      entries.push(mat.get(a, ii, jj));
+    }
+  }
+  return mat(a.m - 1, a.n - 1, entries);
+};
+
+/**
+ * Get the determinant of a matrix
+ * @param {mat} a Matrix a
+ * @return {number|false} |a| or false if the matrix is not square
+ */
+mat.det = a => {
+  if (a.m !== a.n) { return false; }
+  if (a.m === 1) {
+    return a.entries[0];
+  }
+  if (a.m === 2) {
+    return a.entries[0] * a.entries[3] - a.entries[1] * a.entries[2];
+  }
+  let total = 0, sign = 1;
+  for (let j = 1; j <= a.n; j++) {
+    total += sign * a.entries[j - 1] * mat.det(mat.minor(a, 1, j));
+    sign *= -1;
+  }
+  return total;
+};
+
+/**
+ * Normalise a matrix
+ * @param {mat} a The matrix to normalise
+ * @return {mat|false} ^a or false if the matrix is not square
+ */
+mat.nor = a => {
+  if (a.m !== a.n) { return false; }
+  const d = mat.det(a);
+  return mat.map(a, i => i * d);
+};
+
+/**
+ * Get the adjugate of a matrix
+ * @param {mat} a The matrix from which to get the adjugate
+ * @return {mat} The adjugate of a
+ */
+mat.adj = a => {
+  const minors = mat(a.m, a.n);
+  for (let i = 1; i <= a.m; i++) {
+    for (let j = 1; j <= a.n; j++) {
+      mat.set(minors, i, j, mat.det(mat.minor(a, i, j)));
+    }
+  }
+  const cofactors = mat.map(minors, (v, i) => v * (i % 2 ? -1 : 1));
+  return mat.trans(cofactors);
+};
+
+/**
+ * Get the inverse of a matrix
+ * @param {mat} a The matrix to invert
+ * @return {mat|false} a^-1 or false if the matrix has no inverse
+ */
+mat.inv = a => {
+  if (a.m !== a.n) { return false; }
+  const d = mat.det(a);
+  if (d === 0) { return false; }
+  return mat.scale(mat.adj(a), 1 / d);
+};
+
+/**
+ * Check if two matrices are equal
+ * @param {mat} a Matrix a
+ * @param {mat} b Matrix b
+ * @return {boolean} True if matrices a and b are identical, false otherwise
+ */
+mat.eq = (a, b) => a.m === b.m && a.n === b.n && mat.str(a) === mat.str(b);
+
+/**
+ * Copy a matrix
+ * @param {mat} a The matrix to copy
+ * @return {mat} A copy of matrix a
+ */
+mat.cpy = a => mat(a.m, a.n, [...a.entries]);
+
+/**
+ * A function to call on each entry of a matrix
+ * @callback matrixMapCallback
+ * @param {number} value The entry value
+ * @param {number} index The entry index
+ * @param {Array<number>} entries The array of matrix entries
+ * @return {number} The mapped entry
+ */
+
+/**
+ * Call a function on each entry of a matrix and build a new matrix from the results
+ * @param {mat} a Matrix a
+ * @param {matrixMapCallback} f The function to call on each entry of the matrix
+ * @return {mat} Matrix a mapped through f
+ */
+mat.map = (a, f) => mat(a.m, a.n, a.entries.map(f));
+
+/**
+ * Convert a matrix into a string
+ * @param {mat} a The matrix to convert
+ * @param {string} [ms=', '] The separator string for columns
+ * @param {string} [ns='\n'] The separator string for rows
+ * @return {string} A string representation of the matrix
+ */
+mat.str = (a, ms = ', ', ns = '\n') => _vec_chunk(a.entries, a.n).map(r => r.join(ms)).join(ns);
+
+if (true) {
+  module.exports = { vec2, vec3, mat };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/poly-decomp/src/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/poly-decomp/src/index.js ***!
+  \***********************************************/
+/***/ ((module) => {
+
+module.exports = {
+    decomp: polygonDecomp,
+    quickDecomp: polygonQuickDecomp,
+    isSimple: polygonIsSimple,
+    removeCollinearPoints: polygonRemoveCollinearPoints,
+    removeDuplicatePoints: polygonRemoveDuplicatePoints,
+    makeCCW: polygonMakeCCW
+};
+
+/**
+ * Compute the intersection between two lines.
+ * @static
+ * @method lineInt
+ * @param  {Array}  l1          Line vector 1
+ * @param  {Array}  l2          Line vector 2
+ * @param  {Number} precision   Precision to use when checking if the lines are parallel
+ * @return {Array}              The intersection point.
+ */
+function lineInt(l1,l2,precision){
+    precision = precision || 0;
+    var i = [0,0]; // point
+    var a1, b1, c1, a2, b2, c2, det; // scalars
+    a1 = l1[1][1] - l1[0][1];
+    b1 = l1[0][0] - l1[1][0];
+    c1 = a1 * l1[0][0] + b1 * l1[0][1];
+    a2 = l2[1][1] - l2[0][1];
+    b2 = l2[0][0] - l2[1][0];
+    c2 = a2 * l2[0][0] + b2 * l2[0][1];
+    det = a1 * b2 - a2*b1;
+    if (!scalar_eq(det, 0, precision)) { // lines are not parallel
+        i[0] = (b2 * c1 - b1 * c2) / det;
+        i[1] = (a1 * c2 - a2 * c1) / det;
+    }
+    return i;
+}
+
+/**
+ * Checks if two line segments intersects.
+ * @method segmentsIntersect
+ * @param {Array} p1 The start vertex of the first line segment.
+ * @param {Array} p2 The end vertex of the first line segment.
+ * @param {Array} q1 The start vertex of the second line segment.
+ * @param {Array} q2 The end vertex of the second line segment.
+ * @return {Boolean} True if the two line segments intersect
+ */
+function lineSegmentsIntersect(p1, p2, q1, q2){
+	var dx = p2[0] - p1[0];
+	var dy = p2[1] - p1[1];
+	var da = q2[0] - q1[0];
+	var db = q2[1] - q1[1];
+
+	// segments are parallel
+	if((da*dy - db*dx) === 0){
+		return false;
+	}
+
+	var s = (dx * (q1[1] - p1[1]) + dy * (p1[0] - q1[0])) / (da * dy - db * dx);
+	var t = (da * (p1[1] - q1[1]) + db * (q1[0] - p1[0])) / (db * dx - da * dy);
+
+	return (s>=0 && s<=1 && t>=0 && t<=1);
+}
+
+/**
+ * Get the area of a triangle spanned by the three given points. Note that the area will be negative if the points are not given in counter-clockwise order.
+ * @static
+ * @method area
+ * @param  {Array} a
+ * @param  {Array} b
+ * @param  {Array} c
+ * @return {Number}
+ */
+function triangleArea(a,b,c){
+    return (((b[0] - a[0])*(c[1] - a[1]))-((c[0] - a[0])*(b[1] - a[1])));
+}
+
+function isLeft(a,b,c){
+    return triangleArea(a,b,c) > 0;
+}
+
+function isLeftOn(a,b,c) {
+    return triangleArea(a, b, c) >= 0;
+}
+
+function isRight(a,b,c) {
+    return triangleArea(a, b, c) < 0;
+}
+
+function isRightOn(a,b,c) {
+    return triangleArea(a, b, c) <= 0;
+}
+
+var tmpPoint1 = [],
+    tmpPoint2 = [];
+
+/**
+ * Check if three points are collinear
+ * @method collinear
+ * @param  {Array} a
+ * @param  {Array} b
+ * @param  {Array} c
+ * @param  {Number} [thresholdAngle=0] Threshold angle to use when comparing the vectors. The function will return true if the angle between the resulting vectors is less than this value. Use zero for max precision.
+ * @return {Boolean}
+ */
+function collinear(a,b,c,thresholdAngle) {
+    if(!thresholdAngle){
+        return triangleArea(a, b, c) === 0;
+    } else {
+        var ab = tmpPoint1,
+            bc = tmpPoint2;
+
+        ab[0] = b[0]-a[0];
+        ab[1] = b[1]-a[1];
+        bc[0] = c[0]-b[0];
+        bc[1] = c[1]-b[1];
+
+        var dot = ab[0]*bc[0] + ab[1]*bc[1],
+            magA = Math.sqrt(ab[0]*ab[0] + ab[1]*ab[1]),
+            magB = Math.sqrt(bc[0]*bc[0] + bc[1]*bc[1]),
+            angle = Math.acos(dot/(magA*magB));
+        return angle < thresholdAngle;
+    }
+}
+
+function sqdist(a,b){
+    var dx = b[0] - a[0];
+    var dy = b[1] - a[1];
+    return dx * dx + dy * dy;
+}
+
+/**
+ * Get a vertex at position i. It does not matter if i is out of bounds, this function will just cycle.
+ * @method at
+ * @param  {Number} i
+ * @return {Array}
+ */
+function polygonAt(polygon, i){
+    var s = polygon.length;
+    return polygon[i < 0 ? i % s + s : i % s];
+}
+
+/**
+ * Clear the polygon data
+ * @method clear
+ * @return {Array}
+ */
+function polygonClear(polygon){
+    polygon.length = 0;
+}
+
+/**
+ * Append points "from" to "to"-1 from an other polygon "poly" onto this one.
+ * @method append
+ * @param {Polygon} poly The polygon to get points from.
+ * @param {Number}  from The vertex index in "poly".
+ * @param {Number}  to The end vertex index in "poly". Note that this vertex is NOT included when appending.
+ * @return {Array}
+ */
+function polygonAppend(polygon, poly, from, to){
+    for(var i=from; i<to; i++){
+        polygon.push(poly[i]);
+    }
+}
+
+/**
+ * Make sure that the polygon vertices are ordered counter-clockwise.
+ * @method makeCCW
+ */
+function polygonMakeCCW(polygon){
+    var br = 0,
+        v = polygon;
+
+    // find bottom right point
+    for (var i = 1; i < polygon.length; ++i) {
+        if (v[i][1] < v[br][1] || (v[i][1] === v[br][1] && v[i][0] > v[br][0])) {
+            br = i;
+        }
+    }
+
+    // reverse poly if clockwise
+    if (!isLeft(polygonAt(polygon, br - 1), polygonAt(polygon, br), polygonAt(polygon, br + 1))) {
+        polygonReverse(polygon);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Reverse the vertices in the polygon
+ * @method reverse
+ */
+function polygonReverse(polygon){
+    var tmp = [];
+    var N = polygon.length;
+    for(var i=0; i!==N; i++){
+        tmp.push(polygon.pop());
+    }
+    for(var i=0; i!==N; i++){
+		polygon[i] = tmp[i];
+    }
+}
+
+/**
+ * Check if a point in the polygon is a reflex point
+ * @method isReflex
+ * @param  {Number}  i
+ * @return {Boolean}
+ */
+function polygonIsReflex(polygon, i){
+    return isRight(polygonAt(polygon, i - 1), polygonAt(polygon, i), polygonAt(polygon, i + 1));
+}
+
+var tmpLine1=[],
+    tmpLine2=[];
+
+/**
+ * Check if two vertices in the polygon can see each other
+ * @method canSee
+ * @param  {Number} a Vertex index 1
+ * @param  {Number} b Vertex index 2
+ * @return {Boolean}
+ */
+function polygonCanSee(polygon, a,b) {
+    var p, dist, l1=tmpLine1, l2=tmpLine2;
+
+    if (isLeftOn(polygonAt(polygon, a + 1), polygonAt(polygon, a), polygonAt(polygon, b)) && isRightOn(polygonAt(polygon, a - 1), polygonAt(polygon, a), polygonAt(polygon, b))) {
+        return false;
+    }
+    dist = sqdist(polygonAt(polygon, a), polygonAt(polygon, b));
+    for (var i = 0; i !== polygon.length; ++i) { // for each edge
+        if ((i + 1) % polygon.length === a || i === a){ // ignore incident edges
+            continue;
+        }
+        if (isLeftOn(polygonAt(polygon, a), polygonAt(polygon, b), polygonAt(polygon, i + 1)) && isRightOn(polygonAt(polygon, a), polygonAt(polygon, b), polygonAt(polygon, i))) { // if diag intersects an edge
+            l1[0] = polygonAt(polygon, a);
+            l1[1] = polygonAt(polygon, b);
+            l2[0] = polygonAt(polygon, i);
+            l2[1] = polygonAt(polygon, i + 1);
+            p = lineInt(l1,l2);
+            if (sqdist(polygonAt(polygon, a), p) < dist) { // if edge is blocking visibility to b
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Check if two vertices in the polygon can see each other
+ * @method canSee2
+ * @param  {Number} a Vertex index 1
+ * @param  {Number} b Vertex index 2
+ * @return {Boolean}
+ */
+function polygonCanSee2(polygon, a,b) {
+    // for each edge
+    for (var i = 0; i !== polygon.length; ++i) {
+        // ignore incident edges
+        if (i === a || i === b || (i + 1) % polygon.length === a || (i + 1) % polygon.length === b){
+            continue;
+        }
+        if( lineSegmentsIntersect(polygonAt(polygon, a), polygonAt(polygon, b), polygonAt(polygon, i), polygonAt(polygon, i+1)) ){
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Copy the polygon from vertex i to vertex j.
+ * @method copy
+ * @param  {Number} i
+ * @param  {Number} j
+ * @param  {Polygon} [targetPoly]   Optional target polygon to save in.
+ * @return {Polygon}                The resulting copy.
+ */
+function polygonCopy(polygon, i,j,targetPoly){
+    var p = targetPoly || [];
+    polygonClear(p);
+    if (i < j) {
+        // Insert all vertices from i to j
+        for(var k=i; k<=j; k++){
+            p.push(polygon[k]);
+        }
+
+    } else {
+
+        // Insert vertices 0 to j
+        for(var k=0; k<=j; k++){
+            p.push(polygon[k]);
+        }
+
+        // Insert vertices i to end
+        for(var k=i; k<polygon.length; k++){
+            p.push(polygon[k]);
+        }
+    }
+
+    return p;
+}
+
+/**
+ * Decomposes the polygon into convex pieces. Returns a list of edges [[p1,p2],[p2,p3],...] that cuts the polygon.
+ * Note that this algorithm has complexity O(N^4) and will be very slow for polygons with many vertices.
+ * @method getCutEdges
+ * @return {Array}
+ */
+function polygonGetCutEdges(polygon) {
+    var min=[], tmp1=[], tmp2=[], tmpPoly = [];
+    var nDiags = Number.MAX_VALUE;
+
+    for (var i = 0; i < polygon.length; ++i) {
+        if (polygonIsReflex(polygon, i)) {
+            for (var j = 0; j < polygon.length; ++j) {
+                if (polygonCanSee(polygon, i, j)) {
+                    tmp1 = polygonGetCutEdges(polygonCopy(polygon, i, j, tmpPoly));
+                    tmp2 = polygonGetCutEdges(polygonCopy(polygon, j, i, tmpPoly));
+
+                    for(var k=0; k<tmp2.length; k++){
+                        tmp1.push(tmp2[k]);
+                    }
+
+                    if (tmp1.length < nDiags) {
+                        min = tmp1;
+                        nDiags = tmp1.length;
+                        min.push([polygonAt(polygon, i), polygonAt(polygon, j)]);
+                    }
+                }
+            }
+        }
+    }
+
+    return min;
+}
+
+/**
+ * Decomposes the polygon into one or more convex sub-Polygons.
+ * @method decomp
+ * @return {Array} An array or Polygon objects.
+ */
+function polygonDecomp(polygon){
+    var edges = polygonGetCutEdges(polygon);
+    if(edges.length > 0){
+        return polygonSlice(polygon, edges);
+    } else {
+        return [polygon];
+    }
+}
+
+/**
+ * Slices the polygon given one or more cut edges. If given one, this function will return two polygons (false on failure). If many, an array of polygons.
+ * @method slice
+ * @param {Array} cutEdges A list of edges, as returned by .getCutEdges()
+ * @return {Array}
+ */
+function polygonSlice(polygon, cutEdges){
+    if(cutEdges.length === 0){
+		return [polygon];
+    }
+    if(cutEdges instanceof Array && cutEdges.length && cutEdges[0] instanceof Array && cutEdges[0].length===2 && cutEdges[0][0] instanceof Array){
+
+        var polys = [polygon];
+
+        for(var i=0; i<cutEdges.length; i++){
+            var cutEdge = cutEdges[i];
+            // Cut all polys
+            for(var j=0; j<polys.length; j++){
+                var poly = polys[j];
+                var result = polygonSlice(poly, cutEdge);
+                if(result){
+                    // Found poly! Cut and quit
+                    polys.splice(j,1);
+                    polys.push(result[0],result[1]);
+                    break;
+                }
+            }
+        }
+
+        return polys;
+    } else {
+
+        // Was given one edge
+        var cutEdge = cutEdges;
+        var i = polygon.indexOf(cutEdge[0]);
+        var j = polygon.indexOf(cutEdge[1]);
+
+        if(i !== -1 && j !== -1){
+            return [polygonCopy(polygon, i,j),
+                    polygonCopy(polygon, j,i)];
+        } else {
+            return false;
+        }
+    }
+}
+
+/**
+ * Checks that the line segments of this polygon do not intersect each other.
+ * @method isSimple
+ * @param  {Array} path An array of vertices e.g. [[0,0],[0,1],...]
+ * @return {Boolean}
+ * @todo Should it check all segments with all others?
+ */
+function polygonIsSimple(polygon){
+    var path = polygon, i;
+    // Check
+    for(i=0; i<path.length-1; i++){
+        for(var j=0; j<i-1; j++){
+            if(lineSegmentsIntersect(path[i], path[i+1], path[j], path[j+1] )){
+                return false;
+            }
+        }
+    }
+
+    // Check the segment between the last and the first point to all others
+    for(i=1; i<path.length-2; i++){
+        if(lineSegmentsIntersect(path[0], path[path.length-1], path[i], path[i+1] )){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function getIntersectionPoint(p1, p2, q1, q2, delta){
+	delta = delta || 0;
+	var a1 = p2[1] - p1[1];
+	var b1 = p1[0] - p2[0];
+	var c1 = (a1 * p1[0]) + (b1 * p1[1]);
+	var a2 = q2[1] - q1[1];
+	var b2 = q1[0] - q2[0];
+	var c2 = (a2 * q1[0]) + (b2 * q1[1]);
+	var det = (a1 * b2) - (a2 * b1);
+
+	if(!scalar_eq(det,0,delta)){
+		return [((b2 * c1) - (b1 * c2)) / det, ((a1 * c2) - (a2 * c1)) / det];
+	} else {
+		return [0,0];
+    }
+}
+
+/**
+ * Quickly decompose the Polygon into convex sub-polygons.
+ * @method quickDecomp
+ * @param  {Array} result
+ * @param  {Array} [reflexVertices]
+ * @param  {Array} [steinerPoints]
+ * @param  {Number} [delta]
+ * @param  {Number} [maxlevel]
+ * @param  {Number} [level]
+ * @return {Array}
+ */
+function polygonQuickDecomp(polygon, result,reflexVertices,steinerPoints,delta,maxlevel,level){
+    maxlevel = maxlevel || 100;
+    level = level || 0;
+    delta = delta || 25;
+    result = typeof(result)!=="undefined" ? result : [];
+    reflexVertices = reflexVertices || [];
+    steinerPoints = steinerPoints || [];
+
+    var upperInt=[0,0], lowerInt=[0,0], p=[0,0]; // Points
+    var upperDist=0, lowerDist=0, d=0, closestDist=0; // scalars
+    var upperIndex=0, lowerIndex=0, closestIndex=0; // Integers
+    var lowerPoly=[], upperPoly=[]; // polygons
+    var poly = polygon,
+        v = polygon;
+
+    if(v.length < 3){
+		return result;
+    }
+
+    level++;
+    if(level > maxlevel){
+        console.warn("quickDecomp: max level ("+maxlevel+") reached.");
+        return result;
+    }
+
+    for (var i = 0; i < polygon.length; ++i) {
+        if (polygonIsReflex(poly, i)) {
+            reflexVertices.push(poly[i]);
+            upperDist = lowerDist = Number.MAX_VALUE;
+
+
+            for (var j = 0; j < polygon.length; ++j) {
+                if (isLeft(polygonAt(poly, i - 1), polygonAt(poly, i), polygonAt(poly, j)) && isRightOn(polygonAt(poly, i - 1), polygonAt(poly, i), polygonAt(poly, j - 1))) { // if line intersects with an edge
+                    p = getIntersectionPoint(polygonAt(poly, i - 1), polygonAt(poly, i), polygonAt(poly, j), polygonAt(poly, j - 1)); // find the point of intersection
+                    if (isRight(polygonAt(poly, i + 1), polygonAt(poly, i), p)) { // make sure it's inside the poly
+                        d = sqdist(poly[i], p);
+                        if (d < lowerDist) { // keep only the closest intersection
+                            lowerDist = d;
+                            lowerInt = p;
+                            lowerIndex = j;
+                        }
+                    }
+                }
+                if (isLeft(polygonAt(poly, i + 1), polygonAt(poly, i), polygonAt(poly, j + 1)) && isRightOn(polygonAt(poly, i + 1), polygonAt(poly, i), polygonAt(poly, j))) {
+                    p = getIntersectionPoint(polygonAt(poly, i + 1), polygonAt(poly, i), polygonAt(poly, j), polygonAt(poly, j + 1));
+                    if (isLeft(polygonAt(poly, i - 1), polygonAt(poly, i), p)) {
+                        d = sqdist(poly[i], p);
+                        if (d < upperDist) {
+                            upperDist = d;
+                            upperInt = p;
+                            upperIndex = j;
+                        }
+                    }
+                }
+            }
+
+            // if there are no vertices to connect to, choose a point in the middle
+            if (lowerIndex === (upperIndex + 1) % polygon.length) {
+                //console.log("Case 1: Vertex("+i+"), lowerIndex("+lowerIndex+"), upperIndex("+upperIndex+"), poly.size("+polygon.length+")");
+                p[0] = (lowerInt[0] + upperInt[0]) / 2;
+                p[1] = (lowerInt[1] + upperInt[1]) / 2;
+                steinerPoints.push(p);
+
+                if (i < upperIndex) {
+                    //lowerPoly.insert(lowerPoly.end(), poly.begin() + i, poly.begin() + upperIndex + 1);
+                    polygonAppend(lowerPoly, poly, i, upperIndex+1);
+                    lowerPoly.push(p);
+                    upperPoly.push(p);
+                    if (lowerIndex !== 0){
+                        //upperPoly.insert(upperPoly.end(), poly.begin() + lowerIndex, poly.end());
+                        polygonAppend(upperPoly, poly,lowerIndex,poly.length);
+                    }
+                    //upperPoly.insert(upperPoly.end(), poly.begin(), poly.begin() + i + 1);
+                    polygonAppend(upperPoly, poly,0,i+1);
+                } else {
+                    if (i !== 0){
+                        //lowerPoly.insert(lowerPoly.end(), poly.begin() + i, poly.end());
+                        polygonAppend(lowerPoly, poly,i,poly.length);
+                    }
+                    //lowerPoly.insert(lowerPoly.end(), poly.begin(), poly.begin() + upperIndex + 1);
+                    polygonAppend(lowerPoly, poly,0,upperIndex+1);
+                    lowerPoly.push(p);
+                    upperPoly.push(p);
+                    //upperPoly.insert(upperPoly.end(), poly.begin() + lowerIndex, poly.begin() + i + 1);
+                    polygonAppend(upperPoly, poly,lowerIndex,i+1);
+                }
+            } else {
+                // connect to the closest point within the triangle
+                //console.log("Case 2: Vertex("+i+"), closestIndex("+closestIndex+"), poly.size("+polygon.length+")\n");
+
+                if (lowerIndex > upperIndex) {
+                    upperIndex += polygon.length;
+                }
+                closestDist = Number.MAX_VALUE;
+
+                if(upperIndex < lowerIndex){
+                    return result;
+                }
+
+                for (var j = lowerIndex; j <= upperIndex; ++j) {
+                    if (
+                        isLeftOn(polygonAt(poly, i - 1), polygonAt(poly, i), polygonAt(poly, j)) &&
+                        isRightOn(polygonAt(poly, i + 1), polygonAt(poly, i), polygonAt(poly, j))
+                    ) {
+                        d = sqdist(polygonAt(poly, i), polygonAt(poly, j));
+                        if (d < closestDist && polygonCanSee2(poly, i, j)) {
+                            closestDist = d;
+                            closestIndex = j % polygon.length;
+                        }
+                    }
+                }
+
+                if (i < closestIndex) {
+                    polygonAppend(lowerPoly, poly,i,closestIndex+1);
+                    if (closestIndex !== 0){
+                        polygonAppend(upperPoly, poly,closestIndex,v.length);
+                    }
+                    polygonAppend(upperPoly, poly,0,i+1);
+                } else {
+                    if (i !== 0){
+                        polygonAppend(lowerPoly, poly,i,v.length);
+                    }
+                    polygonAppend(lowerPoly, poly,0,closestIndex+1);
+                    polygonAppend(upperPoly, poly,closestIndex,i+1);
+                }
+            }
+
+            // solve smallest poly first
+            if (lowerPoly.length < upperPoly.length) {
+                polygonQuickDecomp(lowerPoly,result,reflexVertices,steinerPoints,delta,maxlevel,level);
+                polygonQuickDecomp(upperPoly,result,reflexVertices,steinerPoints,delta,maxlevel,level);
+            } else {
+                polygonQuickDecomp(upperPoly,result,reflexVertices,steinerPoints,delta,maxlevel,level);
+                polygonQuickDecomp(lowerPoly,result,reflexVertices,steinerPoints,delta,maxlevel,level);
+            }
+
+            return result;
+        }
+    }
+    result.push(polygon);
+
+    return result;
+}
+
+/**
+ * Remove collinear points in the polygon.
+ * @method removeCollinearPoints
+ * @param  {Number} [precision] The threshold angle to use when determining whether two edges are collinear. Use zero for finest precision.
+ * @return {Number}           The number of points removed
+ */
+function polygonRemoveCollinearPoints(polygon, precision){
+    var num = 0;
+    for(var i=polygon.length-1; polygon.length>3 && i>=0; --i){
+        if(collinear(polygonAt(polygon, i-1),polygonAt(polygon, i),polygonAt(polygon, i+1),precision)){
+            // Remove the middle point
+            polygon.splice(i%polygon.length,1);
+            num++;
+        }
+    }
+    return num;
+}
+
+/**
+ * Remove duplicate points in the polygon.
+ * @method removeDuplicatePoints
+ * @param  {Number} [precision] The threshold to use when determining whether two points are the same. Use zero for best precision.
+ */
+function polygonRemoveDuplicatePoints(polygon, precision){
+    for(var i=polygon.length-1; i>=1; --i){
+        var pi = polygon[i];
+        for(var j=i-1; j>=0; --j){
+            if(points_eq(pi, polygon[j], precision)){
+                polygon.splice(i,1);
+                continue;
+            }
+        }
+    }
+}
+
+/**
+ * Check if two scalars are equal
+ * @static
+ * @method eq
+ * @param  {Number} a
+ * @param  {Number} b
+ * @param  {Number} [precision]
+ * @return {Boolean}
+ */
+function scalar_eq(a,b,precision){
+    precision = precision || 0;
+    return Math.abs(a-b) <= precision;
+}
+
+/**
+ * Check if two points are equal
+ * @static
+ * @method points_eq
+ * @param  {Array} a
+ * @param  {Array} b
+ * @param  {Number} [precision]
+ * @return {Boolean}
+ */
+function points_eq(a,b,precision){
+    return scalar_eq(a[0],b[0],precision) && scalar_eq(a[1],b[1],precision);
+}
+
+
+/***/ }),
+
+/***/ "./src/2d/index.ts":
+/*!*************************!*\
+  !*** ./src/2d/index.ts ***!
+  \*************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.distance = distance;
+exports.angle = angle;
+exports.angleBetween = angleBetween;
+exports.pointsAreCollinear = pointsAreCollinear;
+exports.lineToRay = lineToRay;
+exports.rayToLine = rayToLine;
+exports.aabb = aabb;
+exports.aabbToRectangle = aabbToRectangle;
+exports.aabbsOverlap = aabbsOverlap;
+exports.pointInAABB = pointInAABB;
+exports.rectangleIsRotated = rectangleIsRotated;
+exports.rectangleVertices = rectangleVertices;
+exports.verticesToEdges = verticesToEdges;
+exports.polygonIsConvex = polygonIsConvex;
+exports.polygonSelfIntersects = polygonSelfIntersects;
+exports.polygonIsValid = polygonIsValid;
+exports.polygonWindingOrder = polygonWindingOrder;
+exports.polygonArea = polygonArea;
+exports.polygonCentroid = polygonCentroid;
+exports.polygonConvexHull = polygonConvexHull;
+exports.optimisePolygon = optimisePolygon;
+exports.decomposePolygon = decomposePolygon;
+exports.pointOnRay = pointOnRay;
+exports.pointOnLine = pointOnLine;
+exports.pointInCircle = pointInCircle;
+exports.pointInRectangle = pointInRectangle;
+exports.pointInPolygon = pointInPolygon;
+exports.rayTraverseGrid = rayTraverseGrid;
+exports.rayIntersectsRay = rayIntersectsRay;
+exports.rayIntersectsLine = rayIntersectsLine;
+exports.rayIntersectsCircle = rayIntersectsCircle;
+exports.rayIntersectsRectangle = rayIntersectsRectangle;
+exports.rayIntersectsPolygon = rayIntersectsPolygon;
+exports.lineIntersectsRay = lineIntersectsRay;
+exports.lineIntersectsLine = lineIntersectsLine;
+exports.lineIntersectsCircle = lineIntersectsCircle;
+exports.lineIntersectsRectangle = lineIntersectsRectangle;
+exports.lineIntersectsPolygon = lineIntersectsPolygon;
+exports.circleIntersectsCircle = circleIntersectsCircle;
+exports.circleIntersectsRectangle = circleIntersectsRectangle;
+exports.circleIntersectsPolygon = circleIntersectsPolygon;
+exports.rectangleIntersectsRectangle = rectangleIntersectsRectangle;
+exports.rectangleIntersectsPolygon = rectangleIntersectsPolygon;
+exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
+const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
+const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
+const decomp = __importStar(__webpack_require__(/*! poly-decomp */ "./node_modules/poly-decomp/src/index.js"));
+const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
+const constants = __importStar(__webpack_require__(/*! ../utilities/constants */ "./src/utilities/constants.ts"));
+const types_1 = __webpack_require__(/*! ./types */ "./src/2d/types.ts");
+__exportStar(__webpack_require__(/*! ./types */ "./src/2d/types.ts"), exports);
+/**
+ * Contents
+ *
+ * Utilities
+ * @see distance
+ * @see angle
+ * @see angleBetween
+ * @see pointsAreCollinear
+ *
+ * Line and ray utilities
+ * @see lineToRay
+ * @see rayToLine
+ *
+ * AABBs
+ * @see aabb
+ * @see aabbToRectangle
+ * @see aabbsOverlap
+ * @see pointInAABB
+ *
+ * Rectangle utilities
+ * @see rectangleIsRotated
+ * @see rectangleVertices
+ *
+ * Polygon utilities
+ * @see verticesToEdges
+ * @see findOuterEdges (not exported)
+ * @see polygonIsConvex
+ * @see polygonSelfIntersects
+ * @see polygonIsValid
+ * @see polygonWindingOrder
+ * @see polygonArea
+ * @see polygonCentroid
+ * @see polygonConvexHull
+ * @see removeDuplicateVertices (not exported)
+ * @see removeDuplicateAdjacentVertices (not exported)
+ * @see removeCollinearVertices (not exported)
+ * @see optimisePolygon
+ * @see decomposePolygon
+ *
+ * Points
+ * @see pointOnRay
+ * @see pointOnLine
+ * @see pointInCircle
+ * @see pointInRectangle
+ * @see pointInPolygon
+ *
+ * Rays
+ * @see rayTraverseGrid
+ * @see rayIntersectsRay
+ * @see rayIntersectsLine
+ * @see rayIntersectsCircle
+ * @see rayIntersectsRectangle
+ * @see rayIntersectsValidConvexPolygonEdges (not exported)
+ * @see rayIntersectsPolygon
+ *
+ * Lines
+ * @see lineIntersectsRay
+ * @see lineIntersectsLine
+ * @see lineIntersectsCircle
+ * @see lineIntersectsRectangle
+ * @see lineIntersectsValidConvexPolygonEdges (not exported)
+ * @see lineIntersectsPolygon
+ *
+ * Circles
+ * @see circleIntersectsCircle
+ * @see circleIntersectsRectangle
+ * @see circleIntersectsValidConvexPolygonEdges (not exported)
+ * @see circleIntersectsPolygon
+ *
+ * Rectangles
+ * @see projectVerticesToAxis (not exported)
+ * @see rectangleIntersectsRectangle
+ * @see rectangleIntersectsPolygon
+ *
+ * Polygons
+ * @see polygonIntersectsPolygon
+ */
+/**
+ * Calculate the distance between two points
+ */
+function distance(a, b) {
+    return vec_1.vec2.len(vec_1.vec2.sub(a, b));
+}
+/**
+ * Calculate the clockwise angle from point a to point b
+ *
+ * The result is in radians and ranges from 0 to 2π (360 degrees)
+ *
+ * Returns 0 if the vectors are equal
+ */
+function angle(a, b) {
+    if ((0, utilities_1.vectorsAlmostEqual)(a, b)) {
+        return 0;
+    }
+    const theta = vec_1.vec2.rad(vec_1.vec2.sub(b, a)) % (2 * Math.PI);
+    if (theta < 0) {
+        return theta + 2 * Math.PI; // Ensure angle is positive
+    }
+    return theta;
+}
+/**
+ * Calculate the clockwise angle between two lines or rays
+ *
+ * Returns 0 if either line is zero-length
+ */
+function angleBetween(a, b) {
+    let aLine = (0, types_1.isRay)(a) ? rayToLine(a, 1) : a;
+    let bLine = (0, types_1.isRay)(b) ? rayToLine(b, 1) : b;
+    if ((0, utilities_1.vectorAlmostZero)(vec_1.vec2.sub(aLine.end, aLine.start)) ||
+        (0, utilities_1.vectorAlmostZero)(vec_1.vec2.sub(bLine.end, bLine.start))) {
+        return 0; // Zero-length line
+    }
+    const dirA = vec_1.vec2.nor(vec_1.vec2.sub(aLine.end, aLine.start));
+    const dirB = vec_1.vec2.nor(vec_1.vec2.sub(bLine.end, bLine.start));
+    // Clamp dot product to [-1, 1] to avoid NaN due to floating-point errors
+    const dot = (0, utils_1.clamp)(vec_1.vec2.dot(dirA, dirB), -1, 1);
+    const cross = vec_1.vec2.cross(dirA, dirB);
+    const angle = Math.atan2(cross, dot);
+    return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
+}
+/**
+ * Check if three points in 2D space are collinear
+ */
+function pointsAreCollinear(a, b, c) {
+    // Check if the area of the triangle formed by the points is zero
+    const area = 0.5 * Math.abs(a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+    return Math.abs(area) < constants.EPSILON;
+}
+/**
+ * Convert a line segment to a ray
+ */
+function lineToRay(line) {
+    return {
+        origin: line.start,
+        direction: vec_1.vec2.nor(vec_1.vec2.sub(line.end, line.start)),
+    };
+}
+/**
+ * Convert a ray to a line segment
+ */
+function rayToLine(ray, length = 1) {
+    return {
+        start: ray.origin,
+        end: vec_1.vec2.add(ray.origin, vec_1.vec2.mul(ray.direction, length)),
+    };
+}
+/**
+ * Get the bounding box (AABB) of a geometric object
+ */
+function aabb(o) {
+    if ((0, types_1.isLine)(o)) {
+        return {
+            position: (0, vec_1.vec2)(Math.min(o.start.x, o.end.x), Math.min(o.start.y, o.end.y)),
+            size: (0, vec_1.vec2)(Math.abs(o.end.x - o.start.x), Math.abs(o.end.y - o.start.y)),
+        };
+    }
+    if ((0, types_1.isRectangle)(o)) {
+        const vertices = rectangleVertices(o);
+        const position = (0, vec_1.vec2)(Math.min(...vertices.map(v => v.x)), Math.min(...vertices.map(v => v.y)));
+        return {
+            position,
+            size: (0, vec_1.vec2)(Math.max(...vertices.map(v => v.x)) - position.x, Math.max(...vertices.map(v => v.y)) - position.y),
+        };
+    }
+    if ((0, types_1.isCircle)(o)) {
+        return {
+            position: vec_1.vec2.sub(o.position, (0, vec_1.vec2)(o.radius, o.radius)),
+            size: (0, vec_1.vec2)(o.radius * 2),
+        };
+    }
+    if ((0, types_1.isPolygon)(o)) {
+        const position = (0, vec_1.vec2)(Math.min(...o.vertices.map(v => v.x)), Math.min(...o.vertices.map(v => v.y)));
+        return {
+            position,
+            size: (0, vec_1.vec2)(Math.max(...o.vertices.map(v => v.x)) - position.x, Math.max(...o.vertices.map(v => v.y)) - position.y),
+        };
+    }
+    return null;
+}
+/**
+ * Convert an AABB to a rectangle
+ */
+function aabbToRectangle(aabb) {
+    return {
+        position: vec_1.vec2.add(aabb.position, vec_1.vec2.div(aabb.size, 2)),
+        size: aabb.size,
+        rotation: 0,
+    };
+}
+/**
+ * Check if two AABBs overlap and return the overlapping area if so
+ */
+function aabbsOverlap(a, b) {
+    const overlapX = (0, utilities_1.overlapInterval)({ min: a.position.x, max: a.position.x + a.size.x }, { min: b.position.x, max: b.position.x + b.size.x });
+    const overlapY = (0, utilities_1.overlapInterval)({ min: a.position.y, max: a.position.y + a.size.y }, { min: b.position.y, max: b.position.y + b.size.y });
+    // If the AABBs don't overlap on one or more axes, they don't overlap at all
+    if (!overlapX || !overlapY) {
+        return { intersects: false };
+    }
+    return {
+        intersects: true,
+        overlap: {
+            position: (0, vec_1.vec2)(overlapX.min, overlapY.min),
+            size: (0, vec_1.vec2)(overlapX.max - overlapX.min, overlapY.max - overlapY.min),
+        },
+    };
+}
+/**
+ * Check if a point is inside an AABB
+ *
+ * This should be faster than pointInRectangle since we don't need to consider
+ * rotation
+ */
+function pointInAABB(point, aabb) {
+    const { position, size } = aabb;
+    const min = position;
+    const max = vec_1.vec2.add(position, size);
+    // Check if the point is inside the AABB
+    const intersects = (0, utilities_1.valueInInterval)(point.x, { min: min.x, max: max.x }) &&
+        (0, utilities_1.valueInInterval)(point.y, { min: min.y, max: max.y });
+    // Find the closest point on the AABB perimeter to the given point
+    let closestPoint;
+    let normal = undefined;
+    if (!intersects) {
+        // If the point is outside, clamp to the box
+        closestPoint = (0, vec_1.vec2)((0, utils_1.clamp)(point.x, min.x, max.x), (0, utils_1.clamp)(point.y, min.y, max.y));
+    }
+    else {
+        // If the point is inside, project to the nearest edge
+        const distances = [
+            {
+                x: min.x,
+                y: point.y,
+                d: Math.abs(point.x - min.x),
+                normal: (0, vec_1.vec2)(-1, 0),
+            }, // left
+            {
+                x: max.x,
+                y: point.y,
+                d: Math.abs(point.x - max.x),
+                normal: (0, vec_1.vec2)(1, 0),
+            }, // right
+            {
+                x: point.x,
+                y: min.y,
+                d: Math.abs(point.y - min.y),
+                normal: (0, vec_1.vec2)(0, -1),
+            }, // top
+            {
+                x: point.x,
+                y: max.y,
+                d: Math.abs(point.y - max.y),
+                normal: (0, vec_1.vec2)(0, 1),
+            }, // bottom
+        ];
+        const nearest = distances.reduce((a, b) => (a.d < b.d ? a : b));
+        closestPoint = (0, vec_1.vec2)(nearest.x, nearest.y);
+        normal = nearest.normal;
+    }
+    // Calculate the distance from the point to the closest point
+    const distance = vec_1.vec2.len(vec_1.vec2.sub(point, closestPoint));
+    // If the point is inside, distance should be negative
+    return {
+        intersects,
+        closestPoint,
+        distance: intersects ? -distance : distance,
+        normal,
+    };
+}
+/**
+ * Check if a rectangle is rotated
+ */
+function rectangleIsRotated(rectangle) {
+    return (rectangle.rotation !== undefined &&
+        Math.abs(rectangle.rotation) > constants.EPSILON);
+}
+/**
+ * Get the vertices of a rectangle
+ *
+ * Vertices will be returned in clockwise order starting at the top-left:
+ * - Top-left
+ * - Top-right
+ * - Bottom-right
+ * - Bottom-left
+ */
+function rectangleVertices(rectangle) {
+    const { position, size, rotation = 0 } = rectangle;
+    const halfSize = vec_1.vec2.div(size, 2);
+    // Calculate the four corners of the rectangle
+    let topLeftOffset = vec_1.vec2.fromComponents(vec_1.vec2.swiz(halfSize, 'XY'));
+    let topRightOffset = vec_1.vec2.fromComponents(vec_1.vec2.swiz(halfSize, 'xY'));
+    let bottomRightOffset = vec_1.vec2.fromComponents(vec_1.vec2.swiz(halfSize, 'xy'));
+    let bottomLeftOffset = vec_1.vec2.fromComponents(vec_1.vec2.swiz(halfSize, 'Xy'));
+    // Rotate the offsets if the rectangle is rotated
+    if (rectangleIsRotated(rectangle)) {
+        topLeftOffset = vec_1.vec2.rot(topLeftOffset, rotation);
+        topRightOffset = vec_1.vec2.rot(topRightOffset, rotation);
+        bottomRightOffset = vec_1.vec2.rot(bottomRightOffset, rotation);
+        bottomLeftOffset = vec_1.vec2.rot(bottomLeftOffset, rotation);
+    }
+    return [
+        vec_1.vec2.add(position, topLeftOffset),
+        vec_1.vec2.add(position, topRightOffset),
+        vec_1.vec2.add(position, bottomRightOffset),
+        vec_1.vec2.add(position, bottomLeftOffset),
+    ];
+}
+/**
+ * Convert a list of vertices to a list of edges
+ */
+function verticesToEdges(vertices) {
+    const edges = [];
+    for (let i = 0; i < vertices.length; i++) {
+        const start = vertices[i];
+        const end = (0, utils_1.at)(vertices, i + 1);
+        edges.push({ start, end });
+    }
+    return edges;
+}
+/**
+ * Find outer edges in a list of polygons
+ *
+ * We assume that the polygons were the result of decomposing a concave polygon
+ * into a set of convex polygons, and as such they are all convex and share
+ * one or more edges
+ *
+ * This means we can identify outer edges because they'll only appear once
+ * in the list of edges, while inner edges will appear twice (once for each
+ * polygon that shares them)
+ */
+function findOuterEdges(polygons) {
+    const allEdges = polygons.flatMap(polygon => verticesToEdges(polygon.vertices));
+    // Edges are the duplicates if they overlap but have no intersection point
+    // (this implies that they have infinitely many intersection points)
+    const edgesOverlap = (a, b) => {
+        const result = lineIntersectsLine(a, b);
+        if (result.intersects && !result.intersectionPoint) {
+            // Edge case: if the edges intersect and have no intersect point, but
+            // share only one endpoint, then they aren't considered overlapping
+            if (((0, utilities_1.vectorsAlmostEqual)(a.end, b.start) &&
+                !(0, utilities_1.vectorsAlmostEqual)(a.start, b.end)) ||
+                ((0, utilities_1.vectorsAlmostEqual)(a.start, b.end) &&
+                    !(0, utilities_1.vectorsAlmostEqual)(a.end, b.start))) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    };
+    // Filter out the edges that appear more than once
+    const result = [];
+    for (const edge of allEdges) {
+        if (!result.some(e => edgesOverlap(e, edge)) &&
+            !allEdges.some(e => e !== edge && edgesOverlap(e, edge))) {
+            result.push(edge); // This edge is an outer edge
+        }
+    }
+    return result;
+}
+/**
+ * Check if a polygon is convex
+ *
+ * Returns null if the polygon is invalid
+ */
+function polygonIsConvex(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    let sign = 0;
+    for (let i = 0; i < polygon.vertices.length; i++) {
+        const a = polygon.vertices[i];
+        const b = (0, utils_1.at)(polygon.vertices, i + 1);
+        const c = (0, utils_1.at)(polygon.vertices, i + 2);
+        const crossProduct = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+        if (crossProduct !== 0) {
+            if (sign === 0) {
+                sign = Math.sign(crossProduct);
+            }
+            else if (Math.sign(crossProduct) !== sign) {
+                return false; // Found a change in sign, polygon is not convex
+            }
+        }
+    }
+    return true; // All cross products have the same sign, polygon is convex
+}
+/**
+ * Check if a polygon self-intersects
+ */
+function polygonSelfIntersects(polygon) {
+    if (polygon.vertices.length < 3) {
+        return false; // A polygon must have at least 3 vertices
+    }
+    const n = polygon.vertices.length;
+    for (let i = 0; i < n; i++) {
+        const a = polygon.vertices[i];
+        const b = (0, utils_1.at)(polygon.vertices, i + 1);
+        for (let j = i + 2; j < n; j++) {
+            const c = polygon.vertices[j];
+            const d = (0, utils_1.at)(polygon.vertices, j + 1);
+            // Skip adjacent edges
+            if (i === 0 && j === n - 1) {
+                continue;
+            }
+            // Check if the segments (a, b) and (c, d) intersect
+            const { intersects } = lineIntersectsLine({ start: a, end: b }, { start: c, end: d });
+            if (intersects) {
+                return true; // Found an intersection, polygon self-intersects
+            }
+        }
+    }
+    return false; // No intersections found, polygon does not self-intersect
+}
+/**
+ * Check if a polygon is valid
+ *
+ * A polygon is valid if it has at least 3 vertices and does not
+ * self-intersect
+ */
+function polygonIsValid(polygon) {
+    return polygon.vertices.length >= 3 && !polygonSelfIntersects(polygon);
+}
+/**
+ * Determine the winding order of a polygon's vertices
+ *
+ * Returns 'clockwise' or 'counter-clockwise' depending on the chosen
+ * coordinate system
+ *
+ * By default we use the 'screen' coordinate system (y increases downwards)
+ *
+ * Returns null if the polygon is invalid
+ */
+function polygonWindingOrder(polygon, options) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    let sum = 0;
+    for (let i = 0; i < polygon.vertices.length; i++) {
+        const a = polygon.vertices[i];
+        const b = (0, utils_1.at)(polygon.vertices, i + 1);
+        sum += (b.x - a.x) * (b.y + a.y);
+    }
+    const coordinateSystem = (options === null || options === void 0 ? void 0 : options.coordinateSystem) || 'screen';
+    switch (coordinateSystem) {
+        case 'cartesian':
+            return sum > 0 ? 'clockwise' : 'counter-clockwise';
+        case 'screen':
+            return sum > 0 ? 'counter-clockwise' : 'clockwise';
+        default:
+            return null;
+    }
+}
+/**
+ * Calculate the area of a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function polygonArea(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    let area = 0;
+    for (let i = 0; i < polygon.vertices.length; i++) {
+        const a = polygon.vertices[i];
+        const b = (0, utils_1.at)(polygon.vertices, i + 1);
+        area += vec_1.vec2.cross(a, b);
+    }
+    return Math.abs(area) / 2;
+}
+/**
+ * Calculate the centroid of a polygon
+ *
+ * Returns null if the polygon is invalid or degenerate (i.e. all vertices are
+ * collinear)
+ */
+function polygonCentroid(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    if (polygon.vertices.every((v, i, a) => pointsAreCollinear(v, (0, utils_1.at)(a, i + 1), (0, utils_1.at)(a, i + 2)))) {
+        return null; // All vertices are collinear
+    }
+    return vec_1.vec2.div([...polygon.vertices].reduce((a, c) => vec_1.vec2.add(a, c), (0, vec_1.vec2)()), polygon.vertices.length);
+}
+/**
+ * Calculate the convex hull of a polygon
+ */
+function polygonConvexHull(polygon, options) {
+    var _a;
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    if (polygonIsConvex(polygon)) {
+        return polygon; // The polygon is already convex
+    }
+    const keepWindingOrder = (_a = options === null || options === void 0 ? void 0 : options.keepWindingOrder) !== null && _a !== void 0 ? _a : true;
+    const originalWindingOrder = polygonWindingOrder(polygon);
+    // Andrew's monotone chain algorithm for convex hull
+    // Sort vertices lexicographically (first by x, then by y)
+    const sorted = [...polygon.vertices].sort((a, b) => a.x !== b.x ? a.x - b.x : a.y - b.y);
+    const lower = [];
+    for (const p of sorted) {
+        while (lower.length >= 2 &&
+            vec_1.vec2.cross(vec_1.vec2.sub(lower[lower.length - 1], lower[lower.length - 2]), vec_1.vec2.sub(p, lower[lower.length - 1])) <= 0) {
+            lower.pop();
+        }
+        lower.push(p);
+    }
+    const upper = [];
+    for (let i = sorted.length - 1; i >= 0; --i) {
+        const p = sorted[i];
+        while (upper.length >= 2 &&
+            vec_1.vec2.cross(vec_1.vec2.sub(upper[upper.length - 1], upper[upper.length - 2]), vec_1.vec2.sub(p, upper[upper.length - 1])) <= 0) {
+            upper.pop();
+        }
+        upper.push(p);
+    }
+    // Remove the last point of each half because it's repeated at the start of
+    // the other
+    lower.pop();
+    upper.pop();
+    const hull = lower.concat(upper);
+    if (hull.length < 3) {
+        return null;
+    }
+    // Optionally ensure the winding order is preserved
+    if (keepWindingOrder &&
+        polygonWindingOrder({ vertices: hull }) !== originalWindingOrder) {
+        hull.reverse();
+    }
+    return {
+        vertices: removeDuplicateVertices(hull),
+    };
+}
+/**
+ * Remove duplicate vertices from a list of vertices
+ */
+function removeDuplicateVertices(vertices) {
+    const result = [];
+    const n = vertices.length;
+    for (let i = 0; i < n; i++) {
+        const current = vertices[i];
+        if (!result.some(v => (0, utilities_1.vectorsAlmostEqual)(current, v))) {
+            result.push(current);
+        }
+    }
+    return result;
+}
+/**
+ * Remove duplicate adjacent vertices from a list of vertices
+ */
+function removeDuplicateAdjacentVertices(vertices) {
+    const result = [];
+    const n = vertices.length;
+    for (let i = 0; i < n; i++) {
+        const current = vertices[i];
+        const next = (0, utils_1.at)(vertices, i + 1);
+        if (!(0, utilities_1.vectorsAlmostEqual)(current, next)) {
+            result.push(current);
+        }
+    }
+    return result;
+}
+/**
+ * Remove collinear vertices from a list of vertices
+ */
+function removeCollinearVertices(vertices) {
+    const result = [];
+    const n = vertices.length;
+    for (let i = 0; i < n; i++) {
+        const a = (0, utils_1.at)(vertices, i - 1);
+        const b = vertices[i];
+        const c = (0, utils_1.at)(vertices, i + 1);
+        // Skip collinear points
+        if (pointsAreCollinear(a, b, c)) {
+            continue;
+        }
+        result.push(b);
+    }
+    return result;
+}
+/**
+ * Optimise a polygon by removing collinear vertices and duplicate adjacent
+ * vertices
+ */
+function optimisePolygon(polygon) {
+    // Duplicate adjacent vertices will count the polygon as self-intersecting,
+    // so skip that check for now and only check the number of vertices
+    if (polygon.vertices.length < 3) {
+        return null;
+    }
+    const optimisedVertices = removeCollinearVertices(removeDuplicateAdjacentVertices(polygon.vertices));
+    // If we have less than 3 vertices after optimisation, return null
+    if (optimisedVertices.length < 3) {
+        return null;
+    }
+    return { vertices: optimisedVertices };
+}
+/**
+ * Decompose a polygon into a set of convex polygons using the Bayazit
+ * algorithm
+ *
+ * Returns null if the polygon is invalid or cannot be decomposed
+ */
+function decomposePolygon(polygon, options) {
+    var _a;
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    if (polygonIsConvex(polygon)) {
+        return [polygon]; // The polygon is already convex
+    }
+    const mode = (options === null || options === void 0 ? void 0 : options.mode) || 'fast';
+    const keepWindingOrder = (_a = options === null || options === void 0 ? void 0 : options.keepWindingOrder) !== null && _a !== void 0 ? _a : true;
+    const originalWindingOrder = polygonWindingOrder(polygon);
+    const vertices = polygon.vertices.map(v => [v.x, v.y]);
+    if (originalWindingOrder === 'counter-clockwise') {
+        vertices.reverse(); // Ensure clockwise winding
+    }
+    // Decompose the polygon
+    let convexPolygons = [];
+    switch (mode) {
+        case 'fast':
+            convexPolygons = decomp.quickDecomp(vertices);
+            break;
+        case 'optimal':
+            convexPolygons = decomp.decomp(vertices);
+            break;
+    }
+    // Convert the result into a list of Polygon objects
+    const result = [];
+    for (const convex of convexPolygons) {
+        result.push({
+            vertices: convex.map(v => (0, vec_1.vec2)(v[0], v[1])),
+        });
+    }
+    // Optionally ensure the winding order is preserved
+    if (keepWindingOrder) {
+        for (const poly of result) {
+            if (polygonWindingOrder(poly) !== originalWindingOrder) {
+                poly.vertices.reverse();
+            }
+        }
+    }
+    return result.length > 0 ? result : null;
+}
+/**
+ * Check if a point is on a ray
+ */
+function pointOnRay(point, ray) {
+    // Vector from ray origin to point
+    const toPoint = vec_1.vec2.sub(point, ray.origin);
+    // Get normalized ray direction
+    const rayDirection = vec_1.vec2.nor(ray.direction);
+    // Project toPoint onto the ray direction
+    const projection = vec_1.vec2.dot(toPoint, rayDirection);
+    // Calculate closest point on ray
+    const closestPoint = vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDirection, Math.max(0, projection)));
+    // Calculate distance from point to closest point
+    const distance = vec_1.vec2.len(vec_1.vec2.sub(point, closestPoint));
+    // The point intersects the ray if the distance is effectively zero and the
+    // projection is non-negative (meaning the point is in the direction of the
+    // ray and not behind it)
+    const intersects = distance < constants.EPSILON && projection >= 0;
+    // Calculate the intersection normal
+    let normal;
+    if (!intersects) {
+        // Get a vector perpendicular to the ray direction by rotating it 90 degrees
+        const rayNormal = vec_1.vec2.rotf(rayDirection, -1);
+        // Use the cross product to determine which side of the ray the point is on
+        const crossProduct = vec_1.vec2.cross(rayDirection, toPoint);
+        // If cross product is negative, point is on the right side of the ray
+        // If positive, point is on the left side
+        normal = vec_1.vec2.mul(rayNormal, Math.sign(crossProduct));
+    }
+    return {
+        intersects,
+        closestPoint,
+        distance,
+        normal,
+    };
+}
+/**
+ * Check if a point intersects a line segment
+ */
+function pointOnLine(point, line) {
+    // Get vector from line start to end
+    const lineVector = vec_1.vec2.sub(line.end, line.start);
+    // Get normalized line direction
+    const lineDirection = vec_1.vec2.nor(lineVector);
+    // Get vector from line start to point
+    const toPoint = vec_1.vec2.sub(point, line.start);
+    // Project toPoint onto the line direction
+    const projection = vec_1.vec2.dot(toPoint, lineDirection);
+    // Get line length
+    const lineLength = vec_1.vec2.len(lineVector);
+    // Clamp projection to line segment
+    const clampedProjection = Math.max(0, Math.min(lineLength, projection));
+    // Calculate closest point on line segment
+    const closestPoint = vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDirection, clampedProjection));
+    // Calculate distance from point to closest point
+    const distance = vec_1.vec2.len(vec_1.vec2.sub(point, closestPoint));
+    // Point is on line if distance is effectively zero
+    const intersects = distance < constants.EPSILON;
+    // Calculate the intersection normal
+    let normal;
+    if (!intersects) {
+        // Get a vector perpendicular to the ray direction by rotating it 90 degrees
+        const rayNormal = vec_1.vec2.rotf(lineDirection, -1);
+        // Use the cross product to determine which side of the ray the point is on
+        const crossProduct = vec_1.vec2.cross(lineDirection, toPoint);
+        // If cross product is negative, point is on the right side of the ray
+        // If positive, point is on the left side
+        normal = vec_1.vec2.mul(rayNormal, Math.sign(crossProduct));
+    }
+    return {
+        intersects,
+        closestPoint,
+        distance,
+        normal,
+    };
+}
+/**
+ * Check if a point is inside a circle
+ */
+function pointInCircle(point, circle) {
+    // Calculate vector from circle center to point
+    const toPoint = vec_1.vec2.sub(point, circle.position);
+    // Calculate distance from point to circle center
+    const distanceToCenter = vec_1.vec2.len(toPoint);
+    // Check if point is inside the circle
+    const intersects = distanceToCenter <= circle.radius;
+    // Calculate distance to circle edge
+    const distance = intersects
+        ? -(circle.radius - distanceToCenter) // Negative if inside
+        : distanceToCenter - circle.radius; // Positive if outside
+    // Calculate closest point on circle edge
+    const closestPoint = vec_1.vec2.add(circle.position, vec_1.vec2.mul(vec_1.vec2.nor(toPoint), circle.radius));
+    // Calculate the intersection normal
+    const normal = intersects
+        ? vec_1.vec2.nor(toPoint) // Normal points outward from circle center
+        : undefined;
+    return {
+        intersects,
+        closestPoint,
+        distance,
+        normal,
+    };
+}
+/**
+ * Check if a point is inside a rectangle
+ *
+ * In cases where the closest point is ambiguous (e.g. corners), the first edge
+ * encountered with a closest point will be returned after evaluating edges in
+ * this order:
+ * top, right, bottom, left (before applying the rectangle's rotation)
+ */
+function pointInRectangle(point, rectangle) {
+    // Edge case: zero-size rectangle
+    if ((0, utilities_1.vectorAlmostZero)(rectangle.size)) {
+        // If the rectangle has no size, check if the point is at the rectangle's
+        // position
+        const isAtPosition = (0, utilities_1.vectorsAlmostEqual)(point, rectangle.position);
+        return {
+            intersects: isAtPosition,
+            closestPoint: rectangle.position,
+            distance: isAtPosition
+                ? 0
+                : vec_1.vec2.len(vec_1.vec2.sub(point, rectangle.position)),
+        };
+    }
+    // Convert rectangle to polygon
+    const vertices = rectangleVertices(rectangle);
+    const polygonResult = pointInPolygon(point, { vertices });
+    // We should always have a valid polygon, but just in case...
+    if (!polygonResult) {
+        throw new Error('Invalid rectangle vertices');
+    }
+    return polygonResult;
+}
+/**
+ * Check if a point is inside a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function pointInPolygon(point, polygon) {
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Check the polygon's winding order (we'll need this later to calculate
+    // the intersecting surface normal)
+    const windingOrder = polygonWindingOrder(polygon);
+    // Find if point is inside polygon using ray casting algorithm
+    let inside = false;
+    const vertices = polygon.vertices;
+    // We'll also keep track of the closest edge while we iterate
+    let minDistanceSquared = Infinity;
+    let closestPoint = point;
+    let normal = undefined;
+    for (let i = 0; i < vertices.length; i++) {
+        const j = (i + 1) % vertices.length;
+        const vi = vertices[i];
+        const vj = vertices[j];
+        // Ray casting algorithm
+        if (vi.y > point.y !== vj.y > point.y &&
+            point.x < ((vj.x - vi.x) * (point.y - vi.y)) / (vj.y - vi.y) + vi.x) {
+            inside = !inside;
+        }
+        // Find closest point on this edge
+        const edge = { start: vi, end: vj };
+        const { closestPoint: edgeClosest, distance: edgeDistance } = pointOnLine(point, edge);
+        const distanceSquared = edgeDistance * edgeDistance;
+        if (distanceSquared < minDistanceSquared) {
+            minDistanceSquared = distanceSquared;
+            closestPoint = edgeClosest;
+            normal = vec_1.vec2.rotf(vec_1.vec2.nor(vec_1.vec2.sub(vj, vi)), windingOrder === 'clockwise' ? 1 : -1);
+        }
+    }
+    const distance = Math.sqrt(minDistanceSquared);
+    return {
+        intersects: inside,
+        closestPoint,
+        distance: inside ? -distance : distance,
+        normal: inside ? normal : undefined,
+    };
+}
+/**
+ * Check which grid cells a ray traverses
+ *
+ * Based on "A Fast Voxel Traversal Algorithm for Ray Tracing" by Amanatides
+ * and Woo
+ *
+ * We can optionally limit the number of cells traversed by the ray, or set
+ * maxCells to -1 to continue traversing until the ray exits the grid (or until
+ * we hit the hard limit of 10000 cells).
+ */
+function rayTraverseGrid(ray, cellSize, gridTopLeft, gridBottomRight, maxCells = -1) {
+    if (cellSize <= 0) {
+        return { cells: [] }; // Invalid cell size, return empty cells array
+    }
+    // Set a limit on the number of cells traversed
+    const HARD_LIMIT = 10000;
+    maxCells = (0, utils_1.clamp)(maxCells === -1 ? HARD_LIMIT : maxCells, 0, HARD_LIMIT);
+    if (maxCells <= 0) {
+        return { cells: [] }; // No cells to traverse
+    }
+    // Make sure the grid top-left and bottom-right boundaries are integers
+    gridTopLeft = vec_1.vec2.map(gridTopLeft, Math.floor);
+    gridBottomRight = vec_1.vec2.map(gridBottomRight, Math.ceil);
+    // Normalize ray direction and handle zero components
+    const rayDir = vec_1.vec2.nor(ray.direction);
+    if ((0, utilities_1.vectorAlmostZero)(rayDir)) {
+        return { cells: [] };
+    }
+    const cells = [];
+    // Calculate initial cell coordinates
+    let currentCell = vec_1.vec2.map(vec_1.vec2.div(vec_1.vec2.sub(ray.origin, gridTopLeft), cellSize), Math.floor);
+    // Calculate grid size in cells
+    const gridSize = vec_1.vec2.sub(gridBottomRight, gridTopLeft);
+    // If starting point is outside grid bounds, find entry point
+    if (currentCell.x < 0 ||
+        currentCell.x >= gridSize.x ||
+        currentCell.y < 0 ||
+        currentCell.y >= gridSize.y) {
+        // Use rayIntersectsRectangle to find grid entry point
+        const gridRect = {
+            position: vec_1.vec2.add(gridTopLeft, vec_1.vec2.div(vec_1.vec2.sub(gridBottomRight, gridTopLeft), 2)),
+            size: vec_1.vec2.sub(gridBottomRight, gridTopLeft),
+        };
+        const intersection = rayIntersectsRectangle(ray, gridRect);
+        if (!intersection.intersects || !intersection.intersectionPoints) {
+            return { cells }; // Ray misses grid entirely
+        }
+        // Get the first intersection point (closest to ray origin)
+        const entryPoint = intersection.intersectionPoints[0];
+        currentCell = vec_1.vec2.map(vec_1.vec2.div(vec_1.vec2.sub(entryPoint, gridTopLeft), cellSize), Math.floor);
+        // Check if entry point is valid (this should never fail but check anyway)
+        if (currentCell.x < 0 ||
+            currentCell.x >= gridSize.x ||
+            currentCell.y < 0 ||
+            currentCell.y >= gridSize.y) {
+            return { cells }; // No valid entry point found
+        }
+    }
+    // Calculate step direction (either 1 or -1) for each axis
+    const step = {
+        x: Math.sign(rayDir.x),
+        y: Math.sign(rayDir.y),
+    };
+    // Calculate tDelta - distance along ray from one grid line to next
+    const tDelta = {
+        x: rayDir.x !== 0 ? Math.abs(cellSize / rayDir.x) : Infinity,
+        y: rayDir.y !== 0 ? Math.abs(cellSize / rayDir.y) : Infinity,
+    };
+    // Calculate initial cell boundary positions
+    const initialBoundary = (0, vec_1.vec2)(gridTopLeft.x + (currentCell.x + (step.x > 0 ? 1 : 0)) * cellSize, gridTopLeft.y + (currentCell.y + (step.y > 0 ? 1 : 0)) * cellSize);
+    // Calculate initial tMax values, handling boundary cases
+    const tMax = {
+        x: rayDir.x !== 0
+            ? Math.abs((initialBoundary.x - ray.origin.x) / rayDir.x)
+            : Infinity,
+        y: rayDir.y !== 0
+            ? Math.abs((initialBoundary.y - ray.origin.y) / rayDir.y)
+            : Infinity,
+    };
+    // If we're exactly on a boundary, we need to adjust tMax
+    if (Math.abs(ray.origin.x - initialBoundary.x) < constants.EPSILON) {
+        tMax.x = tDelta.x;
+    }
+    if (Math.abs(ray.origin.y - initialBoundary.y) < constants.EPSILON) {
+        tMax.y = tDelta.y;
+    }
+    // Add starting cell
+    cells.push((0, vec_1.vec2)(currentCell.x, currentCell.y));
+    let cellCount = 1;
+    // Main loop
+    while (cellCount < maxCells &&
+        currentCell.x >= 0 &&
+        currentCell.x < gridSize.x &&
+        currentCell.y >= 0 &&
+        currentCell.y < gridSize.y) {
+        // Advance to next cell based on shortest tMax
+        if (tMax.x < tMax.y) {
+            tMax.x += tDelta.x;
+            currentCell.x += step.x;
+        }
+        else {
+            tMax.y += tDelta.y;
+            currentCell.y += step.y;
+        }
+        // Check if we're still in bounds
+        if (currentCell.x < 0 ||
+            currentCell.x >= gridSize.x ||
+            currentCell.y < 0 ||
+            currentCell.y >= gridSize.y) {
+            break;
+        }
+        // Add current cell
+        cells.push((0, vec_1.vec2)(currentCell.x, currentCell.y));
+        cellCount++;
+    }
+    return { cells };
+}
+/**
+ * Check if two rays intersect
+ */
+function rayIntersectsRay(rayA, rayB) {
+    // Normalize the direction vectors
+    const dirA = vec_1.vec2.nor(rayA.direction);
+    const dirB = vec_1.vec2.nor(rayB.direction);
+    // If either ray has zero direction, they cannot intersect
+    if ((0, utilities_1.vectorAlmostZero)(dirA) || (0, utilities_1.vectorAlmostZero)(dirB)) {
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate the cross product determinant
+    const det = vec_1.vec2.cross(dirA, dirB);
+    // Get the vector between starting points
+    const startDiff = vec_1.vec2.sub(rayB.origin, rayA.origin);
+    // If determinant is close to 0, rays are parallel or collinear
+    if (Math.abs(det) < constants.EPSILON) {
+        // Check if rays are collinear
+        if (Math.abs(vec_1.vec2.cross(startDiff, dirA)) < constants.EPSILON) {
+            // Rays are collinear - check if they overlap
+            const t = vec_1.vec2.dot(startDiff, dirA);
+            // For rays pointing in the same direction:
+            // If t <= 0: rayA's origin is behind or at rayB's origin
+            // If t >= 0: rayB's origin is behind or at rayA's origin
+            // dot(dirA, dirB) should be close to 1 for same direction
+            if ((t <= 0 || t >= 0) && vec_1.vec2.dot(dirA, dirB) > 1 - constants.EPSILON) {
+                return {
+                    intersects: true,
+                    // No single intersection point for overlapping rays
+                };
+            }
+        }
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate intersection parameters
+    const t = vec_1.vec2.cross(startDiff, dirB) / det;
+    const s = vec_1.vec2.cross(startDiff, dirA) / det;
+    // Check if intersection occurs on both rays (t >= 0 and s >= 0)
+    if (t >= 0 && s >= 0) {
+        return {
+            intersects: true,
+            intersectionPoint: vec_1.vec2.add(rayA.origin, vec_1.vec2.mul(dirA, t)),
+        };
+    }
+    return {
+        intersects: false,
+    };
+}
+/**
+ * Check if a ray intersects a line segment
+ */
+function rayIntersectsLine(ray, line) {
+    // Convert line to a direction vector
+    const lineDir = vec_1.vec2.sub(line.end, line.start);
+    // Normalize the ray direction
+    const rayDir = vec_1.vec2.nor(ray.direction);
+    // If either the ray or the line has zero direction, they cannot intersect
+    if ((0, utilities_1.vectorAlmostZero)(lineDir) || (0, utilities_1.vectorAlmostZero)(rayDir)) {
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate the cross product determinant
+    const det = vec_1.vec2.cross(rayDir, lineDir);
+    // Get the vector between ray origin and line start
+    const startDiff = vec_1.vec2.sub(line.start, ray.origin);
+    // If determinant is close to 0, ray and line are parallel or collinear
+    if (Math.abs(det) < constants.EPSILON) {
+        // Check if they are collinear
+        if (Math.abs(vec_1.vec2.cross(startDiff, rayDir)) < constants.EPSILON) {
+            // They are collinear - project the line endpoints onto the ray
+            const t1 = vec_1.vec2.dot(vec_1.vec2.sub(line.start, ray.origin), rayDir);
+            const t2 = vec_1.vec2.dot(vec_1.vec2.sub(line.end, ray.origin), rayDir);
+            // Check if any part of the line segment is in front of the ray
+            if ((t1 >= 0 || t2 >= 0) && Math.min(t1, t2) <= vec_1.vec2.len(lineDir)) {
+                return {
+                    intersects: true,
+                    // No single intersection point for overlapping segments
+                };
+            }
+        }
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate intersection parameters
+    const t = vec_1.vec2.cross(startDiff, lineDir) / det; // Ray parameter
+    const s = vec_1.vec2.cross(startDiff, rayDir) / det; // Line parameter
+    // Check if intersection occurs on the ray (t >= 0) and within the line
+    // segment (0 <= s <= 1)
+    if (t >= 0 && s >= 0 && s <= 1) {
+        return {
+            intersects: true,
+            intersectionPoint: vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDir, t)),
+        };
+    }
+    return {
+        intersects: false,
+    };
+}
+/**
+ * Check if a ray intersects a circle
+ */
+function rayIntersectsCircle(ray, circle) {
+    // 1. Parameterized ray equation: P(t) = origin + t * direction
+    const rayDir = vec_1.vec2.nor(ray.direction);
+    // Calculate vector from ray origin to circle center
+    const toCenter = vec_1.vec2.sub(circle.position, ray.origin);
+    // 2. Substitute ray equation into circle equation:
+    // (origin.x + t*dir.x - circle.x)² + (origin.y + t*dir.y - circle.y)² = r²
+    // Expand and collect terms to get quadratic equation: at² + bt + c = 0
+    // a = dot(dir, dir) (should be 1 since dir is normalized)
+    const a = vec_1.vec2.dot(rayDir, rayDir);
+    // b = 2 * dot(dir, (origin - center))
+    const b = 2 * vec_1.vec2.dot(rayDir, vec_1.vec2.mul(toCenter, -1));
+    // c = dot((origin - center), (origin - center)) - radius²
+    const c = vec_1.vec2.dot(toCenter, toCenter) - circle.radius * circle.radius;
+    // 3. Solve quadratic equation using discriminant
+    const discriminant = b * b - 4 * a * c;
+    // 4. Check if solutions exist (discriminant >= 0)
+    if (discriminant < -constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Handle case where ray just touches circle (discriminant ≈ 0)
+    if (Math.abs(discriminant) < constants.EPSILON) {
+        const t = -b / (2 * a);
+        if (t >= 0) {
+            const point = vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDir, t));
+            return {
+                intersects: true,
+                intersectionPoints: [point],
+            };
+        }
+        return { intersects: false };
+    }
+    // 5. Calculate intersection points for discriminant > 0
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDiscriminant) / (2 * a);
+    const t2 = (-b + sqrtDiscriminant) / (2 * a);
+    // If both t values are negative, ray points away from circle
+    if (t2 < 0) {
+        return { intersects: false };
+    }
+    // Calculate intersection points for positive t values
+    let intersectionPoints = [];
+    if (t1 >= 0) {
+        intersectionPoints.push(vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDir, t1)));
+    }
+    if (t2 >= 0) {
+        intersectionPoints.push(vec_1.vec2.add(ray.origin, vec_1.vec2.mul(rayDir, t2)));
+    }
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a ray intersects a rectangle
+ */
+function rayIntersectsRectangle(ray, rectangle) {
+    // Get vertices of the rectangle in clockwise order
+    const vertices = rectangleVertices(rectangle);
+    let intersectionPoints = [];
+    // Check each edge of the rectangle for intersection
+    const edges = verticesToEdges(vertices);
+    for (const edge of edges) {
+        const intersection = rayIntersectsLine(ray, edge);
+        if (intersection.intersects && intersection.intersectionPoint) {
+            intersectionPoints.push(intersection.intersectionPoint);
+        }
+    }
+    // Remove duplicate intersection points and sort by distance to ray origin
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+        const rayDir = vec_1.vec2.nor(ray.direction);
+        intersectionPoints.sort((a, b) => {
+            const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, ray.origin), rayDir);
+            const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, ray.origin), rayDir);
+            return distA - distB;
+        });
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a ray intersects the edges of a convex polygon
+ *
+ * We assume the polygon has already been checked for validity and convexity
+ */
+function rayIntersectsValidConvexPolygonEdges(ray, edges) {
+    let intersectionPoints = [];
+    // Check each outer edge for intersections
+    for (const edge of edges) {
+        const intersection = rayIntersectsLine(ray, edge);
+        if (intersection.intersects && intersection.intersectionPoint) {
+            intersectionPoints.push(intersection.intersectionPoint);
+        }
+    }
+    // Remove duplicate intersection points and sort by distance to ray origin
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+        const rayDir = vec_1.vec2.nor(ray.direction);
+        intersectionPoints.sort((a, b) => {
+            const distA = vec_1.vec2.dot(vec_1.vec2.sub(a, ray.origin), rayDir);
+            const distB = vec_1.vec2.dot(vec_1.vec2.sub(b, ray.origin), rayDir);
+            return distA - distB;
+        });
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a ray intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function rayIntersectsPolygon(ray, polygon) {
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // Check the ray against the outer edges of each convex polygons
+        return rayIntersectsValidConvexPolygonEdges(ray, findOuterEdges(convexPolygons));
+    }
+    // For convex polygons, check each edge
+    return rayIntersectsValidConvexPolygonEdges(ray, verticesToEdges(polygon.vertices));
+}
+/**
+ * Check if a line segment intersects a ray
+ */
+function lineIntersectsRay(line, ray) {
+    return rayIntersectsLine(ray, line);
+}
+/**
+ * Check if two line segments intersect
+ */
+function lineIntersectsLine(lineA, lineB) {
+    // Get the vectors representing the directions of each line
+    const dirA = vec_1.vec2.sub(lineA.end, lineA.start);
+    const dirB = vec_1.vec2.sub(lineB.end, lineB.start);
+    // If either line has zero direction, they cannot intersect
+    if ((0, utilities_1.vectorAlmostZero)(dirA) || (0, utilities_1.vectorAlmostZero)(dirB)) {
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate the cross product determinant
+    const det = vec_1.vec2.cross(dirA, dirB);
+    // Get the vector between starting points
+    const startDiff = vec_1.vec2.sub(lineB.start, lineA.start);
+    // If determinant is close to 0, lines are parallel or collinear
+    if (Math.abs(det) < constants.EPSILON) {
+        // Check if lines are collinear
+        if (Math.abs(vec_1.vec2.cross(startDiff, dirA)) < constants.EPSILON) {
+            // Lines are collinear - check if they overlap
+            const t0 = vec_1.vec2.dot(startDiff, dirA) / vec_1.vec2.dot(dirA, dirA);
+            const t1 = t0 + vec_1.vec2.dot(dirB, dirA) / vec_1.vec2.dot(dirA, dirA);
+            // Check if segments overlap
+            const interval0 = Math.min(t0, t1);
+            const interval1 = Math.max(t0, t1);
+            if (interval0 <= 1 && interval1 >= 0) {
+                return {
+                    intersects: true,
+                    // No single intersection point for overlapping lines
+                };
+            }
+        }
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate intersection parameters
+    const t = vec_1.vec2.cross(startDiff, dirB) / det;
+    const s = vec_1.vec2.cross(startDiff, dirA) / det;
+    // Check if intersection occurs within both line segments
+    if (t >= 0 && t <= 1 && s >= 0 && s <= 1) {
+        return {
+            intersects: true,
+            intersectionPoint: vec_1.vec2.add(lineA.start, vec_1.vec2.mul(dirA, t)),
+        };
+    }
+    return {
+        intersects: false,
+    };
+}
+/**
+ * Check if a line segment intersects a circle
+ */
+function lineIntersectsCircle(line, circle) {
+    // 1. Parameterized line equation: P(t) = start + t * (end - start)
+    const lineDir = vec_1.vec2.sub(line.end, line.start);
+    const lineLengthSquared = vec_1.vec2.dot(lineDir, lineDir);
+    // If the line segment has zero length, it cannot intersect
+    if (lineLengthSquared < constants.EPSILON) {
+        return { intersects: false };
+    }
+    // If both endpoints of the line are inside the circle, then we have an
+    // intersection (but no intersection points)
+    if (pointInCircle(line.start, circle).intersects &&
+        pointInCircle(line.end, circle).intersects) {
+        return { intersects: true };
+    }
+    // Calculate vector from circle center to line start
+    const toCenter = vec_1.vec2.sub(circle.position, line.start);
+    // 2. Substitute line equation into circle equation:
+    // (start.x + t*dir.x - circle.x)² + (start.y + t*dir.y - circle.y)² = r²
+    // Expand and collect terms to get quadratic equation: at² + bt + c = 0
+    // a = dot(dir, dir)
+    const a = lineLengthSquared;
+    // b = 2 * dot(dir, (start - center))
+    const b = 2 * vec_1.vec2.dot(lineDir, vec_1.vec2.mul(toCenter, -1));
+    // c = dot((start - center), (start - center)) - radius²
+    const c = vec_1.vec2.dot(toCenter, toCenter) - circle.radius * circle.radius;
+    // 3. Solve quadratic equation using discriminant
+    const discriminant = b * b - 4 * a * c;
+    // If discriminant is negative, no intersection
+    if (discriminant < -constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Handle case where line just touches circle (discriminant ≈ 0)
+    if (Math.abs(discriminant) < constants.EPSILON) {
+        const t = -b / (2 * a);
+        if (t >= 0 && t <= 1) {
+            const point = vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDir, t));
+            return {
+                intersects: true,
+                intersectionPoints: [point],
+            };
+        }
+        return { intersects: false };
+    }
+    // Calculate intersection points for discriminant > 0
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDiscriminant) / (2 * a);
+    const t2 = (-b + sqrtDiscriminant) / (2 * a);
+    let intersectionPoints = [];
+    // If both t values are outside [0, 1], no intersection
+    if (t2 < 0 || t1 > 1) {
+        return { intersects: false };
+    }
+    // Calculate intersection points for valid t values
+    if (t1 >= 0 && t1 <= 1) {
+        intersectionPoints.push(vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDir, t1)));
+    }
+    if (t2 >= 0 && t2 <= 1) {
+        intersectionPoints.push(vec_1.vec2.add(line.start, vec_1.vec2.mul(lineDir, t2)));
+    }
+    // Remove duplicate intersection points and sort by distance to line start
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+        intersectionPoints.sort((a, b) => {
+            const distA = vec_1.vec2.len(vec_1.vec2.sub(a, line.start));
+            const distB = vec_1.vec2.len(vec_1.vec2.sub(b, line.start));
+            return distA - distB;
+        });
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a line segment intersects a rectangle
+ */
+function lineIntersectsRectangle(line, rectangle) {
+    // Edge case: zero-size rectangle
+    if ((0, utilities_1.vectorAlmostZero)(rectangle.size)) {
+        return {
+            intersects: false,
+        };
+    }
+    // Get vertices of the rectangle in clockwise order
+    const vertices = rectangleVertices(rectangle);
+    // If both endpoints are inside, line is completely contained
+    if (pointInRectangle(line.start, rectangle).intersects &&
+        pointInRectangle(line.end, rectangle).intersects) {
+        return {
+            intersects: true,
+        };
+    }
+    let intersectionPoints = [];
+    // Check each edge of the rectangle for intersection
+    const edges = verticesToEdges(vertices);
+    for (const edge of edges) {
+        const intersection = lineIntersectsLine(line, edge);
+        if (intersection.intersects && intersection.intersectionPoint) {
+            intersectionPoints.push(intersection.intersectionPoint);
+        }
+    }
+    // Remove duplicate intersection points and sort by distance to line start
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+        intersectionPoints.sort((a, b) => {
+            const distA = vec_1.vec2.len(vec_1.vec2.sub(a, line.start));
+            const distB = vec_1.vec2.len(vec_1.vec2.sub(b, line.start));
+            return distA - distB;
+        });
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a line segment intersects the edges of a convex polygon
+ *
+ * We assume the polygon has already been checked for validity and convexity
+ */
+function lineIntersectsValidConvexPolygonEdges(line, polygon, edges) {
+    // Special case: line segment is entirely inside polygon
+    const midpoint = {
+        x: (line.start.x + line.end.x) / 2,
+        y: (line.start.y + line.end.y) / 2,
+    };
+    const pointInside = pointInPolygon(midpoint, polygon);
+    const startInside = pointInPolygon(line.start, polygon);
+    const endInside = pointInPolygon(line.end, polygon);
+    if ((pointInside === null || pointInside === void 0 ? void 0 : pointInside.intersects) &&
+        (startInside === null || startInside === void 0 ? void 0 : startInside.intersects) &&
+        (endInside === null || endInside === void 0 ? void 0 : endInside.intersects)) {
+        return {
+            intersects: true,
+        };
+    }
+    let intersectionPoints = [];
+    // Check each outer edge for intersections
+    for (const edge of edges) {
+        const intersection = lineIntersectsLine(line, edge);
+        if (intersection.intersects && intersection.intersectionPoint) {
+            intersectionPoints.push(intersection.intersectionPoint);
+        }
+    }
+    // Remove duplicate intersection points and sort by distance to line start
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    if (intersectionPoints.length > 1) {
+        intersectionPoints.sort((a, b) => {
+            const distA = vec_1.vec2.len(vec_1.vec2.sub(a, line.start));
+            const distB = vec_1.vec2.len(vec_1.vec2.sub(b, line.start));
+            return distA - distB;
+        });
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a line segment intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function lineIntersectsPolygon(line, polygon) {
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // Check the line against the outer edges of each convex polygon
+        return lineIntersectsValidConvexPolygonEdges(line, polygon, findOuterEdges(convexPolygons));
+    }
+    // For convex polygons, check each edge
+    return lineIntersectsValidConvexPolygonEdges(line, polygon, verticesToEdges(polygon.vertices));
+}
+/**
+ * Check if two circles intersect
+ */
+function circleIntersectsCircle(circleA, circleB) {
+    // Calculate the vector from center A to center B
+    const centerToCenterVec = vec_1.vec2.sub(circleB.position, circleA.position);
+    const centerToCenter = vec_1.vec2.len(centerToCenterVec);
+    const sumRadii = circleA.radius + circleB.radius;
+    // If distance between centers is greater than sum of radii, the circles
+    // don't intersect
+    if (centerToCenter > sumRadii + constants.EPSILON) {
+        return { intersects: false };
+    }
+    // If circles are identical (same position and radius), they have infinitely
+    // many intersection points
+    if (centerToCenter < constants.EPSILON &&
+        Math.abs(circleA.radius - circleB.radius) < constants.EPSILON) {
+        return {
+            intersects: true,
+            minimumSeparation: vec_1.vec2.mul(vec_1.vec2.ux(), 2 * circleA.radius),
+        };
+    }
+    // Check if one circle is inside the other (no intersection points but still
+    // intersecting)
+    const radiusDiff = Math.abs(circleA.radius - circleB.radius);
+    if (centerToCenter < radiusDiff - constants.EPSILON) {
+        return {
+            intersects: true,
+            minimumSeparation: vec_1.vec2.mul(vec_1.vec2.nor(centerToCenterVec), circleA.radius - centerToCenter + circleB.radius),
+        };
+    }
+    // Calculate intersection points for standard intersecting case
+    // http://mathworld.wolfram.com/Circle-CircleIntersection.html
+    const a = (circleA.radius * circleA.radius -
+        circleB.radius * circleB.radius +
+        centerToCenter * centerToCenter) /
+        (2 * centerToCenter);
+    const h = Math.sqrt(Math.max(0, circleA.radius * circleA.radius - a * a));
+    // Calculate the point on the line between centers that is distance 'a' from
+    // circle A's center
+    const p = vec_1.vec2.add(circleA.position, vec_1.vec2.mul(vec_1.vec2.nor(centerToCenterVec), a));
+    // If circles are tangent (touching at one point)
+    if (Math.abs(centerToCenter - sumRadii) < constants.EPSILON) {
+        return {
+            intersects: true,
+            intersectionPoints: [p],
+            minimumSeparation: (0, vec_1.vec2)(),
+        };
+    }
+    // Calculate the perpendicular vector to get both intersection points
+    const perpVec = vec_1.vec2.mul((0, vec_1.vec2)({ x: -centerToCenterVec.y, y: centerToCenterVec.x }), h / centerToCenter);
+    const intersectionPoints = [vec_1.vec2.add(p, perpVec), vec_1.vec2.sub(p, perpVec)];
+    // Calculate the minimum separation vector
+    const minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(centerToCenterVec), sumRadii - centerToCenter);
+    return {
+        intersects: true,
+        intersectionPoints,
+        minimumSeparation,
+    };
+}
+/**
+ * Check if a circle intersects a rectangle
+ */
+function circleIntersectsRectangle(circle, rectangle) {
+    // Get rectangle vertices so we can test against rotated rectangles
+    const vertices = rectangleVertices(rectangle);
+    const edges = verticesToEdges(vertices);
+    // Check if circle's center is inside rectangle
+    const pointInRectResult = pointInRectangle(circle.position, rectangle);
+    const circleCenterInsideRectangle = pointInRectResult.intersects;
+    // Check if rectangle's center is inside circle
+    const pointInCircleResult = pointInCircle(rectangle.position, circle);
+    const rectangleCenterInsideCircle = pointInCircleResult.intersects;
+    // Check circle intersection with rectangle edges
+    const intersectionPoints = [];
+    for (const edge of edges) {
+        const result = lineIntersectsCircle(edge, circle);
+        if (result.intersects && result.intersectionPoints) {
+            intersectionPoints.push(...result.intersectionPoints);
+        }
+    }
+    // Calculate the minimum separation vector
+    let minimumSeparation;
+    if (Math.abs(pointInRectResult.distance) < constants.EPSILON) {
+        minimumSeparation = (0, vec_1.vec2)();
+    }
+    else if (pointInRectResult.distance < 0) {
+        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInRectResult.closestPoint, circle.position)), circle.radius + Math.abs(pointInRectResult.distance));
+    }
+    else {
+        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(circle.position, pointInRectResult.closestPoint)), circle.radius - pointInRectResult.distance);
+    }
+    // If either shape's center is inside the other and there are no intersection
+    // points, it means one of the shapes completely encloses the other
+    if ((circleCenterInsideRectangle || rectangleCenterInsideCircle) &&
+        intersectionPoints.length === 0) {
+        return {
+            intersects: true,
+            minimumSeparation,
+        };
+    }
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    if (uniquePoints.length > 0) {
+        return {
+            intersects: true,
+            intersectionPoints: uniquePoints,
+            minimumSeparation,
+        };
+    }
+    return { intersects: false };
+}
+/**
+ * Check if a circle intersects the edges of a convex polygon
+ *
+ * We assume the polygon has already been checked for validity and convexity
+ */
+function circleIntersectsValidConvexPolygonEdges(circle, edges, circleCenterInsidePolygon, polygonCenterInsideCircle) {
+    let intersectionPoints = [];
+    // Check each outer edge for intersections with the circle
+    for (const edge of edges) {
+        const result = lineIntersectsCircle(edge, circle);
+        if (result.intersects && result.intersectionPoints) {
+            intersectionPoints.push(...result.intersectionPoints);
+        }
+    }
+    // If either shape's center is inside the other and there are no
+    // intersection points, one shape completely encloses the other
+    if ((circleCenterInsidePolygon || polygonCenterInsideCircle) &&
+        intersectionPoints.length === 0) {
+        return { intersects: true };
+    }
+    // Remove duplicate intersection points
+    intersectionPoints = removeDuplicateVertices(intersectionPoints);
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a circle intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function circleIntersectsPolygon(circle, polygon, options) {
+    var _a, _b, _c, _d, _e, _f;
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const MAX_ITERATIONS = 10;
+    const findMinimumSeparation = (_a = options === null || options === void 0 ? void 0 : options.findMinimumSeparation) !== null && _a !== void 0 ? _a : false;
+    // Check if circle's center is inside polygon
+    const pointInPolygonResult = pointInPolygon(circle.position, polygon);
+    const circleCenterInsidePolygon = (_b = pointInPolygonResult === null || pointInPolygonResult === void 0 ? void 0 : pointInPolygonResult.intersects) !== null && _b !== void 0 ? _b : false;
+    // If polygon is not convex, decompose it into convex polygons
+    if (!polygonIsConvex(polygon)) {
+        const convexPolygons = decomposePolygon(polygon);
+        if (!convexPolygons) {
+            return null;
+        }
+        // For a concave polygon, the centroid might be outside of the polygon, so
+        // in order to check if the polygon is entirely inside the circle, we need
+        // to check if all sub-polygon centroids are inside the circle
+        const polygonCenterInsideCircle = convexPolygons.every(convexPolygon => {
+            var _a;
+            const centroid = polygonCentroid(convexPolygon);
+            if (!centroid) {
+                return false; // Invalid centroid
+            }
+            return (_a = pointInCircle(centroid, circle).intersects) !== null && _a !== void 0 ? _a : false;
+        });
+        // Find outer edges from the decomposed polygons
+        const outerEdges = findOuterEdges(convexPolygons);
+        const result = circleIntersectsValidConvexPolygonEdges(circle, outerEdges, circleCenterInsidePolygon, polygonCenterInsideCircle);
+        if (result.intersects && findMinimumSeparation) {
+            let iteration = 0;
+            let previousSeparation = null;
+            let currentSeparation = (0, vec_1.vec2)();
+            let currentSeparationIntersects = true;
+            while (
+            // Continue if we still haven't found a separation that doesn't
+            // intersect
+            currentSeparationIntersects &&
+                // Continue if we're still converging (i.e. if we didn't make any
+                // progress in the last iteration then we can stop)
+                (previousSeparation === null ||
+                    !(0, utilities_1.vectorsAlmostEqual)(previousSeparation, currentSeparation)) &&
+                // Continue until we reach the maximum number of iterations
+                ++iteration < MAX_ITERATIONS) {
+                let minimumSeparations = [];
+                let circlePosition = vec_1.vec2.add(circle.position, currentSeparation);
+                // Find minimum separation vectors for each convex sub-polygon
+                for (const convexPolygon of convexPolygons) {
+                    const pointInConvexPolygonResult = pointInPolygon(circlePosition, convexPolygon);
+                    if (!pointInConvexPolygonResult) {
+                        continue;
+                    }
+                    let minimumSeparation;
+                    if (Math.abs(pointInConvexPolygonResult.distance) < constants.EPSILON) {
+                        minimumSeparation = (0, vec_1.vec2)();
+                    }
+                    else if (pointInConvexPolygonResult.distance < 0) {
+                        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInConvexPolygonResult.closestPoint, circlePosition)), circle.radius + Math.abs(pointInConvexPolygonResult.distance));
+                    }
+                    else {
+                        minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(circlePosition, pointInConvexPolygonResult.closestPoint)), circle.radius - pointInConvexPolygonResult.distance);
+                    }
+                    minimumSeparations.push({
+                        separation: minimumSeparation,
+                        distance: Math.abs(pointInConvexPolygonResult.distance),
+                    });
+                }
+                // Sort minimum separations by penetration distance
+                minimumSeparations = minimumSeparations.sort((a, b) => a.distance - b.distance);
+                previousSeparation = vec_1.vec2.cpy(currentSeparation);
+                currentSeparation = vec_1.vec2.add(currentSeparation, ((_c = minimumSeparations[0]) === null || _c === void 0 ? void 0 : _c.separation) || (0, vec_1.vec2)());
+                // Check if the current separation still intersects
+                currentSeparationIntersects =
+                    (_e = (_d = circleIntersectsPolygon({
+                        ...circle,
+                        position: vec_1.vec2.add(circle.position, 
+                        // Add a small buffer to avoid numerical/precision issues
+                        vec_1.vec2.mul(currentSeparation, 1.01)),
+                    }, polygon, {
+                        ...options,
+                        // Don't recurse to avoid infinite loops
+                        findMinimumSeparation: false,
+                    })) === null || _d === void 0 ? void 0 : _d.intersects) !== null && _e !== void 0 ? _e : false;
+            }
+            return {
+                ...result,
+                minimumSeparation: currentSeparation,
+            };
+        }
+        return result;
+    }
+    // Check if polygon's centroid is inside circle
+    // For a convex polygon, the centroid is always inside the polygon
+    const polygonCenter = polygonCentroid(polygon);
+    const pointInCircleResult = pointInCircle(polygonCenter, circle);
+    const polygonCenterInsideCircle = (_f = pointInCircleResult.intersects) !== null && _f !== void 0 ? _f : false;
+    // For convex polygons, check each edge directly
+    const edges = verticesToEdges(polygon.vertices);
+    const result = circleIntersectsValidConvexPolygonEdges(circle, edges, circleCenterInsidePolygon, polygonCenterInsideCircle);
+    if (result.intersects && findMinimumSeparation) {
+        // Calculate the minimum separation vector
+        let minimumSeparation;
+        if (Math.abs(pointInPolygonResult.distance) < constants.EPSILON) {
+            minimumSeparation = (0, vec_1.vec2)();
+        }
+        else if (pointInPolygonResult.distance < 0) {
+            minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(pointInPolygonResult.closestPoint, circle.position)), circle.radius + Math.abs(pointInPolygonResult.distance));
+        }
+        else {
+            minimumSeparation = vec_1.vec2.mul(vec_1.vec2.nor(vec_1.vec2.sub(circle.position, pointInPolygonResult.closestPoint)), circle.radius - pointInPolygonResult.distance);
+        }
+        return {
+            ...result,
+            minimumSeparation,
+        };
+    }
+    return result;
+}
+/**
+ * Project vertices onto an axis and return the min/max values
+ */
+function projectVerticesToAxis(vertices, axis) {
+    let min = Infinity;
+    let max = -Infinity;
+    for (const vertex of vertices) {
+        const projection = vec_1.vec2.dot(vertex, axis);
+        min = Math.min(min, projection);
+        max = Math.max(max, projection);
+    }
+    return { min, max };
+}
+/**
+ * Check if two rectangles intersect
+ */
+function rectangleIntersectsRectangle(rectangleA, rectangleB) {
+    // Edge case: if either rectangle has zero size, they cannot intersect
+    if ((0, utilities_1.vectorAlmostZero)(rectangleA.size) || (0, utilities_1.vectorAlmostZero)(rectangleB.size)) {
+        return { intersects: false };
+    }
+    // Get vertices of both rectangles
+    const verticesA = rectangleVertices(rectangleA);
+    const verticesB = rectangleVertices(rectangleB);
+    // Get edges of both rectangles
+    const edgesA = verticesToEdges(verticesA);
+    const edgesB = verticesToEdges(verticesB);
+    // Get separating axes by calculating the normals of each edge
+    const axes = [];
+    for (const edge of [...edgesA, ...edgesB]) {
+        const edgeVec = vec_1.vec2.sub(edge.end, edge.start);
+        const normal = vec_1.vec2.nor(vec_1.vec2.rotf(edgeVec, -1));
+        // Only add unique axes
+        if (!axes.some(axis => Math.abs(vec_1.vec2.dot(axis, normal)) > 1 - constants.EPSILON)) {
+            axes.push(normal);
+        }
+    }
+    // Track minimum penetration for separation vector
+    let minPenetration = Infinity;
+    let minAxis = (0, vec_1.vec2)();
+    // Test each axis
+    for (const axis of axes) {
+        // Project both rectangles onto the axis
+        const projectionA = projectVerticesToAxis(verticesA, axis);
+        const projectionB = projectVerticesToAxis(verticesB, axis);
+        // If we find a separating axis, the rectangles don't intersect
+        if (projectionA.max < projectionB.min ||
+            projectionB.max < projectionA.min) {
+            return { intersects: false };
+        }
+        // Calculate penetration depth
+        const overlap = Math.min(projectionA.max - projectionB.min, projectionB.max - projectionA.min);
+        // Track minimum penetration and its axis
+        if (overlap < minPenetration) {
+            minPenetration = overlap;
+            minAxis = axis;
+        }
+    }
+    // Find intersection points by checking each edge of rectangle A against each
+    // edge of rectangle B
+    const intersectionPoints = [];
+    for (const edgeA of edgesA) {
+        for (const edgeB of edgesB) {
+            const intersection = lineIntersectsLine(edgeA, edgeB);
+            if (intersection.intersects && intersection.intersectionPoint) {
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+        }
+    }
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    // Calculate the minimum separation vector
+    const centerA = rectangleA.position;
+    const centerB = rectangleB.position;
+    const centerToCenter = vec_1.vec2.sub(centerB, centerA);
+    // If the dot product is negative, we need to flip the axis
+    if (vec_1.vec2.dot(minAxis, centerToCenter) < 0) {
+        minAxis = vec_1.vec2.mul(minAxis, -1);
+    }
+    // The minimum separation vector is the axis scaled by the penetration depth
+    const minimumSeparation = vec_1.vec2.mul(minAxis, minPenetration);
+    return {
+        intersects: true,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+        minimumSeparation,
+    };
+}
+/**
+ * Check if a rectangle intersects a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function rectangleIntersectsPolygon(rectangle, polygon) {
+    // First check if the polygon is valid
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Edge case: if the rectangle has zero size, there is no intersection
+    if ((0, utilities_1.vectorAlmostZero)(rectangle.size)) {
+        return { intersects: false };
+    }
+    // Convert rectangle to polygon
+    const rectVertices = rectangleVertices(rectangle);
+    const rectPolygon = {
+        vertices: rectVertices,
+    };
+    // Use polygon intersection algorithm
+    return polygonIntersectsPolygon(rectPolygon, polygon);
+}
+/**
+ * Check if two polygons intersect
+ *
+ * Returns null if either polygon is invalid
+ */
+function polygonIntersectsPolygon(polygonA, polygonB) {
+    // First check if both polygons are valid
+    if (!polygonIsValid(polygonA) || !polygonIsValid(polygonB)) {
+        return null;
+    }
+    // Decompose polygon A if it's concave
+    let convexPolygonsA = [];
+    if (!polygonIsConvex(polygonA)) {
+        const decomposedA = decomposePolygon(polygonA);
+        if (!decomposedA) {
+            return null;
+        }
+        convexPolygonsA = decomposedA;
+    }
+    else {
+        convexPolygonsA = [polygonA];
+    }
+    // Decompose polygon B if it's concave
+    let convexPolygonsB = [];
+    if (!polygonIsConvex(polygonB)) {
+        const decomposedB = decomposePolygon(polygonB);
+        if (!decomposedB) {
+            return null;
+        }
+        convexPolygonsB = decomposedB;
+    }
+    else {
+        convexPolygonsB = [polygonB];
+    }
+    // Get the outer edges of the decomposed polygons
+    const outerEdgesA = findOuterEdges(convexPolygonsA);
+    const outerEdgesB = findOuterEdges(convexPolygonsB);
+    // Find intersection points between outer edges only
+    const intersectionPoints = [];
+    for (const edgeA of outerEdgesA) {
+        for (const edgeB of outerEdgesB) {
+            const intersection = lineIntersectsLine(edgeA, edgeB);
+            if (intersection.intersects && intersection.intersectionPoint) {
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+        }
+    }
+    // Check if one polygon is contained within the other
+    // A polygon is contained within another if the centroids of all its
+    // convex sub-polygons are inside the other polygon
+    if (intersectionPoints.length === 0) {
+        const polygonACentroids = convexPolygonsA
+            .map(polygonCentroid)
+            .filter(centroid => !!centroid);
+        if (polygonACentroids.every(centroid => { var _a; return (_a = pointInPolygon(centroid, polygonB)) === null || _a === void 0 ? void 0 : _a.intersects; })) {
+            return { intersects: true };
+        }
+        const polygonBCentroids = convexPolygonsB
+            .map(polygonCentroid)
+            .filter(centroid => !!centroid);
+        if (polygonBCentroids.every(centroid => { var _a; return (_a = pointInPolygon(centroid, polygonA)) === null || _a === void 0 ? void 0 : _a.intersects; })) {
+            return { intersects: true };
+        }
+    }
+    // Remove duplicate intersection points
+    const uniquePoints = removeDuplicateVertices(intersectionPoints);
+    return {
+        intersects: uniquePoints.length > 0,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+    };
+}
+
+
+/***/ }),
+
+/***/ "./src/2d/types.ts":
+/*!*************************!*\
+  !*** ./src/2d/types.ts ***!
+  \*************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isPoint = isPoint;
+exports.isRay = isRay;
+exports.isLine = isLine;
+exports.isCircle = isCircle;
+exports.isAABB = isAABB;
+exports.isRectangle = isRectangle;
+exports.isPolygon = isPolygon;
+const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
+/**
+ * Type guard to check if a value is a Point
+ */
+function isPoint(value) {
+    return (0, types_1.isVec2)(value);
+}
+/**
+ * Check if a value is a Ray
+ */
+function isRay(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'origin' in value &&
+        isPoint(value.origin) &&
+        'direction' in value &&
+        (0, types_1.isVec2)(value.direction));
+}
+/**
+ * Check if a value is a Line
+ */
+function isLine(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'start' in value &&
+        isPoint(value.start) &&
+        'end' in value &&
+        isPoint(value.end));
+}
+/**
+ * Check if a value is a Circle
+ */
+function isCircle(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'radius' in value &&
+        typeof value.radius === 'number');
+}
+/**
+ * Check if a value is an AABB
+ */
+function isAABB(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec2)(value.size));
+}
+/**
+ * Check if a value is a Rectangle
+ */
+function isRectangle(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec2)(value.size) &&
+        ('rotation' in value ? typeof value.rotation === 'number' : true));
+}
+/**
+ * Check if a value is a Polygon
+ */
+function isPolygon(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'vertices' in value &&
+        Array.isArray(value.vertices) &&
+        value.vertices.every(isPoint));
+}
+
+
+/***/ }),
+
+/***/ "./src/3d/index.ts":
+/*!*************************!*\
+  !*** ./src/3d/index.ts ***!
+  \*************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.distance = distance;
+exports.angle = angle;
+exports.angleBetween = angleBetween;
+exports.pointsAreCollinear = pointsAreCollinear;
+exports.lineToRay = lineToRay;
+exports.rayToLine = rayToLine;
+exports.aabb = aabb;
+exports.aabbToCuboid = aabbToCuboid;
+exports.aabbsOverlap = aabbsOverlap;
+exports.pointInAABB = pointInAABB;
+exports.cuboidIsRotated = cuboidIsRotated;
+exports.cuboidVertices = cuboidVertices;
+exports.cuboidToPolygons = cuboidToPolygons;
+exports.verticesToEdges = verticesToEdges;
+exports.polygonIsValid = polygonIsValid;
+exports.polygonWindingOrder = polygonWindingOrder;
+exports.polygonArea = polygonArea;
+exports.polygonCentroid = polygonCentroid;
+exports.polygonToPlane = polygonToPlane;
+exports.polygonsToMesh = polygonsToMesh;
+exports.meshToPolygons = meshToPolygons;
+exports.meshToEdges = meshToEdges;
+exports.meshCentroid = meshCentroid;
+exports.meshIsWatertight = meshIsWatertight;
+exports.pointOnRay = pointOnRay;
+exports.pointOnLine = pointOnLine;
+exports.pointInSphere = pointInSphere;
+exports.pointInCuboid = pointInCuboid;
+exports.pointOnPolygon = pointOnPolygon;
+exports.rayTraverseGrid = rayTraverseGrid;
+exports.rayIntersectsRay = rayIntersectsRay;
+exports.rayIntersectsLine = rayIntersectsLine;
+exports.rayIntersectsSphere = rayIntersectsSphere;
+exports.rayIntersectsPlane = rayIntersectsPlane;
+exports.rayIntersectsCuboid = rayIntersectsCuboid;
+exports.rayIntersectsPolygon = rayIntersectsPolygon;
+exports.rayIntersectsMesh = rayIntersectsMesh;
+exports.lineIntersectsRay = lineIntersectsRay;
+exports.lineIntersectsLine = lineIntersectsLine;
+exports.lineIntersectsSphere = lineIntersectsSphere;
+exports.lineIntersectsPlane = lineIntersectsPlane;
+exports.lineIntersectsCuboid = lineIntersectsCuboid;
+exports.lineIntersectsPolygon = lineIntersectsPolygon;
+exports.lineIntersectsMesh = lineIntersectsMesh;
+exports.sphereIntersectsSphere = sphereIntersectsSphere;
+exports.sphereIntersectsPlane = sphereIntersectsPlane;
+exports.sphereIntersectsCuboid = sphereIntersectsCuboid;
+exports.sphereIntersectsPolygon = sphereIntersectsPolygon;
+exports.sphereIntersectsMesh = sphereIntersectsMesh;
+exports.planeIntersectsPlane = planeIntersectsPlane;
+exports.planeIntersectsMesh = planeIntersectsMesh;
+exports.cuboidIntersectsCuboid = cuboidIntersectsCuboid;
+exports.cuboidIntersectsPlane = cuboidIntersectsPlane;
+exports.cuboidIntersectsPolygon = cuboidIntersectsPolygon;
+exports.cuboidIntersectsMesh = cuboidIntersectsMesh;
+exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
+exports.polygonIntersectsPlane = polygonIntersectsPlane;
+exports.polygonIntersectsMesh = polygonIntersectsMesh;
+exports.meshIntersectsMesh = meshIntersectsMesh;
+exports.meshIntersectsPlane = meshIntersectsPlane;
+const utils_1 = __webpack_require__(/*! @basementuniverse/utils */ "./node_modules/@basementuniverse/utils/utils.js");
+const vec_1 = __webpack_require__(/*! @basementuniverse/vec */ "./node_modules/@basementuniverse/vec/vec.js");
+const utilities_1 = __webpack_require__(/*! ../utilities */ "./src/utilities/index.ts");
+const constants = __importStar(__webpack_require__(/*! ../utilities/constants */ "./src/utilities/constants.ts"));
+const types_1 = __webpack_require__(/*! ./types */ "./src/3d/types.ts");
+__exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
+/**
+ * Contents
+ *
+ * Utilities
+ * @see distance
+ * @see angle
+ * @see angleBetween
+ * @see pointsAreCollinear
+ *
+ * Line and ray utilities
+ * @see lineToRay
+ * @see rayToLine
+ *
+ * AABBs
+ * @see aabb
+ * @see aabbToCuboid
+ * @see aabbsOverlap
+ * @see pointInAABB
+ *
+ * Cuboid utilities
+ * @see cuboidIsRotated
+ * @see cuboidVertices
+ * @see cuboidToPolygons
+ *
+ * Polygon utilities
+ * @see verticesToEdges
+ * @see polygonIsValid
+ * @see polygonWindingOrder
+ * @see polygonArea
+ * @see polygonCentroid
+ * @see polygonToPlane
+ *
+ * Mesh utilities
+ * @see polygonsToMesh
+ * @see meshToPolygons
+ * @see meshToEdges
+ * @see meshCentroid
+ * @see meshIsWatertight
+ *
+ * Points
+ * @see pointOnRay
+ * @see pointOnLine
+ * @see pointInSphere
+ * @see pointInCuboid
+ * @see pointOnPolygon
+ *
+ * Rays
+ * @see rayTraverseGrid
+ * @see rayIntersectsRay
+ * @see rayIntersectsLine
+ * @see rayIntersectsSphere
+ * @see rayIntersectsPlane
+ * @see rayIntersectsCuboid
+ * @see rayIntersectsPolygon
+ * @see rayIntersectsMesh
+ *
+ * Lines
+ * @see lineIntersectsRay
+ * @see lineIntersectsLine
+ * @see lineIntersectsSphere
+ * @see lineIntersectsPlane
+ * @see lineIntersectsCuboid
+ * @see lineIntersectsPolygon
+ * @see lineIntersectsMesh
+ *
+ * Spheres
+ * @see sphereIntersectsSphere
+ * @see sphereIntersectsPlane
+ * @see sphereIntersectsCuboid
+ * @see sphereIntersectsPolygon
+ * @see sphereIntersectsMesh
+ *
+ * Planes
+ * @see planeIntersectsPlane
+ * @see planeIntersectsMesh
+ *
+ * Cuboids
+ * @see cuboidIntersectsCuboid
+ * @see cuboidIntersectsPlane
+ * @see cuboidIntersectsPolygon
+ * @see cuboidIntersectsMesh
+ *
+ * Polygons
+ * @see polygonIntersectsPolygon
+ * @see polygonIntersectsPlane
+ * @see polygonIntersectsMesh
+ *
+ * Meshes
+ * @see meshIntersectsMesh
+ * @see meshIntersectsPlane
+ */
+/**
+ * Calculate the distance between two points in 3D space
+ */
+function distance(a, b) {
+    return vec_1.vec3.len(vec_1.vec3.sub(a, b));
+}
+/**
+ * Calculate the Euler angle from point a to point b
+ */
+function angle(a, b) {
+    if ((0, utilities_1.vectorsAlmostEqual)(a, b)) {
+        return (0, vec_1.vec3)();
+    }
+    let thetaX = vec_1.vec3.radx(vec_1.vec3.sub(b, a)) % (2 * Math.PI);
+    if (thetaX < 0) {
+        thetaX += 2 * Math.PI; // Ensure angle is positive
+    }
+    let thetaY = vec_1.vec3.rady(vec_1.vec3.sub(b, a)) % (2 * Math.PI);
+    if (thetaY < 0) {
+        thetaY += 2 * Math.PI; // Ensure angle is positive
+    }
+    let thetaZ = vec_1.vec3.radz(vec_1.vec3.sub(b, a)) % (2 * Math.PI);
+    if (thetaZ < 0) {
+        thetaZ += 2 * Math.PI; // Ensure angle is positive
+    }
+    return (0, vec_1.vec3)(thetaX, thetaY, thetaZ);
+}
+/**
+ * Calculate the angle between two lines or rays
+ *
+ * Returns 0 if either line is zero-length
+ */
+function angleBetween(a, b) {
+    let aLine = (0, types_1.isRay)(a) ? rayToLine(a, 1) : a;
+    let bLine = (0, types_1.isRay)(b) ? rayToLine(b, 1) : b;
+    if ((0, utilities_1.vectorAlmostZero)(vec_1.vec3.sub(aLine.start, aLine.end)) ||
+        (0, utilities_1.vectorAlmostZero)(vec_1.vec3.sub(bLine.start, bLine.end))) {
+        return 0; // Zero-length line
+    }
+    const dirA = vec_1.vec3.nor(vec_1.vec3.sub(aLine.end, aLine.start));
+    const dirB = vec_1.vec3.nor(vec_1.vec3.sub(bLine.end, bLine.start));
+    // Clamp dot product to [-1, 1] to avoid NaN due to floating-point errors
+    const dot = (0, utils_1.clamp)(vec_1.vec3.dot(dirA, dirB), -1, 1);
+    const angle = Math.acos(dot);
+    return angle < 0 ? angle + 2 * Math.PI : angle; // Ensure angle is positive
+}
+/**
+ * Check if three points in 3D space are collinear
+ */
+function pointsAreCollinear(a, b, c) {
+    // Create two vectors from the points:
+    // v1 = b - a
+    // v2 = c - a
+    const v1 = vec_1.vec3.sub(b, a);
+    const v2 = vec_1.vec3.sub(c, a);
+    // Calculate the cross product of the two vectors
+    const cross = vec_1.vec3.cross(v1, v2);
+    // If the cross product is zero (or very close to zero),
+    // the points are collinear
+    return vec_1.vec3.len(cross) < constants.EPSILON;
+}
+/**
+ * Convert a line segment to a ray
+ */
+function lineToRay(line) {
+    return {
+        origin: line.start,
+        direction: vec_1.vec3.nor(vec_1.vec3.sub(line.end, line.start)),
+    };
+}
+/**
+ * Convert a ray to a line segment
+ */
+function rayToLine(ray, length = 1) {
+    return {
+        start: ray.origin,
+        end: vec_1.vec3.add(ray.origin, vec_1.vec3.mul(ray.direction, length)),
+    };
+}
+/**
+ * Get the bounding box (AABB) of a geometric object
+ */
+function aabb(o) {
+    if ((0, types_1.isLine)(o)) {
+        return {
+            position: (0, vec_1.vec3)(Math.min(o.start.x, o.end.y), Math.min(o.start.y, o.end.y), Math.min(o.start.z, o.end.z)),
+            size: (0, vec_1.vec3)(Math.abs(o.start.x - o.end.x), Math.abs(o.start.y - o.end.y), Math.abs(o.start.z - o.end.z)),
+        };
+    }
+    if ((0, types_1.isSphere)(o)) {
+        return {
+            position: o.position,
+            size: (0, vec_1.vec3)(o.radius * 2),
+        };
+    }
+    if ((0, types_1.isCuboid)(o)) {
+        const vertices = cuboidVertices(o);
+        const position = (0, vec_1.vec3)(Math.min(...vertices.map(v => v.x)), Math.min(...vertices.map(v => v.y)), Math.min(...vertices.map(v => v.z)));
+        return {
+            position,
+            size: (0, vec_1.vec3)(Math.max(...vertices.map(v => v.x)) - position.x, Math.max(...vertices.map(v => v.y)) - position.y, Math.max(...vertices.map(v => v.z)) - position.z),
+        };
+    }
+    if ((0, types_1.isMesh)(o) || (0, types_1.isPolygon)(o)) {
+        const position = (0, vec_1.vec3)(Math.min(...o.vertices.map(v => v.x)), Math.min(...o.vertices.map(v => v.y)), Math.min(...o.vertices.map(v => v.z)));
+        return {
+            position,
+            size: (0, vec_1.vec3)(Math.max(...o.vertices.map(v => v.x)) - position.x, Math.max(...o.vertices.map(v => v.y)) - position.y, Math.max(...o.vertices.map(v => v.z)) - position.z),
+        };
+    }
+    return null;
+}
+/**
+ * Convert an AABB to a cuboid
+ */
+function aabbToCuboid(aabb) {
+    return {
+        position: vec_1.vec3.add(aabb.position, vec_1.vec3.div(aabb.size, 2)),
+        size: aabb.size,
+        rotation: (0, vec_1.vec3)(0, 0, 0),
+    };
+}
+/**
+ * Check if two AABBs overlap and return the overlapping volume if they do
+ */
+function aabbsOverlap(a, b) {
+    const overlapX = (0, utilities_1.overlapInterval)({ min: a.position.x, max: a.position.x + a.size.x }, { min: b.position.x, max: b.position.x + b.size.x });
+    const overlapY = (0, utilities_1.overlapInterval)({ min: a.position.y, max: a.position.y + a.size.y }, { min: b.position.y, max: b.position.y + b.size.y });
+    const overlapZ = (0, utilities_1.overlapInterval)({ min: a.position.z, max: a.position.z + a.size.z }, { min: b.position.z, max: b.position.z + b.size.z });
+    // If the AABBs don't overlap on one or more axes, they don't overlap at all
+    if (!overlapX || !overlapY || !overlapZ) {
+        return { intersects: false };
+    }
+    return {
+        intersects: true,
+        overlap: {
+            position: (0, vec_1.vec3)(overlapX.min, overlapY.min, overlapZ.min),
+            size: (0, vec_1.vec3)(overlapX.max - overlapX.min, overlapY.max - overlapY.min, overlapZ.max - overlapZ.min),
+        },
+    };
+}
+/**
+ * Check if a point is inside an AABB
+ *
+ * This should be a bit faster than pointInRectangle since we don't need to
+ * worry about rotation
+ */
+function pointInAABB(point, aabb) {
+    const { position, size } = aabb;
+    const min = position;
+    const max = vec_1.vec3.add(position, size);
+    // Check if the point is inside the AABB
+    const intersects = (0, utilities_1.valueInInterval)(point.x, { min: min.x, max: max.x }) &&
+        (0, utilities_1.valueInInterval)(point.y, { min: min.y, max: max.y }) &&
+        (0, utilities_1.valueInInterval)(point.z, { min: min.z, max: max.z });
+    // Find the closest point on the AABB surface to the given point
+    let closestPoint;
+    if (!intersects) {
+        // If the point is outside, clamp to the box
+        closestPoint = (0, vec_1.vec3)((0, utils_1.clamp)(point.x, min.x, max.x), (0, utils_1.clamp)(point.y, min.y, max.y), (0, utils_1.clamp)(point.z, min.z, max.z));
+    }
+    else {
+        // If the point is inside, project to the nearest edge
+        const distances = [
+            { x: min.x, y: point.y, z: point.z, d: Math.abs(point.x - min.x) }, // left
+            { x: max.x, y: point.y, z: point.z, d: Math.abs(point.x - max.x) }, // right
+            { x: point.x, y: min.y, z: point.z, d: Math.abs(point.y - min.y) }, // bottom
+            { x: point.x, y: max.y, z: point.z, d: Math.abs(point.y - max.y) }, // top
+            { x: point.x, y: point.y, z: min.z, d: Math.abs(point.z - min.z) }, // front
+            { x: point.x, y: point.y, z: max.z, d: Math.abs(point.z - max.z) }, // back
+        ];
+        const nearest = distances.reduce((a, b) => (a.d < b.d ? a : b));
+        closestPoint = (0, vec_1.vec3)(nearest.x, nearest.y, nearest.z);
+    }
+    // Calculate the distance from the point to the closest point
+    const distance = vec_1.vec3.len(vec_1.vec3.sub(point, closestPoint));
+    // If the point is inside, distance should be negative
+    return {
+        intersects,
+        closestPoint,
+        distance: intersects ? -distance : distance,
+    };
+}
+/**
+ * Check if a cuboid is rotated
+ */
+function cuboidIsRotated(cuboid) {
+    return cuboid.rotation !== undefined && !(0, utilities_1.vectorAlmostZero)(cuboid.rotation);
+}
+/**
+ * Get the vertices of a cuboid
+ *
+ * Vertices will be returned in the following order:
+ * - Upper face (max z, clockwise starting at the top-left)
+ *   - Top-left
+ *   - Top-right
+ *   - Bottom-right
+ *   - Bottom-left
+ * - Lower face (min z, clockwise starting at the top-left)
+ *   - Top-left
+ *   - Top-right
+ *   - Bottom-right
+ *   - Bottom-left
+ */
+function cuboidVertices(cuboid) {
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Calculate the 8 corners of the cuboid
+    let upperTopLeftOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'XYz'));
+    let upperTopRightOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'xYz'));
+    let upperBottomRightOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'xyz'));
+    let upperBottomLeftOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'Xyz'));
+    let lowerTopLeftOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'XYZ'));
+    let lowerTopRightOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'xYZ'));
+    let lowerBottomRightOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'xyZ'));
+    let lowerBottomLeftOffset = vec_1.vec3.fromComponents(vec_1.vec3.swiz(halfSize, 'XyZ'));
+    // Rotate the offsets if the cuboid is rotated
+    if (cuboidIsRotated(cuboid)) {
+        upperTopLeftOffset = vec_1.vec3.rota(upperTopLeftOffset, rotation);
+        upperTopRightOffset = vec_1.vec3.rota(upperTopRightOffset, rotation);
+        upperBottomRightOffset = vec_1.vec3.rota(upperBottomRightOffset, rotation);
+        upperBottomLeftOffset = vec_1.vec3.rota(upperBottomLeftOffset, rotation);
+        lowerTopLeftOffset = vec_1.vec3.rota(lowerTopLeftOffset, rotation);
+        lowerTopRightOffset = vec_1.vec3.rota(lowerTopRightOffset, rotation);
+        lowerBottomRightOffset = vec_1.vec3.rota(lowerBottomRightOffset, rotation);
+        lowerBottomLeftOffset = vec_1.vec3.rota(lowerBottomLeftOffset, rotation);
+    }
+    return [
+        // Upper face vertices
+        vec_1.vec3.add(position, upperTopLeftOffset),
+        vec_1.vec3.add(position, upperTopRightOffset),
+        vec_1.vec3.add(position, upperBottomRightOffset),
+        vec_1.vec3.add(position, upperBottomLeftOffset),
+        // Lower face vertices
+        vec_1.vec3.add(position, lowerTopLeftOffset),
+        vec_1.vec3.add(position, lowerTopRightOffset),
+        vec_1.vec3.add(position, lowerBottomRightOffset),
+        vec_1.vec3.add(position, lowerBottomLeftOffset),
+    ];
+}
+/**
+ * Convert a cuboid to a list of polygons representing its faces
+ *
+ * Polygons will be returned in the following order:
+ * - Upper face (top)
+ * - Lower face (bottom)
+ * - Front face
+ * - Back face
+ * - Left face
+ * - Right face
+ */
+function cuboidToPolygons(cuboid) {
+    const vertices = cuboidVertices(cuboid);
+    if (vertices.length !== 8) {
+        throw new Error('Cuboid must have exactly 8 vertices');
+    }
+    // Create polygons for each face of the cuboid
+    return [
+        // Upper face
+        { vertices: [vertices[0], vertices[1], vertices[2]] },
+        { vertices: [vertices[0], vertices[2], vertices[3]] },
+        // Lower face
+        { vertices: [vertices[4], vertices[5], vertices[6]] },
+        { vertices: [vertices[4], vertices[6], vertices[7]] },
+        // Front face
+        { vertices: [vertices[0], vertices[1], vertices[5]] },
+        { vertices: [vertices[0], vertices[5], vertices[4]] },
+        // Back face
+        { vertices: [vertices[2], vertices[3], vertices[7]] },
+        { vertices: [vertices[2], vertices[7], vertices[6]] },
+        // Left face
+        { vertices: [vertices[0], vertices[3], vertices[7]] },
+        { vertices: [vertices[0], vertices[7], vertices[4]] },
+        // Right face
+        { vertices: [vertices[1], vertices[2], vertices[6]] },
+        { vertices: [vertices[1], vertices[6], vertices[5]] },
+    ];
+}
+/**
+ * Convert a list of vertices to a list of edges
+ */
+function verticesToEdges(vertices) {
+    const edges = [];
+    for (let i = 0; i < vertices.length; i++) {
+        const start = vertices[i];
+        const end = (0, utils_1.at)(vertices, i + 1);
+        edges.push({ start, end });
+    }
+    return edges;
+}
+/**
+ * Check if a polygon is valid
+ *
+ * A polygon is valid if it has exactly 3 vertices
+ */
+function polygonIsValid(polygon) {
+    return polygon.vertices.length === 3;
+}
+/**
+ * Determine the winding order of a polygon's vertices
+ *
+ * Returns 'clockwise' or 'counter-clockwise'
+ *
+ * By default uses the right-hand rule: if the vertices are ordered
+ * counter-clockwise, the normal points towards the viewer
+ *
+ * Returns null if the polygon is invalid or degenerate
+ */
+function polygonWindingOrder(polygon, options) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const [a, b, c] = polygon.vertices;
+    const handedness = (options === null || options === void 0 ? void 0 : options.handedness) || 'right';
+    // Calculate vectors from vertex a to b and a to c
+    const ab = vec_1.vec3.sub(b, a);
+    const ac = vec_1.vec3.sub(c, a);
+    // Calculate normal vector using cross product
+    const normal = vec_1.vec3.cross(ab, ac);
+    // If normal is zero vector (or very close to zero), vertices are collinear
+    if ((0, utilities_1.vectorAlmostZero)(normal)) {
+        return null;
+    }
+    // If a reference normal was provided, use it
+    if (options === null || options === void 0 ? void 0 : options.normal) {
+        const dot = vec_1.vec3.dot(vec_1.vec3.nor(normal), vec_1.vec3.nor(options.normal));
+        // Dot product > 0 means normals point in similar direction
+        if (Math.abs(dot) < constants.EPSILON) {
+            return null; // Normals are perpendicular, can't determine order
+        }
+        if (handedness === 'right') {
+            return dot > 0 ? 'counter-clockwise' : 'clockwise';
+        }
+        else {
+            return dot > 0 ? 'clockwise' : 'counter-clockwise';
+        }
+    }
+    // Without a reference normal, we'll use the z-component of the normal
+    // to determine winding order (positive z points towards viewer)
+    if (Math.abs(normal.z) < constants.EPSILON) {
+        return null; // Normal is perpendicular to view direction
+    }
+    if (handedness === 'right') {
+        return normal.z > 0 ? 'counter-clockwise' : 'clockwise';
+    }
+    else {
+        return normal.z > 0 ? 'clockwise' : 'counter-clockwise';
+    }
+}
+/**
+ * Calculate the 2D area of a polygon in 3D space
+ *
+ * Returns null if the polygon is invalid
+ */
+function polygonArea(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const [a, b, c] = polygon.vertices;
+    // Use the shoelace formula to calculate the area of the triangle
+    // https://en.wikipedia.org/wiki/Shoelace_formula
+    return (Math.abs(a.x * (b.y - b.x) * a.y +
+        b.x * (c.y - c.x) * b.y +
+        c.x * (a.y - a.x) * c.y) / 2);
+}
+/**
+ * Calculate the centroid of a polygon
+ *
+ * Returns null if the polygon is invalid
+ */
+function polygonCentroid(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    return vec_1.vec3.div(vec_1.vec3.add(polygon.vertices[0], vec_1.vec3.add(polygon.vertices[1], polygon.vertices[2])), 3);
+}
+/**
+ * Convert a polygon to a plane
+ */
+function polygonToPlane(polygon) {
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Calculate the normal vector
+    const [a, b, c] = polygon.vertices;
+    const ab = vec_1.vec3.sub(b, a);
+    const ac = vec_1.vec3.sub(c, a);
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(ab, ac));
+    // Calculate the plane's position as the centroid of the polygon
+    const point = polygonCentroid(polygon);
+    return {
+        point,
+        normal,
+    };
+}
+/**
+ * Convert a list of polygons to a mesh
+ *
+ * This optimises the number of vertices and edges by merging common vertices
+ */
+function polygonsToMesh(polygons) {
+    if (polygons.length === 0) {
+        return { vertices: [], indices: [] };
+    }
+    // Create a map to store unique vertices
+    const vertexMap = new Map();
+    const indices = [];
+    // Iterate over each polygon
+    polygons.forEach((polygon, polygonIndex) => {
+        if (!polygonIsValid(polygon)) {
+            throw new Error(`Invalid polygon at index ${polygonIndex}`);
+        }
+        // Iterate over each vertex in the polygon
+        polygon.vertices.forEach(vertex => {
+            // Create a unique key for the vertex
+            const key = `${vertex.x},${vertex.y},${vertex.z}`;
+            if (!vertexMap.has(key)) {
+                // If the vertex is not in the map, add it
+                vertexMap.set(key, vertex);
+            }
+            // Get the index of the vertex in the map
+            const index = Array.from(vertexMap.keys()).indexOf(key);
+            indices.push(index);
+        });
+    });
+    // Convert the vertex map to an array
+    const vertices = Array.from(vertexMap.values());
+    return {
+        vertices,
+        indices,
+    };
+}
+/**
+ * Convert a mesh to a list of polygons
+ */
+function meshToPolygons(mesh) {
+    if (mesh.indices.length % 3 !== 0) {
+        throw new Error('Mesh indices must be a multiple of 3 to form triangles');
+    }
+    const polygons = [];
+    for (let i = 0; i < mesh.indices.length; i += 3) {
+        const indices = mesh.indices.slice(i, i + 3);
+        if (indices.length !== 3) {
+            throw new Error('Mesh indices must form triangles');
+        }
+        const vertices = indices.map(index => mesh.vertices[index]);
+        polygons.push({ vertices });
+    }
+    return polygons;
+}
+/**
+ * Convert a mesh to a list of edges
+ */
+function meshToEdges(mesh) {
+    if (mesh.indices.length % 2 !== 0) {
+        throw new Error('Mesh indices must be a multiple of 2 to form edges');
+    }
+    const edges = [];
+    for (let i = 0; i < mesh.indices.length; i += 2) {
+        const startIndex = mesh.indices[i];
+        const endIndex = mesh.indices[i + 1];
+        if (startIndex >= mesh.vertices.length ||
+            endIndex >= mesh.vertices.length) {
+            throw new Error('Mesh indices out of bounds');
+        }
+        edges.push({
+            start: mesh.vertices[startIndex],
+            end: mesh.vertices[endIndex],
+        });
+    }
+    return edges;
+}
+/**
+ * Calculate the centroid of a mesh
+ */
+function meshCentroid(mesh) {
+    return vec_1.vec3.div(mesh.vertices.reduce((acc, v) => vec_1.vec3.add(acc, v), (0, vec_1.vec3)()), mesh.vertices.length);
+}
+/**
+ * Perform an edge manifold check to tell if a mesh is watertight
+ *
+ * Every edge in a watertight mesh should be shared by exactly two triangles
+ *
+ * This isn't perfect, but it should be sufficient for most simple cases
+ */
+function meshIsWatertight(mesh) {
+    // Create a map to store edge counts
+    // Key format: "smallerVertexIndex,largerVertexIndex"
+    const edgeCounts = new Map();
+    // Process each triangle
+    for (let i = 0; i < mesh.indices.length; i += 3) {
+        const v1 = mesh.indices[i];
+        const v2 = mesh.indices[i + 1];
+        const v3 = mesh.indices[i + 2];
+        // For each edge in the triangle, create a canonical key
+        const edges = [
+            [Math.min(v1, v2), Math.max(v1, v2)],
+            [Math.min(v2, v3), Math.max(v2, v3)],
+            [Math.min(v3, v1), Math.max(v3, v1)],
+        ];
+        // Count each edge
+        edges.forEach(([a, b]) => {
+            const key = `${a},${b}`;
+            edgeCounts.set(key, (edgeCounts.get(key) || 0) + 1);
+        });
+    }
+    // Check if all edges appear exactly twice
+    return Array.from(edgeCounts.values()).every(count => count === 2);
+}
+/**
+ * Check if a point is on a ray
+ *
+ * Also returns the closest point on the ray and the distance to it
+ */
+function pointOnRay(point, ray) {
+    // Vector from ray origin to point
+    const toPoint = vec_1.vec3.sub(point, ray.origin);
+    // Get normalized ray direction
+    const rayDirection = vec_1.vec3.nor(ray.direction);
+    // Project toPoint onto the ray direction
+    const projection = vec_1.vec3.dot(toPoint, rayDirection);
+    // Calculate closest point on ray
+    const closestPoint = vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDirection, Math.max(0, projection)));
+    // Calculate distance from point to closest point
+    const distance = vec_1.vec3.len(vec_1.vec3.sub(point, closestPoint));
+    return {
+        // Point is on ray if distance is zero and projection is non-negative
+        intersects: distance < constants.EPSILON && projection >= 0,
+        closestPoint,
+        distance,
+    };
+}
+/**
+ * Check if a point intersects a line segment
+ *
+ * Also returns the closest point on the line segment and the distance to it
+ */
+function pointOnLine(point, line) {
+    // Get vector from line start to end
+    const lineVector = vec_1.vec3.sub(line.end, line.start);
+    // Get normalized line direction
+    const lineDirection = vec_1.vec3.nor(lineVector);
+    // Get vector from line start to point
+    const toPoint = vec_1.vec3.sub(point, line.start);
+    // Project toPoint onto the line direction
+    const projection = vec_1.vec3.dot(toPoint, lineDirection);
+    // Get line length
+    const lineLength = vec_1.vec3.len(lineVector);
+    // Clamp projection to line segment
+    const clampedProjection = Math.max(0, Math.min(lineLength, projection));
+    // Calculate closest point on line segment
+    const closestPoint = vec_1.vec3.add(line.start, vec_1.vec3.mul(lineDirection, clampedProjection));
+    // Calculate distance from point to closest point
+    const distance = vec_1.vec3.len(vec_1.vec3.sub(point, closestPoint));
+    return {
+        // Point is on line if distance is effectively zero
+        intersects: distance < constants.EPSILON,
+        closestPoint,
+        distance,
+    };
+}
+/**
+ * Check if a point is inside a sphere
+ *
+ * Also returns the closest point on the sphere edge and the distance to it
+ *
+ * If the point is inside the sphere, the distance will be negative
+ */
+function pointInSphere(point, sphere) {
+    // Calculate vector from sphere center to point
+    const toPoint = vec_1.vec3.sub(point, sphere.position);
+    // Calculate distance from point to sphere center
+    const distanceToCenter = vec_1.vec3.len(toPoint);
+    // Check if point is inside the sphere
+    const intersects = distanceToCenter <= sphere.radius;
+    // Calculate distance to circle edge
+    const distance = intersects
+        ? -(sphere.radius - distanceToCenter) // Negative if inside
+        : distanceToCenter - sphere.radius; // Positive if outside
+    // Calculate closest point on sphere edge
+    const closestPoint = vec_1.vec3.add(sphere.position, vec_1.vec3.mul(vec_1.vec3.nor(toPoint), sphere.radius));
+    return {
+        intersects,
+        closestPoint,
+        distance,
+    };
+}
+/**
+ * Check if a point is inside a cuboid
+ */
+function pointInCuboid(point, cuboid) {
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Transform point to local space by undoing rotation and translation
+    let localPoint = vec_1.vec3.sub(point, position);
+    if (cuboidIsRotated(cuboid)) {
+        localPoint = vec_1.vec3.rota(localPoint, vec_1.vec3.mul(rotation, -1));
+    }
+    // Calculate distances to each face in local space
+    const dx = Math.max(Math.abs(localPoint.x) - halfSize.x, 0);
+    const dy = Math.max(Math.abs(localPoint.y) - halfSize.y, 0);
+    const dz = Math.max(Math.abs(localPoint.z) - halfSize.z, 0);
+    // Calculate closest point in local space
+    const closestLocalPoint = (0, vec_1.vec3)((0, utils_1.clamp)(localPoint.x, -halfSize.x, halfSize.x), (0, utils_1.clamp)(localPoint.y, -halfSize.y, halfSize.y), (0, utils_1.clamp)(localPoint.z, -halfSize.z, halfSize.z));
+    // Transform closest point back to world space
+    let closestPoint = closestLocalPoint;
+    if (cuboidIsRotated(cuboid)) {
+        closestPoint = vec_1.vec3.rota(closestPoint, rotation);
+    }
+    closestPoint = vec_1.vec3.add(closestPoint, position);
+    // Calculate if point is inside and the distance
+    const intersects = dx === 0 && dy === 0 && dz === 0;
+    const distance = intersects
+        ? -Math.min(halfSize.x - Math.abs(localPoint.x), halfSize.y - Math.abs(localPoint.y), halfSize.z - Math.abs(localPoint.z))
+        : Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return {
+        intersects,
+        closestPoint,
+        distance,
+    };
+}
+function pointOnPolygon(point, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const [v1, v2, v3] = polygon.vertices;
+    // Calculate two edges of the triangle
+    const edge1 = vec_1.vec3.sub(v2, v1);
+    const edge2 = vec_1.vec3.sub(v3, v1);
+    // Calculate the normal vector of the plane containing the triangle
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(edge1, edge2));
+    // Calculate plane constant d
+    const d = -vec_1.vec3.dot(normal, v1);
+    // Calculate the signed distance from the point to the plane
+    const signedDistance = vec_1.vec3.dot(normal, point) + d;
+    // Project the point onto the plane
+    const projectedPoint = vec_1.vec3.sub(point, vec_1.vec3.mul(normal, signedDistance));
+    // Now we need to check if the projected point is inside the triangle
+    // We'll use the barycentric coordinate method
+    const area = vec_1.vec3.len(vec_1.vec3.cross(edge1, edge2)) / 2; // Triangle area
+    // Calculate barycentric coordinates using sub-triangle areas
+    const edge3 = vec_1.vec3.sub(v3, v2);
+    const vp1 = vec_1.vec3.sub(projectedPoint, v1);
+    const vp2 = vec_1.vec3.sub(projectedPoint, v2);
+    const vp3 = vec_1.vec3.sub(projectedPoint, v3);
+    const alpha = vec_1.vec3.len(vec_1.vec3.cross(edge3, vp2)) / (2 * area);
+    const beta = vec_1.vec3.len(vec_1.vec3.cross(edge2, vp3)) / (2 * area);
+    const gamma = vec_1.vec3.len(vec_1.vec3.cross(edge1, vp1)) / (2 * area);
+    // Point is inside triangle if all barycentric coordinates are between 0 and 1
+    // and their sum is approximately 1
+    const sum = alpha + beta + gamma;
+    const isInside = alpha >= -constants.EPSILON &&
+        beta >= -constants.EPSILON &&
+        gamma >= -constants.EPSILON &&
+        Math.abs(sum - 1) < constants.EPSILON;
+    // If point is inside, the closest point is the projected point
+    // If point is outside, find the closest point on the triangle's edges
+    let closestPoint;
+    let distance;
+    if (isInside) {
+        closestPoint = projectedPoint;
+        distance = Math.abs(signedDistance);
+    }
+    else {
+        // Check distances to each edge
+        const p1 = pointOnLine(point, { start: v1, end: v2 });
+        const p2 = pointOnLine(point, { start: v2, end: v3 });
+        const p3 = pointOnLine(point, { start: v3, end: v1 });
+        // Find the minimum distance
+        const minDist = Math.min(p1.distance, p2.distance, p3.distance);
+        // Use the closest point from the edge with minimum distance
+        if (minDist === p1.distance) {
+            closestPoint = p1.closestPoint;
+        }
+        else if (minDist === p2.distance) {
+            closestPoint = p2.closestPoint;
+        }
+        else {
+            closestPoint = p3.closestPoint;
+        }
+        distance = minDist;
+    }
+    return {
+        intersects: distance < constants.EPSILON,
+        closestPoint,
+        distance,
+    };
+}
+/**
+ * Check which grid cells a ray traverses
+ *
+ * Based on "A Fast Voxel Traversal Algorithm for Ray Tracing" by Amanatides
+ * and Woo
+ *
+ * We can optionally limit the number of cells traversed by the ray, or set
+ * maxCells to -1 to continue traversing until the ray exits the grid (or until
+ * we hit the hard limit of 10000 cells).
+ */
+function rayTraverseGrid(ray, cellSize, gridTopLeftFront, gridBottomRightBack, maxCells = -1) {
+    if (cellSize <= 0) {
+        return { cells: [] }; // Invalid cell size, return empty cells array
+    }
+    // Set a limit on the number of cells traversed
+    const HARD_LIMIT = 10000;
+    maxCells = (0, utils_1.clamp)(maxCells === -1 ? HARD_LIMIT : maxCells, 0, HARD_LIMIT);
+    if (maxCells <= 0) {
+        return { cells: [] }; // No cells to traverse
+    }
+    // Make sure the grid boundaries are integers
+    gridTopLeftFront = vec_1.vec3.map(gridTopLeftFront, Math.floor);
+    gridBottomRightBack = vec_1.vec3.map(gridBottomRightBack, Math.ceil);
+    // Normalize ray direction and handle zero components
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    if ((0, utilities_1.vectorAlmostZero)(rayDir)) {
+        return { cells: [] };
+    }
+    const cells = [];
+    // Calculate initial cell coordinates
+    let currentCell = vec_1.vec3.map(vec_1.vec3.div(vec_1.vec3.sub(ray.origin, gridTopLeftFront), cellSize), Math.floor);
+    // Calculate grid size in cells
+    const gridSize = vec_1.vec3.sub(gridBottomRightBack, gridTopLeftFront);
+    // If starting point is outside grid bounds, find entry point
+    if (currentCell.x < 0 ||
+        currentCell.x >= gridSize.x ||
+        currentCell.y < 0 ||
+        currentCell.y >= gridSize.y ||
+        currentCell.z < 0 ||
+        currentCell.z >= gridSize.z) {
+        // Use cuboid intersection to find grid entry point
+        const gridCuboid = {
+            position: vec_1.vec3.add(gridTopLeftFront, vec_1.vec3.div(vec_1.vec3.sub(gridBottomRightBack, gridTopLeftFront), 2)),
+            size: vec_1.vec3.sub(gridBottomRightBack, gridTopLeftFront),
+        };
+        const intersection = rayIntersectsCuboid(ray, gridCuboid);
+        if (!intersection.intersects || !intersection.intersectionPoints) {
+            return { cells }; // Ray misses grid entirely
+        }
+        // Get the first intersection point (closest to ray origin)
+        const entryPoint = intersection.intersectionPoints[0];
+        currentCell = vec_1.vec3.map(vec_1.vec3.div(vec_1.vec3.sub(entryPoint, gridTopLeftFront), cellSize), Math.floor);
+        // Check if entry point is valid
+        if (currentCell.x < 0 ||
+            currentCell.x >= gridSize.x ||
+            currentCell.y < 0 ||
+            currentCell.y >= gridSize.y ||
+            currentCell.z < 0 ||
+            currentCell.z >= gridSize.z) {
+            return { cells }; // No valid entry point found
+        }
+    }
+    // Calculate step direction (either 1 or -1) for each axis
+    const step = {
+        x: Math.sign(rayDir.x),
+        y: Math.sign(rayDir.y),
+        z: Math.sign(rayDir.z),
+    };
+    // Calculate tDelta - distance along ray from one grid line to next
+    const tDelta = {
+        x: rayDir.x !== 0 ? Math.abs(cellSize / rayDir.x) : Infinity,
+        y: rayDir.y !== 0 ? Math.abs(cellSize / rayDir.y) : Infinity,
+        z: rayDir.z !== 0 ? Math.abs(cellSize / rayDir.z) : Infinity,
+    };
+    // Calculate initial cell boundary positions
+    const initialBoundary = (0, vec_1.vec3)(gridTopLeftFront.x + (currentCell.x + (step.x > 0 ? 1 : 0)) * cellSize, gridTopLeftFront.y + (currentCell.y + (step.y > 0 ? 1 : 0)) * cellSize, gridTopLeftFront.z + (currentCell.z + (step.z > 0 ? 1 : 0)) * cellSize);
+    // Calculate initial tMax values
+    const tMax = {
+        x: rayDir.x !== 0
+            ? Math.abs((initialBoundary.x - ray.origin.x) / rayDir.x)
+            : Infinity,
+        y: rayDir.y !== 0
+            ? Math.abs((initialBoundary.y - ray.origin.y) / rayDir.y)
+            : Infinity,
+        z: rayDir.z !== 0
+            ? Math.abs((initialBoundary.z - ray.origin.z) / rayDir.z)
+            : Infinity,
+    };
+    // If we're exactly on a boundary, we need to adjust tMax
+    if (Math.abs(ray.origin.x - initialBoundary.x) < constants.EPSILON) {
+        tMax.x = tDelta.x;
+    }
+    if (Math.abs(ray.origin.y - initialBoundary.y) < constants.EPSILON) {
+        tMax.y = tDelta.y;
+    }
+    if (Math.abs(ray.origin.z - initialBoundary.z) < constants.EPSILON) {
+        tMax.z = tDelta.z;
+    }
+    // Add starting cell
+    cells.push((0, vec_1.vec3)(currentCell.x, currentCell.y, currentCell.z));
+    let cellCount = 1;
+    // Main loop
+    while (cellCount < maxCells &&
+        currentCell.x >= 0 &&
+        currentCell.x < gridSize.x &&
+        currentCell.y >= 0 &&
+        currentCell.y < gridSize.y &&
+        currentCell.z >= 0 &&
+        currentCell.z < gridSize.z) {
+        // Advance to next cell based on shortest tMax
+        if (tMax.x < tMax.y && tMax.x < tMax.z) {
+            tMax.x += tDelta.x;
+            currentCell.x += step.x;
+        }
+        else if (tMax.y < tMax.z) {
+            tMax.y += tDelta.y;
+            currentCell.y += step.y;
+        }
+        else {
+            tMax.z += tDelta.z;
+            currentCell.z += step.z;
+        }
+        // Check if we're still in bounds
+        if (currentCell.x < 0 ||
+            currentCell.x >= gridSize.x ||
+            currentCell.y < 0 ||
+            currentCell.y >= gridSize.y ||
+            currentCell.z < 0 ||
+            currentCell.z >= gridSize.z) {
+            break;
+        }
+        // Add current cell
+        cells.push((0, vec_1.vec3)(currentCell.x, currentCell.y, currentCell.z));
+        cellCount++;
+    }
+    return { cells };
+}
+/**
+ * Check if two rays intersect
+ */
+function rayIntersectsRay(rayA, rayB) {
+    // Normalize ray directions
+    const dirA = vec_1.vec3.nor(rayA.direction);
+    const dirB = vec_1.vec3.nor(rayB.direction);
+    // If either ray has zero direction, they cannot intersect
+    if ((0, utilities_1.vectorAlmostZero)(dirA) || (0, utilities_1.vectorAlmostZero)(dirB)) {
+        return {
+            intersects: false,
+        };
+    }
+    // Calculate vector between ray origins
+    const originDiff = vec_1.vec3.sub(rayB.origin, rayA.origin);
+    // Calculate triple products
+    const normal = vec_1.vec3.cross(dirA, dirB);
+    const normalLengthSq = vec_1.vec3.dot(normal, normal);
+    // If normal is zero, rays are parallel
+    if (normalLengthSq < constants.EPSILON) {
+        // Check if rays are coincident
+        const crossOrigins = vec_1.vec3.cross(originDiff, dirA);
+        if (vec_1.vec3.len(crossOrigins) < constants.EPSILON) {
+            // Rays are coincident - return point on rayA closest to rayB.origin
+            const t = vec_1.vec3.dot(originDiff, dirA);
+            if (t >= 0) {
+                return {
+                    intersects: true,
+                    intersectionPoint: vec_1.vec3.add(rayA.origin, vec_1.vec3.mul(dirA, t)),
+                };
+            }
+        }
+        return { intersects: false };
+    }
+    // Calculate parameters for closest points
+    const c1 = vec_1.vec3.dot(originDiff, vec_1.vec3.cross(dirB, normal)) / normalLengthSq;
+    const c2 = vec_1.vec3.dot(originDiff, vec_1.vec3.cross(dirA, normal)) / normalLengthSq;
+    // If either parameter is negative, closest points are behind ray origins
+    if (c1 < 0 || c2 < 0) {
+        return { intersects: false };
+    }
+    // Calculate closest points on each ray
+    const pointA = vec_1.vec3.add(rayA.origin, vec_1.vec3.mul(dirA, c1));
+    const pointB = vec_1.vec3.add(rayB.origin, vec_1.vec3.mul(dirB, c2));
+    // Check if points are close enough to consider intersection
+    const distance = vec_1.vec3.len(vec_1.vec3.sub(pointA, pointB));
+    if (distance < constants.EPSILON) {
+        // Use midpoint as intersection point
+        return {
+            intersects: true,
+            intersectionPoint: vec_1.vec3.add(pointA, vec_1.vec3.mul(vec_1.vec3.sub(pointB, pointA), 0.5)),
+        };
+    }
+    return { intersects: false };
+}
+/**
+ * Check if a ray intersects a line segment
+ */
+function rayIntersectsLine(ray, line) {
+    // Convert line to a direction vector
+    let lineDir = vec_1.vec3.sub(line.end, line.start);
+    const lineLength = vec_1.vec3.len(lineDir);
+    // If the line has zero length, it cannot intersect
+    if (lineLength < constants.EPSILON) {
+        return {
+            intersects: false,
+        };
+    }
+    // Normalize ray and line directions
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    lineDir = vec_1.vec3.div(lineDir, lineLength); // Normalize line direction
+    // Calculate vector between ray origin and line start
+    const startDiff = vec_1.vec3.sub(line.start, ray.origin);
+    // Calculate triple products
+    const normal = vec_1.vec3.cross(rayDir, lineDir);
+    const normalLengthSq = vec_1.vec3.dot(normal, normal);
+    // If normal is zero, ray and line are parallel
+    if (normalLengthSq < constants.EPSILON) {
+        // Check if they are collinear
+        const crossOrigins = vec_1.vec3.cross(startDiff, rayDir);
+        if (vec_1.vec3.len(crossOrigins) < constants.EPSILON) {
+            // They are collinear - find closest point on line to ray origin
+            const t = vec_1.vec3.dot(startDiff, lineDir);
+            if (t >= 0 && t <= lineLength) {
+                return {
+                    intersects: true,
+                    intersectionPoint: vec_1.vec3.add(line.start, vec_1.vec3.mul(lineDir, t)),
+                };
+            }
+        }
+        return { intersects: false };
+    }
+    // Calculate parameters for closest points
+    const c1 = vec_1.vec3.dot(startDiff, vec_1.vec3.cross(lineDir, normal)) / normalLengthSq;
+    const c2 = vec_1.vec3.dot(startDiff, vec_1.vec3.cross(rayDir, normal)) / normalLengthSq;
+    // Check if intersection occurs on ray and within line segment bounds
+    if (c1 >= 0 && c2 >= 0 && c2 <= lineLength) {
+        // Calculate closest points
+        const pointOnRay = vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, c1));
+        const pointOnLine = vec_1.vec3.add(line.start, vec_1.vec3.mul(lineDir, c2));
+        // Check if points are close enough to consider intersection
+        const distance = vec_1.vec3.len(vec_1.vec3.sub(pointOnRay, pointOnLine));
+        if (distance < constants.EPSILON) {
+            // Use midpoint as intersection point
+            return {
+                intersects: true,
+                intersectionPoint: vec_1.vec3.add(pointOnRay, vec_1.vec3.mul(vec_1.vec3.sub(pointOnLine, pointOnRay), 0.5)),
+            };
+        }
+    }
+    return { intersects: false };
+}
+/**
+ * Check if a ray intersects a sphere
+ */
+function rayIntersectsSphere(ray, sphere) {
+    // Normalize ray direction
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    // Calculate vector from ray origin to sphere center
+    const toCenter = vec_1.vec3.sub(sphere.position, ray.origin);
+    // Calculate quadratic equation coefficients
+    // a = dot(dir, dir) (should be 1 since dir is normalized)
+    const a = vec_1.vec3.dot(rayDir, rayDir);
+    // b = 2 * dot(dir, (origin - center))
+    const b = 2 * vec_1.vec3.dot(rayDir, vec_1.vec3.mul(toCenter, -1));
+    // c = dot((origin - center), (origin - center)) - radius²
+    const c = vec_1.vec3.dot(toCenter, toCenter) - sphere.radius * sphere.radius;
+    // Solve quadratic equation using discriminant
+    const discriminant = b * b - 4 * a * c;
+    // No intersection if discriminant is negative
+    if (discriminant < -constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Handle case where ray just touches sphere (discriminant ≈ 0)
+    if (Math.abs(discriminant) < constants.EPSILON) {
+        const t = -b / (2 * a);
+        if (t >= 0) {
+            const point = vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t));
+            return {
+                intersects: true,
+                intersectionPoints: [point],
+            };
+        }
+        return { intersects: false };
+    }
+    // Calculate intersection points for discriminant > 0
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDiscriminant) / (2 * a);
+    const t2 = (-b + sqrtDiscriminant) / (2 * a);
+    // If both t values are negative, ray points away from sphere
+    if (t2 < 0) {
+        return { intersects: false };
+    }
+    // Calculate intersection points for positive t values
+    const intersectionPoints = [];
+    if (t1 >= 0) {
+        intersectionPoints.push(vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t1)));
+    }
+    if (t2 >= 0) {
+        intersectionPoints.push(vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t2)));
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a ray intersects a plane
+ */
+function rayIntersectsPlane(ray, plane) {
+    // Normalize the ray direction and plane normal
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    const planeNormal = vec_1.vec3.nor(plane.normal);
+    // Calculate denominator (dot product of ray direction and plane normal)
+    const denominator = vec_1.vec3.dot(rayDir, planeNormal);
+    // If denominator is close to 0, ray is parallel to plane
+    if (Math.abs(denominator) < constants.EPSILON) {
+        // Check if the ray lies in the plane (origin is on the plane)
+        const distanceToPlane = vec_1.vec3.dot(vec_1.vec3.sub(ray.origin, plane.point), planeNormal);
+        if (Math.abs(distanceToPlane) < constants.EPSILON) {
+            // Ray lies in the plane: infinite intersection points
+            return { intersects: true };
+        }
+        // Ray is parallel and not on the plane
+        return { intersects: false };
+    }
+    // Calculate distance from ray origin to plane
+    const t = vec_1.vec3.dot(vec_1.vec3.sub(plane.point, ray.origin), planeNormal) / denominator;
+    // If t is negative, intersection is behind ray origin
+    if (t < 0) {
+        return { intersects: false };
+    }
+    // Calculate intersection point
+    const intersectionPoint = vec_1.vec3.add(ray.origin, vec_1.vec3.mul(rayDir, t));
+    return {
+        intersects: true,
+        intersectionPoint,
+    };
+}
+/**
+ * Check if a ray intersects a cuboid
+ */
+function rayIntersectsCuboid(ray, cuboid) {
+    // Normalize ray direction
+    const rayDir = vec_1.vec3.nor(ray.direction);
+    // Extract cuboid properties with default rotation
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    // Transform ray to local space if cuboid is rotated
+    let localRayOrigin = vec_1.vec3.sub(ray.origin, position);
+    let localRayDir = rayDir;
+    if (cuboidIsRotated(cuboid)) {
+        // Undo rotation by applying inverse rotation to ray
+        const inverseRotation = vec_1.vec3.mul(rotation, -1);
+        localRayOrigin = vec_1.vec3.rota(localRayOrigin, inverseRotation);
+        localRayDir = vec_1.vec3.rota(localRayDir, inverseRotation);
+    }
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Calculate intersection with each pair of parallel planes
+    const txMin = vec_1.vec3.div(vec_1.vec3.sub(vec_1.vec3.mul(halfSize, -1), localRayOrigin), localRayDir);
+    const txMax = vec_1.vec3.div(vec_1.vec3.sub(halfSize, localRayOrigin), localRayDir);
+    // Find the farthest near intersection and the closest far intersection
+    const tNear = (0, vec_1.vec3)(Math.min(txMin.x, txMax.x), Math.min(txMin.y, txMax.y), Math.min(txMin.z, txMax.z));
+    const tFar = (0, vec_1.vec3)(Math.max(txMin.x, txMax.x), Math.max(txMin.y, txMax.y), Math.max(txMin.z, txMax.z));
+    // If the largest tNear is greater than the smallest tFar, there is no
+    // intersection
+    const tMin = Math.max(tNear.x, tNear.y, tNear.z);
+    const tMax = Math.min(tFar.x, tFar.y, tFar.z);
+    if (tMin > tMax || tMax < 0) {
+        return { intersects: false };
+    }
+    // Calculate intersection points
+    const intersectionPoints = [];
+    // Add entry point if it's in front of ray origin
+    if (tMin >= 0) {
+        let point = vec_1.vec3.add(localRayOrigin, vec_1.vec3.mul(localRayDir, tMin));
+        if (cuboidIsRotated(cuboid)) {
+            point = vec_1.vec3.rota(point, rotation);
+        }
+        intersectionPoints.push(vec_1.vec3.add(position, point));
+    }
+    // Add exit point if different from entry point
+    if (tMax > tMin && tMax >= 0) {
+        let point = vec_1.vec3.add(localRayOrigin, vec_1.vec3.mul(localRayDir, tMax));
+        if (cuboidIsRotated(cuboid)) {
+            point = vec_1.vec3.rota(point, rotation);
+        }
+        intersectionPoints.push(vec_1.vec3.add(position, point));
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a ray intersects a polygon
+ */
+function rayIntersectsPolygon(ray, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Calculate the plane of the polygon
+    const [v1, v2, v3] = polygon.vertices;
+    const edge1 = vec_1.vec3.sub(v2, v1);
+    const edge2 = vec_1.vec3.sub(v3, v1);
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(edge1, edge2));
+    // Create a plane from the polygon
+    const plane = {
+        point: v1,
+        normal,
+    };
+    // Check if the ray intersects the plane
+    const intersection = rayIntersectsPlane(ray, plane);
+    if (!intersection.intersects || !intersection.intersectionPoint) {
+        return { intersects: false };
+    }
+    // Check if the intersection point is inside the polygon
+    const pointCheck = pointOnPolygon(intersection.intersectionPoint, polygon);
+    if (!pointCheck || !pointCheck.intersects) {
+        return { intersects: false };
+    }
+    return {
+        intersects: true,
+        intersectionPoint: intersection.intersectionPoint,
+    };
+}
+/**
+ * Check if a ray intersects any of the polygons in a mesh
+ */
+function rayIntersectsMesh(ray, mesh) {
+    const polygons = meshToPolygons(mesh);
+    const intersectionPoints = [];
+    polygons.forEach(polygon => {
+        const intersection = rayIntersectsPolygon(ray, polygon);
+        if (intersection && intersection.intersects) {
+            intersectionPoints.push(intersection.intersectionPoint);
+        }
+    });
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a line segment intersects a ray
+ */
+function lineIntersectsRay(line, ray) {
+    return rayIntersectsLine(ray, line);
+}
+/**
+ * Check if two line segments intersect
+ */
+function lineIntersectsLine(lineA, lineB) {
+    // Convert lines to direction vectors
+    const dirA = vec_1.vec3.sub(lineA.end, lineA.start);
+    const dirB = vec_1.vec3.sub(lineB.end, lineB.start);
+    // Get line lengths
+    const lengthA = vec_1.vec3.len(dirA);
+    const lengthB = vec_1.vec3.len(dirB);
+    // If either line has zero length, they cannot intersect
+    if (lengthA < constants.EPSILON || lengthB < constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Normalize directions
+    const normA = vec_1.vec3.div(dirA, lengthA);
+    const normB = vec_1.vec3.div(dirB, lengthB);
+    // Calculate vector between line starts
+    const startDiff = vec_1.vec3.sub(lineB.start, lineA.start);
+    // Calculate cross product of directions
+    const normal = vec_1.vec3.cross(normA, normB);
+    const normalLengthSq = vec_1.vec3.dot(normal, normal);
+    // If normal is zero, lines are parallel
+    if (normalLengthSq < constants.EPSILON) {
+        // Check if they are collinear
+        const crossStarts = vec_1.vec3.cross(startDiff, normA);
+        if (vec_1.vec3.len(crossStarts) < constants.EPSILON) {
+            // They are collinear - check for overlap
+            const t0 = vec_1.vec3.dot(startDiff, normA);
+            const t1 = t0 + vec_1.vec3.dot(dirB, normA);
+            // Find overlap interval
+            const tMin = Math.min(t0, t1);
+            const tMax = Math.max(t0, t1);
+            // Check if lines overlap
+            if (tMin <= lengthA && tMax >= 0) {
+                // Calculate intersection point at middle of overlap
+                const t = (0, utils_1.clamp)(0, Math.max(0, tMin), lengthA);
+                return {
+                    intersects: true,
+                    intersectionPoint: vec_1.vec3.add(lineA.start, vec_1.vec3.mul(normA, t)),
+                };
+            }
+        }
+        return { intersects: false };
+    }
+    // Calculate parameters for closest points
+    const c1 = vec_1.vec3.dot(startDiff, vec_1.vec3.cross(dirB, normal)) / normalLengthSq;
+    const c2 = vec_1.vec3.dot(startDiff, vec_1.vec3.cross(dirA, normal)) / normalLengthSq;
+    // Check if closest points lie within line segments
+    if (c1 >= 0 && c1 <= lengthA && c2 >= 0 && c2 <= lengthB) {
+        // Calculate closest points
+        const pointOnA = vec_1.vec3.add(lineA.start, vec_1.vec3.mul(normA, c1));
+        const pointOnB = vec_1.vec3.add(lineB.start, vec_1.vec3.mul(normB, c2));
+        // Check if points are close enough to consider intersection
+        const distance = vec_1.vec3.len(vec_1.vec3.sub(pointOnA, pointOnB));
+        if (distance < constants.EPSILON) {
+            // Use midpoint as intersection point
+            return {
+                intersects: true,
+                intersectionPoint: vec_1.vec3.add(pointOnA, vec_1.vec3.mul(vec_1.vec3.sub(pointOnB, pointOnA), 0.5)),
+            };
+        }
+    }
+    return { intersects: false };
+}
+/**
+ * Check if a line segments intersects a sphere
+ */
+function lineIntersectsSphere(line, sphere) {
+    // Calculate line direction and length
+    const lineDir = vec_1.vec3.sub(line.end, line.start);
+    const lineLength = vec_1.vec3.len(lineDir);
+    // If line has zero length, treat as point-sphere intersection
+    if (lineLength < constants.EPSILON) {
+        const distance = vec_1.vec3.len(vec_1.vec3.sub(line.start, sphere.position));
+        if (distance <= sphere.radius) {
+            return {
+                intersects: true,
+                intersectionPoints: [line.start],
+            };
+        }
+        return { intersects: false };
+    }
+    // Normalize line direction
+    const normDir = vec_1.vec3.div(lineDir, lineLength);
+    // Calculate vector from line start to sphere center
+    const toCenter = vec_1.vec3.sub(sphere.position, line.start);
+    // Calculate quadratic equation coefficients
+    // a = dot(dir, dir) = 1 since dir is normalized
+    const a = vec_1.vec3.dot(normDir, normDir);
+    // b = 2 * dot(dir, (start - center))
+    const b = 2 * vec_1.vec3.dot(normDir, vec_1.vec3.mul(toCenter, -1));
+    // c = dot((start - center), (start - center)) - radius²
+    const c = vec_1.vec3.dot(toCenter, toCenter) - sphere.radius * sphere.radius;
+    // Solve quadratic equation using discriminant
+    const discriminant = b * b - 4 * a * c;
+    // No intersection if discriminant is negative
+    if (discriminant < -constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Handle case where line just touches sphere (discriminant ≈ 0)
+    if (Math.abs(discriminant) < constants.EPSILON) {
+        const t = -b / (2 * a);
+        if (t >= 0 && t <= lineLength) {
+            const point = vec_1.vec3.add(line.start, vec_1.vec3.mul(normDir, t));
+            return {
+                intersects: true,
+                intersectionPoints: [point],
+            };
+        }
+        return { intersects: false };
+    }
+    // Calculate intersection points for discriminant > 0
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDiscriminant) / (2 * a);
+    const t2 = (-b + sqrtDiscriminant) / (2 * a);
+    // Collect intersection points that lie within line segment
+    const intersectionPoints = [];
+    if (t1 >= 0 && t1 <= lineLength) {
+        intersectionPoints.push(vec_1.vec3.add(line.start, vec_1.vec3.mul(normDir, t1)));
+    }
+    if (t2 >= 0 && t2 <= lineLength) {
+        intersectionPoints.push(vec_1.vec3.add(line.start, vec_1.vec3.mul(normDir, t2)));
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a line segments intersects a plane
+ */
+function lineIntersectsPlane(line, plane) {
+    // Convert line to direction vector
+    const lineDir = vec_1.vec3.sub(line.end, line.start);
+    const lineLength = vec_1.vec3.len(lineDir);
+    // If the line has zero length, it cannot intersect
+    if (lineLength < constants.EPSILON) {
+        return { intersects: false };
+    }
+    // Normalize line direction
+    const normDir = vec_1.vec3.div(lineDir, lineLength);
+    // Calculate denominator (dot product of line direction and plane normal)
+    const denominator = vec_1.vec3.dot(normDir, plane.normal);
+    // If denominator is close to 0, line is parallel to plane
+    if (Math.abs(denominator) < constants.EPSILON) {
+        // Check if the line start is on the plane
+        const distanceToPlane = vec_1.vec3.dot(vec_1.vec3.sub(line.start, plane.point), plane.normal);
+        if (Math.abs(distanceToPlane) < constants.EPSILON) {
+            // Line lies in the plane: infinite intersection points
+            return { intersects: true };
+        }
+        // Line is parallel and not on the plane
+        return { intersects: false };
+    }
+    // Calculate distance from line start to plane
+    const t = vec_1.vec3.dot(vec_1.vec3.sub(plane.point, line.start), plane.normal) / denominator;
+    // If t is negative or greater than line length, intersection is outside of
+    // the line segment
+    if (t < 0 || t > lineLength) {
+        return { intersects: false };
+    }
+    // Calculate intersection point
+    const intersectionPoint = vec_1.vec3.add(line.start, vec_1.vec3.mul(normDir, t));
+    return {
+        intersects: true,
+        intersectionPoint,
+    };
+}
+/**
+ * Check if a line segment intersects a cuboid
+ */
+function lineIntersectsCuboid(line, cuboid) {
+    // Get line direction and length
+    const lineDir = vec_1.vec3.sub(line.end, line.start);
+    const lineLength = vec_1.vec3.len(lineDir);
+    // If line has zero length, treat as point-cuboid intersection
+    if (lineLength < constants.EPSILON) {
+        const result = pointInCuboid(line.start, cuboid);
+        return {
+            intersects: result.intersects,
+            intersectionPoints: result.intersects ? [line.start] : undefined,
+        };
+    }
+    // Normalize line direction
+    const normDir = vec_1.vec3.div(lineDir, lineLength);
+    // Extract cuboid properties with default rotation
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    // Transform line to local space if cuboid is rotated
+    let localLineStart = vec_1.vec3.sub(line.start, position);
+    let localLineDir = normDir;
+    if (cuboidIsRotated(cuboid)) {
+        // Undo rotation by applying inverse rotation
+        const inverseRotation = vec_1.vec3.mul(rotation, -1);
+        localLineStart = vec_1.vec3.rota(localLineStart, inverseRotation);
+        localLineDir = vec_1.vec3.rota(localLineDir, inverseRotation);
+    }
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Calculate intersection with each pair of parallel planes
+    const txMin = vec_1.vec3.div(vec_1.vec3.sub(vec_1.vec3.mul(halfSize, -1), localLineStart), localLineDir);
+    const txMax = vec_1.vec3.div(vec_1.vec3.sub(halfSize, localLineStart), localLineDir);
+    // Find the farthest near intersection and the closest far intersection
+    const tNear = (0, vec_1.vec3)(Math.min(txMin.x, txMax.x), Math.min(txMin.y, txMax.y), Math.min(txMin.z, txMax.z));
+    const tFar = (0, vec_1.vec3)(Math.max(txMin.x, txMax.x), Math.max(txMin.y, txMax.y), Math.max(txMin.z, txMax.z));
+    // Find the latest entry and earliest exit
+    const tMin = Math.max(tNear.x, tNear.y, tNear.z);
+    const tMax = Math.min(tFar.x, tFar.y, tFar.z);
+    // If the entry is after the exit, or the exit is before the start of the
+    // line, or the entry is after the end of the line, there is no intersection
+    if (tMin > tMax || tMax < 0 || tMin > lineLength) {
+        return { intersects: false };
+    }
+    // Calculate intersection points
+    const intersectionPoints = [];
+    // Add entry point if it's within line segment
+    if (tMin >= 0 && tMin <= lineLength) {
+        let point = vec_1.vec3.add(localLineStart, vec_1.vec3.mul(localLineDir, tMin));
+        if (cuboidIsRotated(cuboid)) {
+            point = vec_1.vec3.rota(point, rotation);
+        }
+        intersectionPoints.push(vec_1.vec3.add(position, point));
+    }
+    // Add exit point if it's different from entry point and within line segment
+    if (tMax > tMin && tMax >= 0 && tMax <= lineLength) {
+        let point = vec_1.vec3.add(localLineStart, vec_1.vec3.mul(localLineDir, tMax));
+        if (cuboidIsRotated(cuboid)) {
+            point = vec_1.vec3.rota(point, rotation);
+        }
+        intersectionPoints.push(vec_1.vec3.add(position, point));
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a line segment intersects a polygon
+ */
+function lineIntersectsPolygon(line, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return { intersects: false };
+    }
+    // Calculate the plane of the polygon
+    const [v1, v2, v3] = polygon.vertices;
+    const edge1 = vec_1.vec3.sub(v2, v1);
+    const edge2 = vec_1.vec3.sub(v3, v1);
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(edge1, edge2));
+    // Create a plane from the polygon
+    const plane = {
+        point: v1,
+        normal,
+    };
+    // Check if the line intersects the plane
+    const intersection = lineIntersectsPlane(line, plane);
+    if (!intersection.intersects || !intersection.intersectionPoint) {
+        return { intersects: false };
+    }
+    // Check if the intersection point is inside the polygon
+    const pointCheck = pointOnPolygon(intersection.intersectionPoint, polygon);
+    if (!pointCheck || !pointCheck.intersects) {
+        return { intersects: false };
+    }
+    return {
+        intersects: true,
+        intersectionPoint: intersection.intersectionPoint,
+    };
+}
+/**
+ * Check if a line segment intersects a cuboid
+ */
+function lineIntersectsMesh(line, mesh) {
+    const polygons = meshToPolygons(mesh);
+    const intersectionPoints = [];
+    polygons.forEach(polygon => {
+        const intersection = lineIntersectsPolygon(line, polygon);
+        if (intersection && intersection.intersects) {
+            intersectionPoints.push(intersection.intersectionPoint);
+        }
+    });
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if two spheres intersect
+ */
+function sphereIntersectsSphere(sphereA, sphereB) {
+    // Calculate vector from center of sphere A to center of sphere B
+    const centerToCenter = vec_1.vec3.sub(sphereB.position, sphereA.position);
+    // Calculate actual distance between centers
+    const distance = vec_1.vec3.len(centerToCenter);
+    // Calculate sum of radii
+    const radiiSum = sphereA.radius + sphereB.radius;
+    // If distance is greater than sum of radii, spheres don't intersect
+    if (distance > radiiSum) {
+        return { intersects: false };
+    }
+    // If distance is zero, spheres are concentric
+    if (distance < constants.EPSILON) {
+        return {
+            intersects: true,
+            intersectionPoint: sphereA.position,
+            penetrationDepth: radiiSum,
+            normal: (0, vec_1.vec3)(1, 0, 0), // Arbitrary normal for concentric spheres
+            contactPoints: {
+                sphereA: vec_1.vec3.add(sphereA.position, (0, vec_1.vec3)(sphereA.radius, 0, 0)),
+                sphereB: vec_1.vec3.add(sphereB.position, (0, vec_1.vec3)(sphereB.radius, 0, 0)),
+            },
+        };
+    }
+    // Calculate normalized direction from sphere A to sphere B
+    const normal = vec_1.vec3.nor(centerToCenter);
+    // Calculate penetration depth
+    const penetrationDepth = radiiSum - distance;
+    // Calculate intersection center point (halfway between surface intersection
+    // points)
+    const intersectionPoint = vec_1.vec3.add(sphereA.position, vec_1.vec3.mul(normal, sphereA.radius + penetrationDepth / 2));
+    // Calculate contact points on each sphere's surface
+    const contactPoints = {
+        sphereA: vec_1.vec3.add(sphereA.position, vec_1.vec3.mul(normal, sphereA.radius)),
+        sphereB: vec_1.vec3.add(sphereB.position, vec_1.vec3.mul(normal, -sphereB.radius)),
+    };
+    return {
+        intersects: true,
+        intersectionPoint,
+        penetrationDepth,
+        normal,
+        contactPoints,
+    };
+}
+/**
+ * Check if a sphere intersects a plane
+ */
+function sphereIntersectsPlane(sphere, plane) {
+    // Normalize the plane normal
+    const normal = vec_1.vec3.nor(plane.normal);
+    // Calculate signed distance from sphere center to plane
+    const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(sphere.position, plane.point), normal);
+    // If the distance is greater than sphere radius, no intersection
+    if (Math.abs(signedDistance) > sphere.radius) {
+        return { intersects: false };
+    }
+    // Calculate penetration depth
+    const penetrationDepth = sphere.radius - Math.abs(signedDistance);
+    // Calculate intersection point (center of intersection circle)
+    // This is the projection of the sphere's center onto the plane
+    const intersectionPoint = vec_1.vec3.sub(sphere.position, vec_1.vec3.mul(normal, signedDistance));
+    // Calculate radius of intersection circle using Pythagorean theorem
+    const intersectionRadius = Math.sqrt(sphere.radius * sphere.radius - signedDistance * signedDistance);
+    return {
+        intersects: true,
+        intersectionPoint,
+        penetrationDepth,
+        intersectionRadius,
+    };
+}
+/**
+ * Check if a sphere intersects a cuboid
+ */
+function sphereIntersectsCuboid(sphere, cuboid) {
+    const { position, size, rotation = (0, vec_1.vec3)() } = cuboid;
+    const halfSize = vec_1.vec3.div(size, 2);
+    // Transform sphere center to cuboid's local space
+    let localSphereCenter = vec_1.vec3.sub(sphere.position, position);
+    if (cuboidIsRotated(cuboid)) {
+        localSphereCenter = vec_1.vec3.rota(localSphereCenter, vec_1.vec3.mul(rotation, -1));
+    }
+    // Find the closest point on the cuboid to the sphere center
+    const closestLocalPoint = (0, vec_1.vec3)((0, utils_1.clamp)(localSphereCenter.x, -halfSize.x, halfSize.x), (0, utils_1.clamp)(localSphereCenter.y, -halfSize.y, halfSize.y), (0, utils_1.clamp)(localSphereCenter.z, -halfSize.z, halfSize.z));
+    // Transform closest point back to world space
+    let closestPoint = closestLocalPoint;
+    if (cuboidIsRotated(cuboid)) {
+        closestPoint = vec_1.vec3.rota(closestPoint, rotation);
+    }
+    closestPoint = vec_1.vec3.add(closestPoint, position);
+    // Calculate vector from closest point to sphere center
+    const separationVector = vec_1.vec3.sub(sphere.position, closestPoint);
+    const distance = vec_1.vec3.len(separationVector);
+    // If distance is greater than sphere radius, no intersection
+    if (distance > sphere.radius) {
+        return { intersects: false };
+    }
+    // Handle case where sphere center is exactly on cuboid surface
+    if (distance < constants.EPSILON) {
+        // Use vector from cuboid center to sphere center as normal
+        let normal = vec_1.vec3.nor(vec_1.vec3.sub(sphere.position, position));
+        const penetrationDepth = sphere.radius;
+        return {
+            intersects: true,
+            intersectionPoint: sphere.position,
+            penetrationDepth,
+            normal,
+            contactPoint: closestPoint,
+        };
+    }
+    // Calculate normal and penetration depth
+    const normal = vec_1.vec3.nor(separationVector);
+    const penetrationDepth = sphere.radius - distance;
+    // Calculate intersection point at center of intersection volume
+    const intersectionPoint = vec_1.vec3.add(closestPoint, vec_1.vec3.mul(normal, penetrationDepth / 2));
+    return {
+        intersects: true,
+        intersectionPoint,
+        penetrationDepth,
+        normal,
+        contactPoint: closestPoint,
+    };
+}
+/**
+ * Check if a sphere intersects a polygon
+ */
+function sphereIntersectsPolygon(sphere, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const [v1, v2, v3] = polygon.vertices;
+    // Calculate polygon plane
+    const edge1 = vec_1.vec3.sub(v2, v1);
+    const edge2 = vec_1.vec3.sub(v3, v1);
+    const normal = vec_1.vec3.nor(vec_1.vec3.cross(edge1, edge2));
+    // Create plane from polygon
+    const plane = {
+        point: v1,
+        normal,
+    };
+    // Check sphere-plane intersection first
+    const planeIntersection = sphereIntersectsPlane(sphere, plane);
+    if (!planeIntersection.intersects) {
+        return { intersects: false };
+    }
+    // Check each vertex distance from sphere center
+    const vertexDistances = polygon.vertices.map(vertex => vec_1.vec3.len(vec_1.vec3.sub(vertex, sphere.position)));
+    // If all vertices are inside sphere, polygon is contained
+    if (vertexDistances.every(dist => dist <= sphere.radius)) {
+        return {
+            intersects: true,
+            intersectionPoint: planeIntersection.intersectionPoint,
+            penetrationDepth: sphere.radius,
+        };
+    }
+    // Create polygon edges
+    const edges = [
+        { start: v1, end: v2 },
+        { start: v2, end: v3 },
+        { start: v3, end: v1 },
+    ];
+    // Check each edge for intersection with sphere
+    const polygonIntersectionPoints = [];
+    edges.forEach(edge => {
+        const lineIntersection = lineIntersectsSphere(edge, sphere);
+        if (lineIntersection.intersects && lineIntersection.intersectionPoints) {
+            // Only add points that lie on the polygon edges
+            lineIntersection.intersectionPoints.forEach(point => {
+                const onLine = pointOnLine(point, edge);
+                if (onLine.intersects) {
+                    polygonIntersectionPoints.push(point);
+                }
+            });
+        }
+    });
+    // Check if sphere center projects onto polygon
+    const projectedCenter = pointOnPolygon(sphere.position, polygon);
+    if (projectedCenter && projectedCenter.intersects) {
+        const distance = vec_1.vec3.len(vec_1.vec3.sub(sphere.position, projectedCenter.closestPoint));
+        if (distance <= sphere.radius) {
+            return {
+                intersects: true,
+                intersectionPoint: projectedCenter.closestPoint,
+                penetrationDepth: sphere.radius - distance,
+                polygonIntersectionPoints: polygonIntersectionPoints.length > 0
+                    ? polygonIntersectionPoints
+                    : undefined,
+            };
+        }
+    }
+    // If we have intersection points but no center projection,
+    // use the midpoint of intersection points as intersection point
+    if (polygonIntersectionPoints.length > 0) {
+        const midPoint = vec_1.vec3.div(polygonIntersectionPoints.reduce((sum, p) => vec_1.vec3.add(sum, p), (0, vec_1.vec3)()), polygonIntersectionPoints.length);
+        return {
+            intersects: true,
+            intersectionPoint: midPoint,
+            penetrationDepth: sphere.radius - vec_1.vec3.len(vec_1.vec3.sub(midPoint, sphere.position)),
+            polygonIntersectionPoints: polygonIntersectionPoints,
+        };
+    }
+    // No intersection found
+    return { intersects: false };
+}
+/**
+ * Check if a sphere intersects any polygon in a mesh
+ */
+function sphereIntersectsMesh(sphere, mesh) {
+    const polygons = meshToPolygons(mesh);
+    let intersects = false;
+    const intersectionPoints = [];
+    const polygonIntersectionPoints = [];
+    polygons.forEach(polygon => {
+        const intersection = sphereIntersectsPolygon(sphere, polygon);
+        if (intersection && intersection.intersects) {
+            intersects = true;
+            intersectionPoints.push(intersection.intersectionPoint);
+            if (intersection.polygonIntersectionPoints) {
+                polygonIntersectionPoints.push(...intersection.polygonIntersectionPoints);
+            }
+        }
+    });
+    return {
+        intersects,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+        polygonIntersectionPoints: polygonIntersectionPoints.length > 0
+            ? polygonIntersectionPoints
+            : undefined,
+    };
+}
+/**
+ * Check if two planes intersect
+ *
+ * Based on the algorithm described in "Real-Time Collision Detection" by
+ * Christer Ericson
+ */
+function planeIntersectsPlane(planeA, planeB) {
+    // Normalize plane normals
+    const normalA = vec_1.vec3.nor(planeA.normal);
+    const normalB = vec_1.vec3.nor(planeB.normal);
+    // Calculate direction of intersection line using cross product
+    const direction = vec_1.vec3.cross(normalA, normalB);
+    const directionLengthSq = vec_1.vec3.dot(direction, direction);
+    // If direction length is almost zero, planes are parallel
+    if (directionLengthSq < constants.EPSILON) {
+        // Check if planes are coincident by comparing distance from one plane's point to other plane
+        const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(planeB.point, planeA.point), normalA);
+        // If distance is effectively zero, planes are coincident
+        if (Math.abs(signedDistance) < constants.EPSILON) {
+            return {
+                intersects: true, // Coincident planes have infinite intersection
+            };
+        }
+        // Planes are parallel with gap between them
+        return {
+            intersects: false,
+        };
+    }
+    // Planes intersect along a line
+    // Calculate a point on the intersection line using:
+    // point = (b₂n₁ - b₁n₂) × (n₁ × n₂) / |n₁ × n₂|²
+    // where b₁, b₂ are the plane constants (d in ax + by + cz + d = 0 form)
+    // and n₁, n₂ are the plane normals
+    const b1 = -vec_1.vec3.dot(normalA, planeA.point);
+    const b2 = -vec_1.vec3.dot(normalB, planeB.point);
+    const point = vec_1.vec3.div(vec_1.vec3.cross(vec_1.vec3.sub(vec_1.vec3.mul(normalA, b2), vec_1.vec3.mul(normalB, b1)), direction), directionLengthSq);
+    return {
+        intersects: true,
+        intersectionLine: {
+            start: point,
+            end: vec_1.vec3.add(point, direction),
+        },
+    };
+}
+/**
+ * Check if a plane intersects one or more polygons in a mesh
+ */
+function planeIntersectsMesh(plane, mesh) {
+    return meshIntersectsPlane(mesh, plane);
+}
+/**
+ * Check if two cuboids intersect using the Separating Axis Theorem
+ */
+function cuboidIntersectsCuboid(cuboidA, cuboidB) {
+    // Extract properties with default rotations
+    const { position: posA, size: sizeA, rotation: rotationA = (0, vec_1.vec3)() } = cuboidA;
+    const { position: posB, size: sizeB, rotation: rotationB = (0, vec_1.vec3)() } = cuboidB;
+    // Calculate half-sizes
+    const halfSizeA = vec_1.vec3.div(sizeA, 2);
+    const halfSizeB = vec_1.vec3.div(sizeB, 2);
+    // Get rotation matrices for both cuboids
+    const rotMatA = cuboidIsRotated(cuboidA)
+        ? getRotationMatrix(rotationA)
+        : null;
+    const rotMatB = cuboidIsRotated(cuboidB)
+        ? getRotationMatrix(rotationB)
+        : null;
+    // Get cuboid axes (face normals)
+    const axesA = getRotatedAxes(rotMatA);
+    const axesB = getRotatedAxes(rotMatB);
+    // Vector between cuboid centers
+    const centerDiff = vec_1.vec3.sub(posB, posA);
+    // Test all 15 potential separating axes:
+    // - 3 from cuboid A's face normals
+    // - 3 from cuboid B's face normals
+    // - 9 from cross products of edges (3x3)
+    const axes = [...axesA, ...axesB, ...getCrossProductAxes(axesA, axesB)];
+    let minPenetration = Infinity;
+    let separationAxis = null;
+    // Test each axis
+    for (const axis of axes) {
+        const axisLength = vec_1.vec3.len(axis);
+        if (axisLength < constants.EPSILON)
+            continue;
+        // Normalize axis
+        const normAxis = vec_1.vec3.div(axis, axisLength);
+        // Project center-to-center vector onto axis
+        const centerProj = vec_1.vec3.dot(centerDiff, normAxis);
+        // Project both cuboids onto axis
+        const projA = projectCuboid(halfSizeA, rotMatA, normAxis);
+        const projB = projectCuboid(halfSizeB, rotMatB, normAxis);
+        // Calculate penetration depth along this axis
+        const penetration = projA + projB - Math.abs(centerProj);
+        // If there's a gap, cuboids are separated
+        if (penetration <= 0) {
+            return { intersects: false };
+        }
+        // Track minimum penetration and its axis
+        if (penetration < minPenetration) {
+            minPenetration = penetration;
+            separationAxis = normAxis;
+        }
+    }
+    // If we get here, no separating axis was found - cuboids intersect
+    if (!separationAxis) {
+        return { intersects: true };
+    }
+    // Ensure normal points from A to B
+    const normal = vec_1.vec3.dot(centerDiff, separationAxis) < 0
+        ? vec_1.vec3.mul(separationAxis, -1)
+        : separationAxis;
+    // Calculate contact points on each cuboid's surface
+    const contactA = getContactPoint(cuboidA, normal);
+    const contactB = getContactPoint(cuboidB, vec_1.vec3.mul(normal, -1));
+    // Calculate intersection point halfway between contacts
+    const intersectionPoint = vec_1.vec3.add(contactA, vec_1.vec3.mul(vec_1.vec3.sub(contactB, contactA), 0.5));
+    return {
+        intersects: true,
+        intersectionPoint,
+        penetrationDepth: minPenetration,
+        normal,
+        contactPoints: {
+            cuboidA: contactA,
+            cuboidB: contactB,
+        },
+    };
+}
+/**
+ * Helper function to create a rotation matrix from Euler angles
+ */
+function getRotationMatrix(rotation) {
+    const cx = Math.cos(rotation.x);
+    const cy = Math.cos(rotation.y);
+    const cz = Math.cos(rotation.z);
+    const sx = Math.sin(rotation.x);
+    const sy = Math.sin(rotation.y);
+    const sz = Math.sin(rotation.z);
+    return [
+        (0, vec_1.vec3)(cy * cz, cy * sz, -sy),
+        (0, vec_1.vec3)(sx * sy * cz - cx * sz, sx * sy * sz + cx * cz, sx * cy),
+        (0, vec_1.vec3)(cx * sy * cz + sx * sz, cx * sy * sz - sx * cz, cx * cy),
+    ];
+}
+/**
+ * Helper function to get rotated axes for a cuboid
+ */
+function getRotatedAxes(rotationMatrix) {
+    if (!rotationMatrix) {
+        return [(0, vec_1.vec3)(1, 0, 0), (0, vec_1.vec3)(0, 1, 0), (0, vec_1.vec3)(0, 0, 1)];
+    }
+    return rotationMatrix;
+}
+/**
+ * Helper function to generate cross product axes
+ */
+function getCrossProductAxes(axesA, axesB) {
+    const crossAxes = [];
+    for (const axisA of axesA) {
+        for (const axisB of axesB) {
+            crossAxes.push(vec_1.vec3.cross(axisA, axisB));
+        }
+    }
+    return crossAxes;
+}
+/**
+ * Helper function to project cuboid onto axis
+ */
+function projectCuboid(halfSize, rotationMatrix, axis) {
+    let projection = 0;
+    if (!rotationMatrix) {
+        // Unrotated cuboid - just sum up the components
+        projection =
+            Math.abs(halfSize.x * axis.x) +
+                Math.abs(halfSize.y * axis.y) +
+                Math.abs(halfSize.z * axis.z);
+    }
+    else {
+        // Rotated cuboid - need to account for rotation
+        projection =
+            Math.abs(vec_1.vec3.dot(vec_1.vec3.mul(rotationMatrix[0], halfSize.x), axis)) +
+                Math.abs(vec_1.vec3.dot(vec_1.vec3.mul(rotationMatrix[1], halfSize.y), axis)) +
+                Math.abs(vec_1.vec3.dot(vec_1.vec3.mul(rotationMatrix[2], halfSize.z), axis));
+    }
+    return projection;
+}
+/**
+ * Helper function to get contact point on cuboid surface
+ */
+function getContactPoint(cuboid, normal) {
+    const vertices = cuboidVertices(cuboid);
+    let maxProj = -Infinity;
+    let contactPoint = vertices[0];
+    // Find vertex with maximum projection along normal
+    for (const vertex of vertices) {
+        const proj = vec_1.vec3.dot(vertex, normal);
+        if (proj > maxProj) {
+            maxProj = proj;
+            contactPoint = vertex;
+        }
+    }
+    return contactPoint;
+}
+/**
+ * Check if a cuboid intersects a plane
+ */
+function cuboidIntersectsPlane(cuboid, plane) {
+    // Get cuboid faces as triangles
+    const polygons = cuboidToPolygons(cuboid);
+    const allIntersectionPoints = [];
+    // Track vertices on each side of the plane for penetration depth calculation
+    const normalizedPlaneNormal = vec_1.vec3.nor(plane.normal);
+    let maxPenetration = -Infinity;
+    let minPenetration = Infinity;
+    // Check each vertex's signed distance to plane
+    const vertices = cuboidVertices(cuboid);
+    vertices.forEach(vertex => {
+        const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(vertex, plane.point), normalizedPlaneNormal);
+        maxPenetration = Math.max(maxPenetration, signedDistance);
+        minPenetration = Math.min(minPenetration, signedDistance);
+    });
+    // Check each polygon for intersection
+    for (const polygon of polygons) {
+        const intersection = polygonIntersectsPlane(polygon, plane);
+        if (intersection === null || intersection === void 0 ? void 0 : intersection.intersects) {
+            // If polygon has specific intersection points, add them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = allIntersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, point)) < constants.EPSILON);
+                    if (!isDuplicate) {
+                        allIntersectionPoints.push(point);
+                    }
+                });
+            }
+        }
+    }
+    // Calculate penetration depth
+    // If min and max penetrations have different signs, cuboid straddles the
+    // plane. Otherwise, penetration is the minimum absolute distance to plane
+    let penetrationDepth;
+    if (minPenetration * maxPenetration <= 0) {
+        // Cuboid straddles plane - penetration is the larger absolute value
+        penetrationDepth = Math.max(Math.abs(minPenetration), Math.abs(maxPenetration));
+    }
+    else if (Math.abs(maxPenetration) < Math.abs(minPenetration)) {
+        // All vertices on positive side of plane
+        penetrationDepth = Math.abs(maxPenetration);
+    }
+    else {
+        // All vertices on negative side of plane
+        penetrationDepth = Math.abs(minPenetration);
+    }
+    return {
+        intersects: allIntersectionPoints.length > 0,
+        intersectionPoints: allIntersectionPoints.length > 0 ? allIntersectionPoints : undefined,
+        penetrationDepth: penetrationDepth,
+    };
+}
+/**
+ * Check if a cuboid intersects a polygon
+ */
+function cuboidIntersectsPolygon(cuboid, polygon) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Check if any polygon vertex is inside the cuboid
+    const verticesInside = polygon.vertices.map(v => pointInCuboid(v, cuboid));
+    if (verticesInside.every(result => result.intersects)) {
+        // Polygon is entirely contained within cuboid
+        return { intersects: true };
+    }
+    // Get cuboid vertices and check if any are on the polygon
+    const cuboidVerticesArray = cuboidVertices(cuboid);
+    const verticesOnPolygon = cuboidVerticesArray.map(v => pointOnPolygon(v, polygon));
+    if (verticesOnPolygon.some(result => result === null || result === void 0 ? void 0 : result.intersects)) {
+        // At least one cuboid vertex lies on the polygon
+        // This likely means the polygon is coincident with a cuboid face
+        return { intersects: true };
+    }
+    // Get cuboid edges
+    const cuboidEdges = verticesToEdges(cuboidVerticesArray);
+    const intersectionPoints = [];
+    // Check each cuboid edge for intersection with the polygon
+    for (const edge of cuboidEdges) {
+        const intersection = lineIntersectsPolygon(edge, polygon);
+        if (intersection &&
+            intersection.intersects &&
+            intersection.intersectionPoint) {
+            // Check if this point is already in our list (within epsilon)
+            const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, intersection.intersectionPoint));
+            if (!isDuplicate) {
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+        }
+    }
+    // Get polygon edges and check against cuboid faces
+    const polygonEdges = verticesToEdges(polygon.vertices);
+    const cuboidPolygons = cuboidToPolygons(cuboid);
+    // Check each polygon edge against each cuboid face
+    for (const edge of polygonEdges) {
+        for (const face of cuboidPolygons) {
+            const intersection = lineIntersectsPolygon(edge, face);
+            if (intersection &&
+                intersection.intersects &&
+                intersection.intersectionPoint) {
+                // Check if this point is already in our list (within epsilon)
+                const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, intersection.intersectionPoint));
+                if (!isDuplicate) {
+                    intersectionPoints.push(intersection.intersectionPoint);
+                }
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0 ||
+            verticesInside.some(result => result.intersects) ||
+            verticesOnPolygon.some(result => result === null || result === void 0 ? void 0 : result.intersects),
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a cuboid intersects any polygon in a mesh
+ */
+function cuboidIntersectsMesh(cuboid, mesh) {
+    const polygons = meshToPolygons(mesh);
+    const intersectionPoints = [];
+    // Check each polygon in the mesh against the cuboid
+    for (const polygon of polygons) {
+        const intersection = cuboidIntersectsPolygon(cuboid, polygon);
+        if (intersection && intersection.intersects) {
+            // If we have specific intersection points, add them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, point));
+                    if (!isDuplicate) {
+                        intersectionPoints.push(point);
+                    }
+                });
+            }
+            else {
+                // If we don't have intersection points but we know there's an
+                // intersection, we can early return since we know they intersect
+                // (this happens when a polygon is inside the cuboid or coincident
+                // with a face)
+                return {
+                    intersects: true,
+                };
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if two polygons intersect
+ */
+function polygonIntersectsPolygon(polygonA, polygonB) {
+    // First validate both polygons
+    if (!polygonIsValid(polygonA) || !polygonIsValid(polygonB)) {
+        return null;
+    }
+    // Create planes from both polygons
+    const planeA = {
+        point: polygonA.vertices[0],
+        normal: vec_1.vec3.nor(vec_1.vec3.cross(vec_1.vec3.sub(polygonA.vertices[1], polygonA.vertices[0]), vec_1.vec3.sub(polygonA.vertices[2], polygonA.vertices[0]))),
+    };
+    const planeB = {
+        point: polygonB.vertices[0],
+        normal: vec_1.vec3.nor(vec_1.vec3.cross(vec_1.vec3.sub(polygonB.vertices[1], polygonB.vertices[0]), vec_1.vec3.sub(polygonB.vertices[2], polygonB.vertices[0]))),
+    };
+    // Check if planes intersect
+    const planeIntersection = planeIntersectsPlane(planeA, planeB);
+    // If planes don't intersect, polygons can't intersect
+    if (!planeIntersection.intersects) {
+        return { intersects: false };
+    }
+    // If planes are coincident, we need to check for polygon overlap
+    if (!planeIntersection.intersectionLine) {
+        // First check if any vertex of polygon A lies inside polygon B
+        for (const vertex of polygonA.vertices) {
+            const pointCheck = pointOnPolygon(vertex, polygonB);
+            if (pointCheck === null || pointCheck === void 0 ? void 0 : pointCheck.intersects) {
+                return { intersects: true }; // Coplanar overlap
+            }
+        }
+        // Then check if any vertex of polygon B lies inside polygon A
+        for (const vertex of polygonB.vertices) {
+            const pointCheck = pointOnPolygon(vertex, polygonA);
+            if (pointCheck === null || pointCheck === void 0 ? void 0 : pointCheck.intersects) {
+                return { intersects: true }; // Coplanar overlap
+            }
+        }
+        // No overlap found
+        return { intersects: false };
+    }
+    // Get edges from both polygons
+    const edgesA = verticesToEdges(polygonA.vertices);
+    const edgesB = verticesToEdges(polygonB.vertices);
+    const intersectionPoints = [];
+    // Check each edge of polygon A against each edge of polygon B
+    for (const edgeA of edgesA) {
+        for (const edgeB of edgesB) {
+            const intersection = lineIntersectsLine(edgeA, edgeB);
+            if (intersection.intersects && intersection.intersectionPoint) {
+                // Verify the intersection point lies on both edges
+                const onEdgeA = pointOnLine(intersection.intersectionPoint, edgeA);
+                const onEdgeB = pointOnLine(intersection.intersectionPoint, edgeB);
+                if (onEdgeA.intersects && onEdgeB.intersects) {
+                    // Check if this point is already in our list (within epsilon)
+                    const isDuplicate = intersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, intersection.intersectionPoint)) <
+                        constants.EPSILON);
+                    if (!isDuplicate) {
+                        intersectionPoints.push(intersection.intersectionPoint);
+                    }
+                }
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if a polygon intersects a plane
+ */
+function polygonIntersectsPlane(polygon, plane) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    // Convert polygon vertices to edges
+    const edges = verticesToEdges(polygon.vertices);
+    const intersectionPoints = [];
+    let edgeInPlane = false;
+    // Check each edge for intersection with the plane
+    for (const edge of edges) {
+        const intersection = lineIntersectsPlane(edge, plane);
+        if (intersection.intersects) {
+            if (intersection.intersectionPoint) {
+                // Edge intersects plane at a point
+                intersectionPoints.push(intersection.intersectionPoint);
+            }
+            else {
+                // Edge lies in the plane
+                edgeInPlane = true;
+                break; // Early exit as polygon must lie in plane
+            }
+        }
+    }
+    // If any edge lies in the plane, the whole polygon must lie in the plane
+    // (since we've verified it's a valid triangle)
+    if (edgeInPlane) {
+        return {
+            intersects: true,
+        };
+    }
+    // Remove duplicate intersection points (within epsilon)
+    const uniquePoints = intersectionPoints.filter((point, index) => {
+        return !intersectionPoints.some((p, i) => i < index && vec_1.vec3.len(vec_1.vec3.sub(p, point)) < constants.EPSILON);
+    });
+    return {
+        intersects: uniquePoints.length > 0,
+        intersectionPoints: uniquePoints.length > 0 ? uniquePoints : undefined,
+    };
+}
+/**
+ * Check if a polygon intersects any polygon in a mesh
+ */
+function polygonIntersectsMesh(polygon, mesh) {
+    // First validate the polygon
+    if (!polygonIsValid(polygon)) {
+        return null;
+    }
+    const meshPolygons = meshToPolygons(mesh);
+    const intersectionPoints = [];
+    // Check the polygon against each mesh polygon
+    for (const meshPolygon of meshPolygons) {
+        const intersection = polygonIntersectsPolygon(polygon, meshPolygon);
+        if (intersection && intersection.intersects) {
+            // If we have intersection points, collect them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = intersectionPoints.some(existing => (0, utilities_1.vectorsAlmostEqual)(existing, point));
+                    if (!isDuplicate) {
+                        intersectionPoints.push(point);
+                    }
+                });
+            }
+            else {
+                // If we have an intersection but no points, it means we have
+                // coplanar overlapping polygons - we can return early
+                return {
+                    intersects: true,
+                };
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if two meshes intersect using their polygons
+ */
+function meshIntersectsMesh(meshA, meshB) {
+    const polygonsA = meshToPolygons(meshA);
+    const polygonsB = meshToPolygons(meshB);
+    const intersectionPoints = [];
+    // Check each polygon in mesh A against each polygon in mesh B
+    for (const polygonA of polygonsA) {
+        for (const polygonB of polygonsB) {
+            const intersection = polygonIntersectsPolygon(polygonA, polygonB);
+            if (intersection && intersection.intersects) {
+                if (intersection.intersectionPoints) {
+                    intersection.intersectionPoints.forEach(point => {
+                        // Check if point is already in list (within epsilon)
+                        const isDuplicate = intersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, point)) < constants.EPSILON);
+                        if (!isDuplicate) {
+                            intersectionPoints.push(point);
+                        }
+                    });
+                }
+            }
+        }
+    }
+    return {
+        intersects: intersectionPoints.length > 0,
+        intersectionPoints: intersectionPoints.length > 0 ? intersectionPoints : undefined,
+    };
+}
+/**
+ * Check if any polygons in a mesh intersect a plane
+ */
+function meshIntersectsPlane(mesh, plane) {
+    // Convert mesh to polygons
+    const polygons = meshToPolygons(mesh);
+    const allIntersectionPoints = [];
+    // Track maximum penetration depth
+    let maxPenetration = -Infinity;
+    let minPenetration = Infinity;
+    // Normalize plane normal for consistent signed distance calculations
+    const normalizedPlaneNormal = vec_1.vec3.nor(plane.normal);
+    // Check each vertex's signed distance to plane
+    mesh.vertices.forEach(vertex => {
+        const signedDistance = vec_1.vec3.dot(vec_1.vec3.sub(vertex, plane.point), normalizedPlaneNormal);
+        maxPenetration = Math.max(maxPenetration, signedDistance);
+        minPenetration = Math.min(minPenetration, signedDistance);
+    });
+    // Check each polygon for intersection
+    let hasIntersection = false;
+    for (const polygon of polygons) {
+        const intersection = polygonIntersectsPlane(polygon, plane);
+        if (intersection === null || intersection === void 0 ? void 0 : intersection.intersects) {
+            hasIntersection = true;
+            // If polygon has specific intersection points, add them
+            if (intersection.intersectionPoints) {
+                intersection.intersectionPoints.forEach(point => {
+                    // Check if point is already in list (within epsilon)
+                    const isDuplicate = allIntersectionPoints.some(existing => vec_1.vec3.len(vec_1.vec3.sub(existing, point)) < constants.EPSILON);
+                    if (!isDuplicate) {
+                        allIntersectionPoints.push(point);
+                    }
+                });
+            }
+        }
+    }
+    // Calculate penetration depth
+    // If min and max penetrations have different signs, mesh straddles the plane
+    // Otherwise, penetration is the minimum absolute distance to plane
+    let penetrationDepth;
+    if (minPenetration * maxPenetration <= 0) {
+        // Mesh straddles plane - penetration is the larger absolute value
+        penetrationDepth = Math.max(Math.abs(minPenetration), Math.abs(maxPenetration));
+    }
+    else if (Math.abs(maxPenetration) < Math.abs(minPenetration)) {
+        // All vertices on positive side of plane
+        penetrationDepth = Math.abs(maxPenetration);
+    }
+    else {
+        // All vertices on negative side of plane
+        penetrationDepth = Math.abs(minPenetration);
+    }
+    return {
+        intersects: hasIntersection,
+        intersectionPoints: allIntersectionPoints.length > 0 ? allIntersectionPoints : undefined,
+        penetrationDepth: penetrationDepth,
+    };
+}
+
+
+/***/ }),
+
+/***/ "./src/3d/types.ts":
+/*!*************************!*\
+  !*** ./src/3d/types.ts ***!
+  \*************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isPoint = isPoint;
+exports.isRay = isRay;
+exports.isLine = isLine;
+exports.isSphere = isSphere;
+exports.isAABB = isAABB;
+exports.isCuboid = isCuboid;
+exports.isPlane = isPlane;
+exports.isPolygon = isPolygon;
+exports.isMesh = isMesh;
+const types_1 = __webpack_require__(/*! ../utilities/types */ "./src/utilities/types.ts");
+/**
+ * Type guard to check if a value is a Point
+ */
+function isPoint(value) {
+    return (0, types_1.isVec3)(value);
+}
+/**
+ * Check if a value is a Ray
+ */
+function isRay(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'origin' in value &&
+        isPoint(value.origin) &&
+        'direction' in value &&
+        (0, types_1.isVec3)(value.direction));
+}
+/**
+ * Check if a value is a Line
+ */
+function isLine(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'start' in value &&
+        isPoint(value.start) &&
+        'end' in value &&
+        isPoint(value.end));
+}
+/**
+ * Check if a value is a Sphere
+ */
+function isSphere(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'radius' in value &&
+        typeof value.radius === 'number');
+}
+/**
+ * Check if a value is an AABB
+ */
+function isAABB(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec3)(value.size));
+}
+/**
+ * Check if a value is a Cuboid
+ */
+function isCuboid(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'position' in value &&
+        isPoint(value.position) &&
+        'size' in value &&
+        (0, types_1.isVec3)(value.size) &&
+        ('rotation' in value ? (0, types_1.isVec3)(value.rotation) : true));
+}
+/**
+ * Check if a value is a Plane
+ */
+function isPlane(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'point' in value &&
+        isPoint(value.point) &&
+        'normal' in value &&
+        (0, types_1.isVec3)(value.normal));
+}
+/**
+ * Check if a value is a Polygon
+ */
+function isPolygon(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'vertices' in value &&
+        Array.isArray(value.vertices) &&
+        value.vertices.length === 3 &&
+        value.vertices.every(isPoint) &&
+        !('indices' in value));
+}
+/**
+ * Check if a value is a Mesh
+ */
+function isMesh(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'vertices' in value &&
+        Array.isArray(value.vertices) &&
+        value.vertices.every(isPoint) &&
+        'indices' in value &&
+        Array.isArray(value.indices) &&
+        value.indices.every((i) => typeof i === 'number'));
+}
+
+
+/***/ }),
+
+/***/ "./src/index.ts":
+/*!**********************!*\
+  !*** ./src/index.ts ***!
+  \**********************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.intersectionUtilities = exports.intersection3d = exports.intersection2d = void 0;
+exports.intersection2d = __importStar(__webpack_require__(/*! ./2d */ "./src/2d/index.ts"));
+exports.intersection3d = __importStar(__webpack_require__(/*! ./3d */ "./src/3d/index.ts"));
+exports.intersectionUtilities = __importStar(__webpack_require__(/*! ./utilities */ "./src/utilities/index.ts"));
+
+
+/***/ }),
+
+/***/ "./src/utilities/constants.ts":
+/*!************************************!*\
+  !*** ./src/utilities/constants.ts ***!
+  \************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.EPSILON = void 0;
+exports.EPSILON = 1e-6;
+
+
+/***/ }),
+
+/***/ "./src/utilities/index.ts":
+/*!********************************!*\
+  !*** ./src/utilities/index.ts ***!
+  \********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.vectorAlmostZero = vectorAlmostZero;
+exports.vectorsAlmostEqual = vectorsAlmostEqual;
+exports.valueInInterval = valueInInterval;
+exports.intervalsOverlap = intervalsOverlap;
+exports.overlapInterval = overlapInterval;
+const constants = __importStar(__webpack_require__(/*! ./constants */ "./src/utilities/constants.ts"));
+const types_1 = __webpack_require__(/*! ./types */ "./src/utilities/types.ts");
+__exportStar(__webpack_require__(/*! ./types */ "./src/utilities/types.ts"), exports);
+function vectorAlmostZero(v) {
+    if ((0, types_1.isVec3)(v)) {
+        return (Math.abs(v.x) < constants.EPSILON &&
+            Math.abs(v.y) < constants.EPSILON &&
+            Math.abs(v.z) < constants.EPSILON);
+    }
+    if ((0, types_1.isVec2)(v)) {
+        return (Math.abs(v.x) < constants.EPSILON && Math.abs(v.y) < constants.EPSILON);
+    }
+    return false;
+}
+function vectorsAlmostEqual(a, b) {
+    if ((0, types_1.isVec3)(a) && (0, types_1.isVec3)(b)) {
+        return (Math.abs(a.x - b.x) < constants.EPSILON &&
+            Math.abs(a.y - b.y) < constants.EPSILON &&
+            Math.abs(a.z - b.z) < constants.EPSILON);
+    }
+    if ((0, types_1.isVec2)(a) && (0, types_1.isVec2)(b)) {
+        return (Math.abs(a.x - b.x) < constants.EPSILON &&
+            Math.abs(a.y - b.y) < constants.EPSILON);
+    }
+    return false;
+}
+/**
+ * Check if a value is within a specified interval
+ */
+function valueInInterval(value, interval) {
+    const { min, minInclusive = true, max, maxInclusive = true } = interval;
+    return ((minInclusive ? value >= min : value > min) &&
+        (maxInclusive ? value <= max : value < max));
+}
+/**
+ * Check if two intervals (a1, a2) and (b1, b2) overlap
+ */
+function intervalsOverlap(a, b) {
+    return Math.max(a.min, b.min) <= Math.min(a.max, b.max);
+}
+/**
+ * Get the overlapping part of two intervals (a1, a2) and (b1, b2)
+ *
+ * If the intervals do not overlap, return null
+ */
+function overlapInterval(a, b) {
+    if (!intervalsOverlap(a, b)) {
+        return null;
+    }
+    return { min: Math.max(a.min, b.min), max: Math.min(a.max, b.max) };
+}
+
+
+/***/ }),
+
+/***/ "./src/utilities/types.ts":
+/*!********************************!*\
+  !*** ./src/utilities/types.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isVec2 = isVec2;
+exports.isVec3 = isVec3;
+/**
+ * Check if a value is a vec2
+ */
+function isVec2(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'x' in value &&
+        typeof value.x === 'number' &&
+        'y' in value &&
+        typeof value.y === 'number' &&
+        !('z' in value));
+}
+/**
+ * Check if a value is a vec3
+ */
+function isVec3(value) {
+    return (value &&
+        typeof value === 'object' &&
+        'x' in value &&
+        typeof value.x === 'number' &&
+        'y' in value &&
+        typeof value.y === 'number' &&
+        'z' in value &&
+        typeof value.z === 'number');
+}
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__("./src/index.ts");
+/******/ 	
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});

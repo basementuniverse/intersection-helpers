@@ -216,6 +216,35 @@ function update() {
     context.moveTo(result.closestPoint.x + size, result.closestPoint.y - size);
     context.lineTo(result.closestPoint.x - size, result.closestPoint.y + size);
     context.stroke();
+
+    // Draw normal vector if available
+    if (result.normal) {
+      const normalLength = 20;
+      const normalEndX = result.closestPoint.x + result.normal.x * normalLength;
+      const normalEndY = result.closestPoint.y + result.normal.y * normalLength;
+      
+      // Draw normal line
+      context.strokeStyle = 'orange';
+      context.lineWidth = 2;
+      context.setLineDash([]);
+      context.beginPath();
+      context.moveTo(result.closestPoint.x, result.closestPoint.y);
+      context.lineTo(normalEndX, normalEndY);
+      
+      // Draw arrowhead
+      const arrowSize = 6;
+      const angle = Math.atan2(result.normal.y, result.normal.x);
+      context.lineTo(
+        normalEndX - arrowSize * Math.cos(angle - Math.PI / 6),
+        normalEndY - arrowSize * Math.sin(angle - Math.PI / 6)
+      );
+      context.moveTo(normalEndX, normalEndY);
+      context.lineTo(
+        normalEndX - arrowSize * Math.cos(angle + Math.PI / 6),
+        normalEndY - arrowSize * Math.sin(angle + Math.PI / 6)
+      );
+      context.stroke();
+    }
   }
 
   // Draw points with labels

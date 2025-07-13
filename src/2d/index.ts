@@ -312,6 +312,11 @@ export function pointInAABB(
    * If the point is inside the AABB, this will be negative
    */
   distance: number;
+
+  /**
+   * The intersecting surface normal, if there is an intersection
+   */
+  normal?: vec2;
 } {
   const { position, size } = aabb;
   const min = position;
@@ -324,6 +329,7 @@ export function pointInAABB(
 
   // Find the closest point on the AABB perimeter to the given point
   let closestPoint: Point;
+  let normal: vec2 | undefined = undefined;
   if (!intersects) {
     // If the point is outside, clamp to the box
     closestPoint = vec2(
@@ -333,13 +339,34 @@ export function pointInAABB(
   } else {
     // If the point is inside, project to the nearest edge
     const distances = [
-      { x: min.x, y: point.y, d: Math.abs(point.x - min.x) }, // left
-      { x: max.x, y: point.y, d: Math.abs(point.x - max.x) }, // right
-      { x: point.x, y: min.y, d: Math.abs(point.y - min.y) }, // top
-      { x: point.x, y: max.y, d: Math.abs(point.y - max.y) }, // bottom
+      {
+        x: min.x,
+        y: point.y,
+        d: Math.abs(point.x - min.x),
+        normal: vec2(-1, 0),
+      }, // left
+      {
+        x: max.x,
+        y: point.y,
+        d: Math.abs(point.x - max.x),
+        normal: vec2(1, 0),
+      }, // right
+      {
+        x: point.x,
+        y: min.y,
+        d: Math.abs(point.y - min.y),
+        normal: vec2(0, -1),
+      }, // top
+      {
+        x: point.x,
+        y: max.y,
+        d: Math.abs(point.y - max.y),
+        normal: vec2(0, 1),
+      }, // bottom
     ];
     const nearest = distances.reduce((a, b) => (a.d < b.d ? a : b));
     closestPoint = vec2(nearest.x, nearest.y);
+    normal = nearest.normal;
   }
 
   // Calculate the distance from the point to the closest point
@@ -350,6 +377,7 @@ export function pointInAABB(
     intersects,
     closestPoint,
     distance: intersects ? -distance : distance,
+    normal,
   };
 }
 
@@ -864,6 +892,14 @@ export function pointOnRay(
    * The distance from the point to the closest point on the ray
    */
   distance: number;
+
+  /**
+   * The intersection normal - a unit vector perpendicular to the ray,
+   * pointing towards the side that the test point is on
+   *
+   * If the point is on the ray, this will be undefined
+   */
+  normal?: vec2;
 } {
   // Vector from ray origin to point
   const toPoint = vec2.sub(point, ray.origin);
@@ -883,11 +919,30 @@ export function pointOnRay(
   // Calculate distance from point to closest point
   const distance = vec2.len(vec2.sub(point, closestPoint));
 
+  // The point intersects the ray if the distance is effectively zero and the
+  // projection is non-negative (meaning the point is in the direction of the
+  // ray and not behind it)
+  const intersects = distance < constants.EPSILON && projection >= 0;
+
+  // Calculate the intersection normal
+  let normal: vec2 | undefined;
+  if (!intersects) {
+    // Get a vector perpendicular to the ray direction by rotating it 90 degrees
+    const rayNormal = vec2.rotf(rayDirection, -1);
+
+    // Use the cross product to determine which side of the ray the point is on
+    const crossProduct = vec2.cross(rayDirection, toPoint);
+
+    // If cross product is negative, point is on the right side of the ray
+    // If positive, point is on the left side
+    normal = vec2.mul(rayNormal, Math.sign(crossProduct));
+  }
+
   return {
-    // Point is on ray if distance is zero and projection is non-negative
-    intersects: distance < constants.EPSILON && projection >= 0,
+    intersects,
     closestPoint,
     distance,
+    normal,
   };
 }
 
@@ -912,6 +967,14 @@ export function pointOnLine(
    * The distance from the point to the closest point on the line segment
    */
   distance: number;
+
+  /**
+   * The intersection normal - a unit vector perpendicular to the line,
+   * pointing towards the side that the test point is on
+   *
+   * If the point is on the line, this will be undefined
+   */
+  normal?: vec2;
 } {
   // Get vector from line start to end
   const lineVector = vec2.sub(line.end, line.start);
@@ -940,11 +1003,28 @@ export function pointOnLine(
   // Calculate distance from point to closest point
   const distance = vec2.len(vec2.sub(point, closestPoint));
 
+  // Point is on line if distance is effectively zero
+  const intersects = distance < constants.EPSILON;
+
+  // Calculate the intersection normal
+  let normal: vec2 | undefined;
+  if (!intersects) {
+    // Get a vector perpendicular to the ray direction by rotating it 90 degrees
+    const rayNormal = vec2.rotf(lineDirection, -1);
+
+    // Use the cross product to determine which side of the ray the point is on
+    const crossProduct = vec2.cross(lineDirection, toPoint);
+
+    // If cross product is negative, point is on the right side of the ray
+    // If positive, point is on the left side
+    normal = vec2.mul(rayNormal, Math.sign(crossProduct));
+  }
+
   return {
-    // Point is on line if distance is effectively zero
-    intersects: distance < constants.EPSILON,
+    intersects,
     closestPoint,
     distance,
+    normal,
   };
 }
 
@@ -971,6 +1051,14 @@ export function pointInCircle(
    * If the point is inside the circle, this will be negative
    */
   distance: number;
+
+  /**
+   * The intersection normal, if there is an intersection
+   *
+   * This will be normal to the tangent line at the closest point on the
+   * circle edge
+   */
+  normal?: vec2;
 } {
   // Calculate vector from circle center to point
   const toPoint = vec2.sub(point, circle.position);
@@ -992,10 +1080,16 @@ export function pointInCircle(
     vec2.mul(vec2.nor(toPoint), circle.radius)
   );
 
+  // Calculate the intersection normal
+  const normal = intersects
+    ? vec2.nor(toPoint) // Normal points outward from circle center
+    : undefined;
+
   return {
     intersects,
     closestPoint,
     distance,
+    normal,
   };
 }
 
@@ -1027,6 +1121,15 @@ export function pointInRectangle(
    * If the point is inside the rectangle, this will be negative
    */
   distance: number;
+
+  /**
+   * The intersection normal, if there is an intersection
+   *
+   * This will be a normal to the surface on which the closest point lies
+   *
+   * This will be undefined if the rectangle has zero-size
+   */
+  normal?: vec2;
 } {
   // Edge case: zero-size rectangle
   if (vectorAlmostZero(rectangle.size)) {
@@ -1079,11 +1182,22 @@ export function pointInPolygon(
    * If the point is inside the polygon, this will be negative
    */
   distance: number;
+
+  /**
+   * The intersection normal, if there is an intersection
+   *
+   * This will be a normal to the surface on which the closest point lies
+   */
+  normal?: vec2;
 } | null {
   // First check if the polygon is valid
   if (!polygonIsValid(polygon)) {
     return null;
   }
+
+  // Check the polygon's winding order (we'll need this later to calculate
+  // the intersecting surface normal)
+  const windingOrder = polygonWindingOrder(polygon);
 
   // Find if point is inside polygon using ray casting algorithm
   let inside = false;
@@ -1092,6 +1206,7 @@ export function pointInPolygon(
   // We'll also keep track of the closest edge while we iterate
   let minDistanceSquared = Infinity;
   let closestPoint: Point = point;
+  let normal: vec2 | undefined = undefined;
 
   for (let i = 0; i < vertices.length; i++) {
     const j = (i + 1) % vertices.length;
@@ -1117,6 +1232,10 @@ export function pointInPolygon(
     if (distanceSquared < minDistanceSquared) {
       minDistanceSquared = distanceSquared;
       closestPoint = edgeClosest;
+      normal = vec2.rotf(
+        vec2.nor(vec2.sub(vj, vi)),
+        windingOrder === 'clockwise' ? 1 : -1
+      );
     }
   }
 
@@ -1125,6 +1244,7 @@ export function pointInPolygon(
     intersects: inside,
     closestPoint,
     distance: inside ? -distance : distance,
+    normal: inside ? normal : undefined,
   };
 }
 
