@@ -45,6 +45,7 @@ export * from './types';
  * @see aabbToCuboid
  * @see aabbsOverlap
  * @see pointInAABB
+ * @see encloseAABBs
  *
  * Cuboid utilities
  * @see cuboidIsRotated
@@ -397,6 +398,33 @@ export function pointInAABB(
     intersects,
     closestPoint,
     distance: intersects ? -distance : distance,
+  };
+}
+
+/**
+ * Enclose a set of AABBs in a single AABB
+ */
+export function encloseAABBs(...aabbs: AABB[]): AABB {
+  if (aabbs.length === 0) {
+    return { position: vec3(), size: vec3() };
+  }
+
+  const minX = Math.min(...aabbs.map(({ position }) => position.x));
+  const minY = Math.min(...aabbs.map(({ position }) => position.y));
+  const minZ = Math.min(...aabbs.map(({ position }) => position.z));
+  const maxX = Math.max(
+    ...aabbs.map(({ position, size }) => position.x + size.x)
+  );
+  const maxY = Math.max(
+    ...aabbs.map(({ position, size }) => position.y + size.y)
+  );
+  const maxZ = Math.max(
+    ...aabbs.map(({ position, size }) => position.z + size.z)
+  );
+
+  return {
+    position: vec3(minX, minY, minZ),
+    size: vec3(maxX - minX, maxY - minY, maxZ - minZ),
   };
 }
 

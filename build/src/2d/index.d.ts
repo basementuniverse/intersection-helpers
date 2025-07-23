@@ -19,6 +19,7 @@ export * from './types';
  * @see aabbToRectangle
  * @see aabbsOverlap
  * @see pointInAABB
+ * @see encloseAABBs
  *
  * Rectangle utilities
  * @see rectangleIsRotated
@@ -155,6 +156,10 @@ export declare function pointInAABB(point: Point, aabb: AABB): {
      */
     normal?: vec2;
 };
+/**
+ * Enclose a set of AABBs in a single AABB
+ */
+export declare function encloseAABBs(...aabbs: AABB[]): AABB;
 /**
  * Check if a rectangle is rotated
  */

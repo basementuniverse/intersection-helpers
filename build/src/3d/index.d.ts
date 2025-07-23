@@ -19,6 +19,7 @@ export * from './types';
  * @see aabbToCuboid
  * @see aabbsOverlap
  * @see pointInAABB
+ * @see encloseAABBs
  *
  * Cuboid utilities
  * @see cuboidIsRotated
@@ -161,6 +162,10 @@ export declare function pointInAABB(point: Point, aabb: AABB): {
      */
     distance: number;
 };
+/**
+ * Enclose a set of AABBs in a single AABB
+ */
+export declare function encloseAABBs(...aabbs: AABB[]): AABB;
 /**
  * Check if a cuboid is rotated
  */

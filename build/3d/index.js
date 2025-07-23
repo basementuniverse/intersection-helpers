@@ -1579,6 +1579,7 @@ exports.aabb = aabb;
 exports.aabbToCuboid = aabbToCuboid;
 exports.aabbsOverlap = aabbsOverlap;
 exports.pointInAABB = pointInAABB;
+exports.encloseAABBs = encloseAABBs;
 exports.cuboidIsRotated = cuboidIsRotated;
 exports.cuboidVertices = cuboidVertices;
 exports.cuboidToPolygons = cuboidToPolygons;
@@ -1653,6 +1654,7 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/3d/types.ts"), exports);
  * @see aabbToCuboid
  * @see aabbsOverlap
  * @see pointInAABB
+ * @see encloseAABBs
  *
  * Cuboid utilities
  * @see cuboidIsRotated
@@ -1907,6 +1909,24 @@ function pointInAABB(point, aabb) {
         intersects,
         closestPoint,
         distance: intersects ? -distance : distance,
+    };
+}
+/**
+ * Enclose a set of AABBs in a single AABB
+ */
+function encloseAABBs(...aabbs) {
+    if (aabbs.length === 0) {
+        return { position: (0, vec_1.vec3)(), size: (0, vec_1.vec3)() };
+    }
+    const minX = Math.min(...aabbs.map(({ position }) => position.x));
+    const minY = Math.min(...aabbs.map(({ position }) => position.y));
+    const minZ = Math.min(...aabbs.map(({ position }) => position.z));
+    const maxX = Math.max(...aabbs.map(({ position, size }) => position.x + size.x));
+    const maxY = Math.max(...aabbs.map(({ position, size }) => position.y + size.y));
+    const maxZ = Math.max(...aabbs.map(({ position, size }) => position.z + size.z));
+    return {
+        position: (0, vec_1.vec3)(minX, minY, minZ),
+        size: (0, vec_1.vec3)(maxX - minX, maxY - minY, maxZ - minZ),
     };
 }
 /**

@@ -2246,6 +2246,7 @@ exports.aabb = aabb;
 exports.aabbToRectangle = aabbToRectangle;
 exports.aabbsOverlap = aabbsOverlap;
 exports.pointInAABB = pointInAABB;
+exports.encloseAABBs = encloseAABBs;
 exports.rectangleIsRotated = rectangleIsRotated;
 exports.rectangleVertices = rectangleVertices;
 exports.verticesToEdges = verticesToEdges;
@@ -2305,6 +2306,7 @@ __exportStar(__webpack_require__(/*! ./types */ "./src/2d/types.ts"), exports);
  * @see aabbToRectangle
  * @see aabbsOverlap
  * @see pointInAABB
+ * @see encloseAABBs
  *
  * Rectangle utilities
  * @see rectangleIsRotated
@@ -2554,6 +2556,22 @@ function pointInAABB(point, aabb) {
         closestPoint,
         distance: intersects ? -distance : distance,
         normal,
+    };
+}
+/**
+ * Enclose a set of AABBs in a single AABB
+ */
+function encloseAABBs(...aabbs) {
+    if (aabbs.length === 0) {
+        return { position: (0, vec_1.vec2)(), size: (0, vec_1.vec2)() };
+    }
+    const minX = Math.min(...aabbs.map(({ position }) => position.x));
+    const minY = Math.min(...aabbs.map(({ position }) => position.y));
+    const maxX = Math.max(...aabbs.map(({ position, size }) => position.x + size.x));
+    const maxY = Math.max(...aabbs.map(({ position, size }) => position.y + size.y));
+    return {
+        position: (0, vec_1.vec2)(minX, minY),
+        size: (0, vec_1.vec2)(maxX - minX, maxY - minY),
     };
 }
 /**

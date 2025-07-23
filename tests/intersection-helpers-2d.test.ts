@@ -659,6 +659,73 @@ describe('IntersectionHelpers2D', () => {
     });
   });
 
+  describe('encloseAABBs', () => {
+    it('should return an AABB that encloses two AABBs', () => {
+      const aabbA = {
+        position: { x: 0, y: 0 },
+        size: { x: 2, y: 2 },
+      };
+      const aabbB = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.encloseAABBs(aabbA, aabbB);
+      expect(result).toEqual({
+        position: { x: 0, y: 0 },
+        size: { x: 3, y: 3 },
+      });
+    });
+
+    it('should handle AABBs with negative coordinates', () => {
+      const aabbA = {
+        position: { x: -3, y: -3 },
+        size: { x: 2, y: 2 },
+      };
+      const aabbB = {
+        position: { x: -1, y: -1 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.encloseAABBs(aabbA, aabbB);
+      expect(result).toEqual({
+        position: { x: -3, y: -3 },
+        size: { x: 4, y: 4 },
+      });
+    });
+
+    it('should handle zero-size AABBs', () => {
+      const aabbA = {
+        position: { x: 0, y: 0 },
+        size: { x: 0, y: 0 },
+      };
+      const aabbB = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.encloseAABBs(aabbA, aabbB);
+      expect(result).toEqual({
+        position: { x: 0, y: 0 },
+        size: { x: 3, y: 3 },
+      });
+    });
+
+    it('should return the same AABB when both are identical', () => {
+      const aabb = {
+        position: { x: 1, y: 1 },
+        size: { x: 2, y: 2 },
+      };
+      const result = intersection2d.encloseAABBs(aabb, aabb);
+      expect(result).toEqual(aabb);
+    });
+
+    it('should return a zero size AABB when no inputs are provided', () => {
+      const result = intersection2d.encloseAABBs();
+      expect(result).toEqual({
+        position: { x: 0, y: 0 },
+        size: { x: 0, y: 0 },
+      });
+    });
+  });
+
   describe('rectangleIsRotated', () => {
     it('should return true for a rotated rectangle', () => {
       const rect = {

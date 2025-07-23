@@ -24,6 +24,7 @@ const {
   pointInAABB,
   distance,
   vec2,
+  encloseAABBs,
 } = intersection2d;
 
 // Constants
@@ -191,6 +192,25 @@ function update() {
 
   // Check if circle center point is inside rectangle AABB
   const pointInAABBResult = pointInAABB(circle.position, rectangleAABB);
+
+  // Calculate the enclosing AABB for all shapes
+  const enclosingAABB = encloseAABBs(
+    circleAABB,
+    rectangleAABB,
+    lineAABB,
+    polygonAABB
+  );
+
+  // Draw enclosing AABB
+  context.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+  context.setLineDash([5, 5]);
+  context.strokeRect(
+    enclosingAABB.position.x,
+    enclosingAABB.position.y,
+    enclosingAABB.size.x,
+    enclosingAABB.size.y
+  );
+  context.setLineDash([]);
 
   // Draw overlapping region if it exists
   if (overlap.intersects && overlap.overlap) {

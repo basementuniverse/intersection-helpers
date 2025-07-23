@@ -44,6 +44,7 @@ export * from './types';
  * @see aabbToRectangle
  * @see aabbsOverlap
  * @see pointInAABB
+ * @see encloseAABBs
  *
  * Rectangle utilities
  * @see rectangleIsRotated
@@ -378,6 +379,29 @@ export function pointInAABB(
     closestPoint,
     distance: intersects ? -distance : distance,
     normal,
+  };
+}
+
+/**
+ * Enclose a set of AABBs in a single AABB
+ */
+export function encloseAABBs(...aabbs: AABB[]): AABB {
+  if (aabbs.length === 0) {
+    return { position: vec2(), size: vec2() };
+  }
+
+  const minX = Math.min(...aabbs.map(({ position }) => position.x));
+  const minY = Math.min(...aabbs.map(({ position }) => position.y));
+  const maxX = Math.max(
+    ...aabbs.map(({ position, size }) => position.x + size.x)
+  );
+  const maxY = Math.max(
+    ...aabbs.map(({ position, size }) => position.y + size.y)
+  );
+
+  return {
+    position: vec2(minX, minY),
+    size: vec2(maxX - minX, maxY - minY),
   };
 }
 
