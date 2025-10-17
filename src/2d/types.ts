@@ -1,5 +1,4 @@
-import { vec2 } from '@basementuniverse/vec';
-import { isVec2 } from '../utilities/types';
+import { vec2, isVec2 } from '@basementuniverse/vec';
 
 /**
  * A point in 2D space

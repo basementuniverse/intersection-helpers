@@ -1,6 +1,6 @@
-import { vec2, vec3 } from '@basementuniverse/vec';
+import { vec2, vec3, isVec2, isVec3 } from '@basementuniverse/vec';
 import * as constants from './constants';
-import { Interval, isVec2, isVec3 } from './types';
+import { Interval } from './types';
 
 export * from './types';
 

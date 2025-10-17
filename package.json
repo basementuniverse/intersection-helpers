@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@basementuniverse/utils": "^1.7.0",
-    "@basementuniverse/vec": "^2.3.4",
+    "@basementuniverse/vec": "^2.5.0",
     "poly-decomp": "^0.3.0"
   },
   "devDependencies": {
