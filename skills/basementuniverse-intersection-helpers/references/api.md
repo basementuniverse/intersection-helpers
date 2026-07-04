@@ -1,164 +1,138 @@
-# Intersection Helpers — API Quick Reference
+# API Reference
 
-## How to use
+This reference summarizes the public API exposed by `@basementuniverse/intersection-helpers`.
 
-### Node
-
-```js
-const { distance } = require('@basementuniverse/intersection-helpers/2d');
-
-const pointA = { x: 1, y: 2 };
-const pointB = { x: 4, y: 2 };
-console.log(distance(pointA, pointB));
-```
-
-### Node (TypeScript)
+## Entry points
 
 ```ts
-import { distance, Point } from '@basementuniverse/intersection-helpers/2d';
-
-const pointA: Point = { x: 1, y: 2 };
-const pointB: Point = { x: 4, y: 2 };
-console.log(distance(pointA, pointB));
+import * as intersection2d from '@basementuniverse/intersection-helpers/2d';
+import * as intersection3d from '@basementuniverse/intersection-helpers/3d';
+import * as intersectionUtilities from '@basementuniverse/intersection-helpers/utilities';
 ```
 
-### Browser
+## 2D
 
-```html
-<script src="intersection-helpers/build/index.js"></script>
-<script>
-
-const pointA = { x: 1, y: 2 };
-const pointB = { x: 4, y: 2 };
-console.log(intersection2d.distance(pointA, pointB));
-
-</script>
-```
-
----
-
-## 2D (`@basementuniverse/intersection-helpers/2d`)
-
-Uses the screen coordinate system (Y+ points downwards).
+Use `@basementuniverse/intersection-helpers/2d` for planar geometry in screen-space coordinates.
 
 ### Types
 
-| Type | Shape |
-|------|-------|
-| `Point` | `vec2` — `{ x: number, y: number }` |
-| `Ray` | `{ origin: Point, direction: vec2 }` |
-| `Line` | `{ start: Point, end: Point }` |
-| `Circle` | `{ position: Point, radius: number }` |
-| `AABB` | `{ position: Point, size: vec2 }` — `position` is the top-left corner |
-| `Rectangle` | `{ position: Point, size: vec2, rotation?: number }` — `position` is the center; `rotation` is in radians |
-| `Polygon` | `{ vertices: Point[] }` |
+```ts
+type Point = vec2;
 
-### Utilities
+type Ray = {
+  origin: Point;
+  direction: vec2;
+};
+
+type Line = {
+  start: Point;
+  end: Point;
+};
+
+type Circle = {
+  position: Point;
+  radius: number;
+};
+
+type AABB = {
+  position: Point;
+  size: vec2;
+};
+
+type Rectangle = {
+  position: Point;
+  size: vec2;
+  rotation?: number;
+};
+
+type Polygon = {
+  vertices: Point[];
+};
+```
+
+### Core utilities
 
 ```ts
 distance(a: Point, b: Point): number
-```
 
-```ts
 angle(a: Point, b: Point): number
-// Clockwise angle from a to b in radians, range [0, 2π]. Returns 0 if points are equal.
-```
 
-```ts
 angleBetween(a: Line | Ray, b: Line | Ray): number
-// Clockwise angle between two lines or rays in radians, range [0, 2π]. Returns 0 if either is zero-length.
-```
 
-```ts
 pointsAreCollinear(a: Point, b: Point, c: Point): boolean
-```
 
-### Line / Ray conversion
-
-```ts
 lineToRay(line: Line): Ray
-rayToLine(ray: Ray, length?: number): Line  // length defaults to 1
+
+rayToLine(ray: Ray, length?: number): Line
 ```
 
-### AABBs
+### AABB helpers
 
 ```ts
 aabb(o: Line | Rectangle | Circle | Polygon): AABB | null
-// Returns the axis-aligned bounding box of a shape.
 
 aabbToRectangle(aabb: AABB): Rectangle
 
 aabbsOverlap(a: AABB, b: AABB): {
   intersects: boolean;
-  overlap?: AABB;          // the overlapping region, if any
+  overlap?: AABB;
 }
 
 pointInAABB(point: Point, aabb: AABB): {
   intersects: boolean;
-  closestPoint: Point;     // closest point on the AABB perimeter
-  distance: number;        // negative if point is inside
-  normal?: vec2;           // surface normal at closest point, only when intersecting
+  closestPoint: Point;
+  distance: number;
+  normal?: vec2;
 }
 
 encloseAABBs(...aabbs: AABB[]): AABB
-// Returns the smallest AABB that contains all the given AABBs.
 ```
 
-### Rectangle utilities
+### Rectangle helpers
 
 ```ts
 rectangleIsRotated(rectangle: Rectangle): boolean
 
 rectangleVertices(rectangle: Rectangle): Point[]
-// Returns [topLeft, topRight, bottomRight, bottomLeft] in clockwise order
-// (before rotation is applied).
 ```
 
-### Polygon utilities
+### Polygon helpers
 
 ```ts
 verticesToEdges(vertices: Point[]): Line[]
 
-polygonIsConvex(polygon: Polygon): boolean | null       // null if polygon is invalid
+polygonIsConvex(polygon: Polygon): boolean | null
 
 polygonSelfIntersects(polygon: Polygon): boolean
 
 polygonIsValid(polygon: Polygon): boolean
-// A polygon is valid if it has ≥ 3 vertices and does not self-intersect.
 
 polygonWindingOrder(
   polygon: Polygon,
-  options?: { coordinateSystem?: 'cartesian' | 'screen' }  // default: 'screen'
-): 'clockwise' | 'counter-clockwise' | null              // null if polygon is invalid
+  options?: { coordinateSystem?: 'cartesian' | 'screen' }
+): 'clockwise' | 'counter-clockwise' | null
 
-polygonArea(polygon: Polygon): number | null             // null if polygon is invalid
+polygonArea(polygon: Polygon): number | null
 
-polygonCentroid(polygon: Polygon): Point | null          // null if invalid or degenerate
+polygonCentroid(polygon: Polygon): Point | null
 
 polygonConvexHull(
   polygon: Polygon,
-  options?: { keepWindingOrder?: boolean }               // default: true
+  options?: { keepWindingOrder?: boolean }
 ): Polygon | null
-// Computes the convex hull using Andrew's monotone chain algorithm.
-// Returns the original polygon unchanged if it is already convex.
 
 optimisePolygon(polygon: Polygon): Polygon | null
-// Removes collinear vertices and duplicate adjacent vertices.
 
 decomposePolygon(
   polygon: Polygon,
   options?: {
-    mode?: 'fast' | 'optimal';       // default: 'fast'
-    keepWindingOrder?: boolean;      // default: true
+    mode?: 'fast' | 'optimal';
+    keepWindingOrder?: boolean;
   }
 ): Polygon[] | null
-// Decomposes a concave polygon into convex sub-polygons (Bayazit algorithm).
-// Returns a single-element array if the polygon is already convex.
 ```
 
 ### Point tests
-
-All point functions return a `closestPoint` on the shape's boundary and a signed `distance` (negative means the point is inside the shape). A `normal` is included when the point intersects.
 
 ```ts
 pointOnRay(point: Point, ray: Ray): {
@@ -178,26 +152,26 @@ pointOnLine(point: Point, line: Line): {
 pointInCircle(point: Point, circle: Circle): {
   intersects: boolean;
   closestPoint: Point;
-  distance: number;        // negative if inside
+  distance: number;
   normal?: vec2;
 }
 
 pointInRectangle(point: Point, rectangle: Rectangle): {
   intersects: boolean;
   closestPoint: Point;
-  distance: number;        // negative if inside
+  distance: number;
   normal?: vec2;
 }
 
 pointInPolygon(point: Point, polygon: Polygon): {
   intersects: boolean;
   closestPoint: Point;
-  distance: number;        // negative if inside
+  distance: number;
   normal?: vec2;
-} | null                   // null if polygon is invalid
+} | null
 ```
 
-### Ray traversal
+### Ray helpers
 
 ```ts
 rayTraverseGrid(
@@ -205,16 +179,9 @@ rayTraverseGrid(
   cellSize: number,
   gridTopLeft: vec2,
   gridBottomRight: vec2,
-  maxCells?: number        // default: -1 (no limit, up to 10 000)
+  maxCells?: number
 ): { cells: Point[] }
-// Returns the grid cell coordinates (as integer points) that the ray passes
-// through, in traversal order. Based on Amanatides & Woo's fast voxel
-// traversal algorithm.
-```
 
-### Ray intersections
-
-```ts
 rayIntersectsRay(rayA: Ray, rayB: Ray): {
   intersects: boolean;
   intersectionPoint?: Point;
@@ -227,21 +194,21 @@ rayIntersectsLine(ray: Ray, line: Line): {
 
 rayIntersectsCircle(ray: Ray, circle: Circle): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // 1 or 2 points
+  intersectionPoints?: Point[];
 }
 
 rayIntersectsRectangle(ray: Ray, rectangle: Rectangle): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // sorted by distance from ray origin
+  intersectionPoints?: Point[];
 }
 
 rayIntersectsPolygon(ray: Ray, polygon: Polygon): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} | null                          // null if polygon is invalid
+} | null
 ```
 
-### Line intersections
+### Line helpers
 
 ```ts
 lineIntersectsRay(line: Line, ray: Ray): {
@@ -267,16 +234,16 @@ lineIntersectsRectangle(line: Line, rectangle: Rectangle): {
 lineIntersectsPolygon(line: Line, polygon: Polygon): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} | null                          // null if polygon is invalid
+} | null
 ```
 
-### Circle intersections
+### Shape intersections
 
 ```ts
 circleIntersectsCircle(circleA: Circle, circleB: Circle): {
   intersects: boolean;
   intersectionPoints?: Point[];
-  minimumSeparation?: vec2;       // vector to move circleA out of circleB
+  minimumSeparation?: vec2;
 }
 
 circleIntersectsRectangle(circle: Circle, rectangle: Rectangle): {
@@ -288,17 +255,13 @@ circleIntersectsRectangle(circle: Circle, rectangle: Rectangle): {
 circleIntersectsPolygon(
   circle: Circle,
   polygon: Polygon,
-  options?: { findMinimumSeparation?: boolean }  // default: false
+  options?: { findMinimumSeparation?: boolean }
 ): {
   intersects: boolean;
   intersectionPoints?: Point[];
   minimumSeparation?: vec2;
-} | null                          // null if polygon is invalid
-```
+} | null
 
-### Rectangle intersections
-
-```ts
 rectangleIntersectsRectangle(rectangleA: Rectangle, rectangleB: Rectangle): {
   intersects: boolean;
   intersectionPoints?: Point[];
@@ -308,62 +271,81 @@ rectangleIntersectsRectangle(rectangleA: Rectangle, rectangleB: Rectangle): {
 rectangleIntersectsPolygon(rectangle: Rectangle, polygon: Polygon): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} | null                          // null if polygon is invalid
-```
+} | null
 
-### Polygon intersections
-
-```ts
 polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} | null                          // null if either polygon is invalid
+} | null
 ```
 
----
+## 3D
 
-## 3D (`@basementuniverse/intersection-helpers/3d`)
-
-> **Note:** The 3D namespace is largely untested and may contain bugs.
-
-In 3D, `Polygon` is always a triangle (exactly 3 vertices).
+Use `@basementuniverse/intersection-helpers/3d` for 3D geometry. The upstream project notes that this namespace is largely untested.
 
 ### Types
 
-| Type | Shape |
-|------|-------|
-| `Point` | `vec3` — `{ x: number, y: number, z: number }` |
-| `Ray` | `{ origin: Point, direction: vec3 }` |
-| `Line` | `{ start: Point, end: Point }` |
-| `Sphere` | `{ position: Point, radius: number }` |
-| `AABB` | `{ position: Point, size: vec3 }` — `position` is the top-left-front corner |
-| `Cuboid` | `{ position: Point, size: vec3, rotation?: vec3 }` — `position` is the center; `rotation` is Euler angles in radians |
-| `Plane` | `{ point: Point, normal: vec3 }` |
-| `Polygon` | `{ vertices: [Point, Point, Point] }` — always a triangle |
-| `Mesh` | `{ vertices: Point[], indices: number[] }` — indices are triplets defining triangles |
+```ts
+type Point = vec3;
 
-### Utilities
+type Ray = {
+  origin: Point;
+  direction: vec3;
+};
+
+type Line = {
+  start: Point;
+  end: Point;
+};
+
+type Sphere = {
+  position: Point;
+  radius: number;
+};
+
+type AABB = {
+  position: Point;
+  size: vec3;
+};
+
+type Cuboid = {
+  position: Point;
+  size: vec3;
+  rotation?: vec3;
+};
+
+type Plane = {
+  point: Point;
+  normal: vec3;
+};
+
+type Polygon = {
+  vertices: [Point, Point, Point];
+};
+
+type Mesh = {
+  vertices: Point[];
+  indices: number[];
+};
+```
+
+### Core utilities
 
 ```ts
 distance(a: Point, b: Point): number
 
 angle(a: Point, b: Point): vec3
-// Returns Euler angles (x, y, z) from a to b, each in range [0, 2π].
 
 angleBetween(a: Line | Ray, b: Line | Ray): number
-// Returns the angle between two lines or rays in radians. Returns 0 if either is zero-length.
 
 pointsAreCollinear(a: Point, b: Point, c: Point): boolean
-```
 
-### Line / Ray conversion
-
-```ts
 lineToRay(line: Line): Ray
-rayToLine(ray: Ray, length?: number): Line  // length defaults to 1
+
+rayToLine(ray: Ray, length?: number): Line
 ```
 
-### AABBs
+### AABB, cuboid, polygon, and mesh helpers
 
 ```ts
 aabb(o: Line | Sphere | Cuboid | Polygon | Mesh): AABB | null
@@ -378,38 +360,24 @@ aabbsOverlap(a: AABB, b: AABB): {
 pointInAABB(point: Point, aabb: AABB): {
   intersects: boolean;
   closestPoint: Point;
-  distance: number;        // negative if inside
+  distance: number;
 }
 
 encloseAABBs(...aabbs: AABB[]): AABB
-```
 
-### Cuboid utilities
-
-```ts
 cuboidIsRotated(cuboid: Cuboid): boolean
 
 cuboidVertices(cuboid: Cuboid): Point[]
-// Returns 8 vertices: upper face [TL, TR, BR, BL] then lower face [TL, TR, BR, BL].
 
 cuboidToPolygons(cuboid: Cuboid): Polygon[]
-// Returns 12 triangles (2 per face) in order: top, bottom, front, back, left, right.
-```
 
-### Polygon utilities
-
-```ts
 verticesToEdges(vertices: Point[]): Line[]
 
 polygonIsValid(polygon: Polygon): boolean
-// Valid only if it has exactly 3 vertices.
 
 polygonWindingOrder(
   polygon: Polygon,
-  options?: {
-    handedness?: 'right' | 'left';  // default: 'right'
-    normal?: Point;                 // optional reference normal
-  }
+  options?: { handedness?: 'right' | 'left'; normal?: Point }
 ): 'clockwise' | 'counter-clockwise' | null
 
 polygonArea(polygon: Polygon): number | null
@@ -417,14 +385,8 @@ polygonArea(polygon: Polygon): number | null
 polygonCentroid(polygon: Polygon): Point | null
 
 polygonToPlane(polygon: Polygon): Plane | null
-// Derives the plane containing the polygon.
-```
 
-### Mesh utilities
-
-```ts
 polygonsToMesh(polygons: Polygon[]): Mesh
-// Merges shared vertices automatically.
 
 meshToPolygons(mesh: Mesh): Polygon[]
 
@@ -433,7 +395,6 @@ meshToEdges(mesh: Mesh): Line[]
 meshCentroid(mesh: Mesh): Point
 
 meshIsWatertight(mesh: Mesh): boolean
-// Checks that every edge is shared by exactly 2 triangles (edge-manifold check).
 ```
 
 ### Point tests
@@ -454,23 +415,23 @@ pointOnLine(point: Point, line: Line): {
 pointInSphere(point: Point, sphere: Sphere): {
   intersects: boolean;
   closestPoint: Point;
-  distance: number;        // negative if inside
+  distance: number;
 }
 
 pointInCuboid(point: Point, cuboid: Cuboid): {
   intersects: boolean;
   closestPoint: Point;
-  distance: number;        // negative if inside
+  distance: number;
 }
 
 pointOnPolygon(point: Point, polygon: Polygon): {
   intersects: boolean;
   closestPoint: Point;
   distance: number;
-} | null                   // null if polygon is invalid
+} | null
 ```
 
-### Ray traversal
+### Ray and line helpers
 
 ```ts
 rayTraverseGrid(
@@ -478,14 +439,9 @@ rayTraverseGrid(
   cellSize: number,
   gridTopLeftFront: vec3,
   gridBottomRightBack: vec3,
-  maxCells?: number        // default: -1 (no limit, up to 10 000)
+  maxCells?: number
 ): { cells: Point[] }
-// 3D extension of Amanatides & Woo's fast voxel traversal algorithm.
-```
 
-### Ray intersections
-
-```ts
 rayIntersectsRay(rayA: Ray, rayB: Ray): {
   intersects: boolean;
   intersectionPoint?: Point;
@@ -498,33 +454,29 @@ rayIntersectsLine(ray: Ray, line: Line): {
 
 rayIntersectsSphere(ray: Ray, sphere: Sphere): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // 1 or 2 points
+  intersectionPoints?: Point[];
 }
 
 rayIntersectsPlane(ray: Ray, plane: Plane): {
   intersects: boolean;
-  intersectionPoint?: Point;      // undefined when ray lies in the plane
+  intersectionPoint?: Point;
 }
 
 rayIntersectsCuboid(ray: Ray, cuboid: Cuboid): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // entry and exit points
+  intersectionPoints?: Point[];
 }
 
 rayIntersectsPolygon(ray: Ray, polygon: Polygon): {
   intersects: boolean;
   intersectionPoint?: Point;
-} | null                          // null if polygon is invalid
+} | null
 
 rayIntersectsMesh(ray: Ray, mesh: Mesh): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // one point per intersected triangle
+  intersectionPoints?: Point[];
 }
-```
 
-### Line intersections
-
-```ts
 lineIntersectsRay(line: Line, ray: Ray): {
   intersects: boolean;
   intersectionPoint?: Point;
@@ -542,7 +494,7 @@ lineIntersectsSphere(line: Line, sphere: Sphere): {
 
 lineIntersectsPlane(line: Line, plane: Plane): {
   intersects: boolean;
-  intersectionPoint?: Point;      // undefined when line lies in the plane
+  intersectionPoint?: Point;
 }
 
 lineIntersectsCuboid(line: Line, cuboid: Cuboid): {
@@ -561,73 +513,63 @@ lineIntersectsMesh(line: Line, mesh: Mesh): {
 }
 ```
 
-### Sphere intersections
+### Shape, plane, polygon, and mesh intersections
 
 ```ts
 sphereIntersectsSphere(sphereA: Sphere, sphereB: Sphere): {
   intersects: boolean;
-  intersectionPoint?: Point;      // center of the intersection volume
+  intersectionPoint?: Point;
   penetrationDepth?: number;
-  normal?: Point;                 // unit vector from sphereA to sphereB
+  normal?: Point;
   contactPoints?: { sphereA: Point; sphereB: Point };
 }
 
 sphereIntersectsPlane(sphere: Sphere, plane: Plane): {
   intersects: boolean;
-  intersectionPoint?: Point;      // center of the intersection circle
+  intersectionPoint?: Point;
   penetrationDepth?: number;
-  intersectionRadius?: number;    // radius of the intersection circle
+  intersectionRadius?: number;
 }
 
 sphereIntersectsCuboid(sphere: Sphere, cuboid: Cuboid): {
   intersects: boolean;
   intersectionPoint?: Point;
   penetrationDepth?: number;
-  normal?: Point;                 // unit vector from cuboid toward sphere
-  contactPoint?: Point;           // closest point on cuboid surface
+  normal?: Point;
+  contactPoint?: Point;
 }
 
 sphereIntersectsPolygon(sphere: Sphere, polygon: Polygon): {
   intersects: boolean;
   intersectionPoint?: Point;
   penetrationDepth?: number;
-  polygonIntersectionPoints?: Point[];  // where sphere surface crosses polygon edges
-} | null                          // null if polygon is invalid
+  polygonIntersectionPoints?: Point[];
+} | null
 
 sphereIntersectsMesh(sphere: Sphere, mesh: Mesh): {
   intersects: boolean;
   intersectionPoints?: Point[];
   polygonIntersectionPoints?: Point[];
 }
-```
 
-### Plane intersections
-
-```ts
 planeIntersectsPlane(planeA: Plane, planeB: Plane): {
   intersects: boolean;
-  intersectionLine?: Line;  // undefined if planes are coincident (infinite intersection)
+  intersectionLine?: Line;
 }
-// intersects is false only when the planes are parallel with a gap between them.
 
 planeIntersectsMesh(plane: Plane, mesh: Mesh): {
   intersects: boolean;
   intersectionPoints?: Point[];
   penetrationDepth?: number;
 }
-```
 
-### Cuboid intersections
-
-```ts
 cuboidIntersectsCuboid(cuboidA: Cuboid, cuboidB: Cuboid): {
   intersects: boolean;
-  intersectionPoint?: Point;      // approximate center of intersection volume
+  intersectionPoint?: Point;
   penetrationDepth?: number;
-  normal?: Point;                 // minimum separation axis, pointing from A to B
+  normal?: Point;
   contactPoints?: { cuboidA: Point; cuboidB: Point };
 }
-// Uses the Separating Axis Theorem (SAT).
 
 cuboidIntersectsPlane(cuboid: Cuboid, plane: Plane): {
   intersects: boolean;
@@ -638,36 +580,28 @@ cuboidIntersectsPlane(cuboid: Cuboid, plane: Plane): {
 cuboidIntersectsPolygon(cuboid: Cuboid, polygon: Polygon): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} | null                          // null if polygon is invalid
+} | null
 
 cuboidIntersectsMesh(cuboid: Cuboid, mesh: Mesh): {
   intersects: boolean;
   intersectionPoints?: Point[];
 }
-```
 
-### Polygon intersections
-
-```ts
 polygonIntersectsPolygon(polygonA: Polygon, polygonB: Polygon): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // undefined if polygons are coplanar and overlapping
-} | null                          // null if either polygon is invalid
+  intersectionPoints?: Point[];
+} | null
 
 polygonIntersectsPlane(polygon: Polygon, plane: Plane): {
   intersects: boolean;
-  intersectionPoints?: Point[];   // undefined if polygon lies in the plane
-} | null                          // null if polygon is invalid
+  intersectionPoints?: Point[];
+} | null
 
 polygonIntersectsMesh(polygon: Polygon, mesh: Mesh): {
   intersects: boolean;
   intersectionPoints?: Point[];
-} | null                          // null if polygon is invalid
-```
+} | null
 
-### Mesh intersections
-
-```ts
 meshIntersectsMesh(meshA: Mesh, meshB: Mesh): {
   intersects: boolean;
   intersectionPoints?: Point[];
@@ -680,18 +614,18 @@ meshIntersectsPlane(mesh: Mesh, plane: Plane): {
 }
 ```
 
----
+## Utilities
 
-## Utilities (`@basementuniverse/intersection-helpers/utilities`)
+Use `@basementuniverse/intersection-helpers/utilities` for tolerance checks and interval operations.
 
 ### Types
 
 ```ts
 type Interval = {
   min: number;
-  minInclusive?: boolean;  // default: true
+  minInclusive?: boolean;
   max: number;
-  maxInclusive?: boolean;  // default: true
+  maxInclusive?: boolean;
 };
 ```
 
@@ -707,5 +641,4 @@ valueInInterval(value: number, interval: Interval): boolean
 intervalsOverlap(a: Interval, b: Interval): boolean
 
 overlapInterval(a: Interval, b: Interval): Interval | null
-// Returns the overlapping portion of two intervals, or null if they don't overlap.
 ```
