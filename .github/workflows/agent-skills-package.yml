@@ -9,6 +9,6 @@ jobs:
   deploy:
     uses: basementuniverse/agent-skills/.github/workflows/agent-skills-catalogue.yml@main
     with:
-      scope: intersection-helpers
+      scope: basementuniverse-intersection-helpers
     secrets:
       AGENT_SKILLS_TOKEN: ${{ secrets.AGENT_SKILLS_TOKEN }}
